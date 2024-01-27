@@ -1,0 +1,6 @@
+@DentaMatch_HostAddress = http://localhost:5105
+
+GET {{DentaMatch_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
