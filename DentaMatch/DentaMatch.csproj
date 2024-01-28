@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <Folder Include="Controllers\Authentication\" />
+    <Folder Include="Migrations\" />
     <Folder Include="Models\Authentication\" />
   </ItemGroup>
 

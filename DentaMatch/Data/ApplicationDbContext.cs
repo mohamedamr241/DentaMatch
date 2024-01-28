@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using DentaMatch.Models.Doctor;
+using DentaMatch.Models.Patient;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace DentaMatch.Data
@@ -10,6 +12,7 @@ namespace DentaMatch.Data
 
         }
 
-
+        public DbSet<Doctor> Doctors { get; set; }  // MIGRATIONS OF Doctor
+        public DbSet<Patient> Patients { get; set; }  // MIGRATIONS OF Patient
     }
 }
