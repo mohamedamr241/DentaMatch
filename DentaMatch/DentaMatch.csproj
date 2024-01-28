@@ -27,9 +27,6 @@
 
   <ItemGroup>
     <Folder Include="Controllers\Authentication\" />
-    <Folder Include="Models\Authentication\" />
-    <Folder Include="Services\MailService\" />
-    <Folder Include="ViewModel\Authentication\" />
   </ItemGroup>
 
 </Project>
