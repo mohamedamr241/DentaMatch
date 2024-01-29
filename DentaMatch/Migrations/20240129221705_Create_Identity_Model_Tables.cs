@@ -166,7 +166,7 @@ namespace DentaMatch.Migrations
                 name: "DoctorDetails",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
                     University = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CardImage = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
@@ -186,7 +186,7 @@ namespace DentaMatch.Migrations
                 name: "PatientDetails",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
                     ChronicDiseases = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },

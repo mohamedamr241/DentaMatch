@@ -113,9 +113,9 @@ namespace DentaMatch.Migrations
 
             modelBuilder.Entity("DentaMatch.Models.Doctor", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CardImage")
                         .IsRequired()
@@ -139,9 +139,9 @@ namespace DentaMatch.Migrations
 
             modelBuilder.Entity("DentaMatch.Models.Patient", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ChronicDiseases")
                         .IsRequired()

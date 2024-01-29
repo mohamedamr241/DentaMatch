@@ -6,8 +6,8 @@ namespace DentaMatch.Models
 {
     public class Doctor 
     {
-        [Key]
-        public Guid Id { get; set; }
+        [Key,MaxLength(450)]
+        public String Id { get; set; }
 
         [Required]
         public string University { get; set; }
