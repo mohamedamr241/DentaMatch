@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
 
-namespace DentaMatch.Models.Patient
+namespace DentaMatch.Models
 {
-    public class Patient
+    public class ApplicationUser : IdentityUser
     {
-        [Key]
-        public int ID { get; set; }
         [ValidateNever]
         public string? ProfileImage { get; set; }
 
@@ -21,7 +21,5 @@ namespace DentaMatch.Models.Patient
         public bool Gender { get; set; } //0 -> male, 1 -> female
         [Required, MaxLength(100)]
         public string Government { get; set; }
-
-
     }
 }
