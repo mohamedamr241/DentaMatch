@@ -2,8 +2,9 @@
 
 namespace DentaMatch.Repository.Authentication.IRepository
 {
-    public interface IAuthRepository
+    public interface IAuthRepository<T>
     {
-        Task<AuthModel> SignInAsync(UserSignInVM model);
+        //Task<AuthModel<T>> SignUpAsync(SignUpVM model);
+        Task<AuthModel<T>> SignInAsync(SignInVM model);
     }
 }

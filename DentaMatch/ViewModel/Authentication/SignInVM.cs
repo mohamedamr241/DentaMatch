@@ -2,7 +2,7 @@
 
 namespace DentaMatch.ViewModel.Authentication
 {
-    public class UserSignInVM
+    public class SignInVM
     {
         [Required]
         public string Email { get; set; }

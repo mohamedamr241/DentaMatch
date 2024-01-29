@@ -1,12 +1,11 @@
 ﻿namespace DentaMatch.ViewModel.Authentication
 {
-    public class AuthModel
+   public class AuthModel<T>
     {
+        public bool Success { get; set; }
         public string Message { get; set; }
-        public string Email { get; set; }
-        public string Roles { get; set; }
-        public string Token { get; set; }
-        public bool IsAuth { get; set; }
-        public DateTime ExpiresOn { get; set; }
+        public T Data { get; set; }
     }
 }
+
+

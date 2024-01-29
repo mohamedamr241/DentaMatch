@@ -10,7 +10,7 @@ using System.Text;
 
 namespace DentaMatch.Repository.Authentication
 {
-    public class PatientRepository:IAuthRepository
+    public class PatientRepository : IAuthRepository<PatientSignUpResponseVM>
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration Configuration;
@@ -23,26 +23,27 @@ namespace DentaMatch.Repository.Authentication
             _db = db;
         }
 
-        public Task<AuthModel> SignInAsync(UserSignInVM model)
+        public Task<AuthModel<PatientSignUpResponseVM>> SignInAsync(SignInVM model)
         {
             throw new NotImplementedException();
         }
-        public async Task<AuthModel> SignUpAsync(PatientSignUpVM model)
+        public async Task<AuthModel<PatientSignUpResponseVM>> SignUpAsync(PatientSignUpVM model)
         {
             if (await _userManager.FindByEmailAsync(model.Email) is not null)
             {
-                return new AuthModel { IsAuth = false, Message = "Email is already exist" };
+                return new AuthModel<PatientSignUpResponseVM>
+                { Success = false, Message = "Email is already exist" };
             }
             var user = new ApplicationUser
             {
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                UserName = model.FirstName+ model.LastName,
+                UserName = model.FirstName + model.LastName,
                 Email = model.Email,
-                Government=model.Government,
+                Government = model.Government,
                 PhoneNumber = model.PhoneNumber,
                 Gender = model.Gender,
-                Age = model.Age,
+                Age = model.Age
             };
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
@@ -52,13 +53,13 @@ namespace DentaMatch.Repository.Authentication
                 {
                     errors += $"{error.Description}, ";
                 }
-                return new AuthModel { IsAuth = false, Message = errors };
+                return new AuthModel<PatientSignUpResponseVM> { Success = false, Message = errors };
             }
             await _userManager.AddToRoleAsync(user, "Patient");
             var PatientDetail = new Patient
             {
                 UserId = user.Id,
-                ChronicDiseases=model.ChronicDiseases
+                ChronicDiseases = model.ChronicDiseases
             };
 
             _db.PatientDetails.Add(PatientDetail);
@@ -66,8 +67,33 @@ namespace DentaMatch.Repository.Authentication
 
             var jwtToken = await CreateJwtToken(user);
 
-            return new AuthModel { IsAuth = true, Email = user.Email, ExpiresOn = jwtToken.ValidTo, Roles = "Patient", Token = new JwtSecurityTokenHandler().WriteToken(jwtToken) };
+            var PatientData = new PatientSignUpResponseVM
+            {
+                Email = user.Email,
+                ExpiresOn = jwtToken.ValidTo,
+                Role = "Patient",
+                Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Government = model.Government,
+                PhoneNumber = model.PhoneNumber,
+                Gender = model.Gender,
+                Age = model.Age,
+                ChronicDiseases = model.ChronicDiseases
+            };
+            return new AuthModel<PatientSignUpResponseVM>
+            {
+                Success = true,
+                Message = "Success SignUp",
+                Data = PatientData
+            };
         }
+
+        public Task<AuthModel<PatientSignUpResponseVM>> SignUpAsync(SignUpVM model)
+        {
+            throw new NotImplementedException();
+        }
+
         private async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
         {
             var userClaims = await _userManager.GetClaimsAsync(user);
