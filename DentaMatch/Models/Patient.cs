@@ -8,7 +8,7 @@ namespace DentaMatch.Models
     {
 
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         [MaxLength(255)]
         public string ChronicDiseases { get; set; }

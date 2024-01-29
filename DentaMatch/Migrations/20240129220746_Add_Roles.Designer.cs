@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DentaMatch.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240129141322_Add_Roles")]
+    [Migration("20240129220746_Add_Roles")]
     partial class Add_Roles
     {
         /// <inheritdoc />
@@ -116,11 +116,9 @@ namespace DentaMatch.Migrations
 
             modelBuilder.Entity("DentaMatch.Models.Doctor", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CardImage")
                         .IsRequired()
@@ -144,11 +142,9 @@ namespace DentaMatch.Migrations
 
             modelBuilder.Entity("DentaMatch.Models.Patient", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ChronicDiseases")
                         .IsRequired()
