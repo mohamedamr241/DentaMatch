@@ -28,5 +28,33 @@ namespace DentaMatch.Controllers.Authentication
             }
             return Ok(result);
         }
+        [HttpPost("SignIn")]
+        public async Task<IActionResult> SignInAsync(SignInVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
+            }
+            var result = await _patient.SignInAsync(model);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+        [HttpPost("forgetPassword")]
+        public async Task<IActionResult> ForgetPasswordAsync([FromBody] ForgetPasswordVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Success = false, Message = "Reset Password failed", Data = new { errors = ModelState } });
+            }
+            var result = await _patient.ForgetPassword(model);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
     }
 }

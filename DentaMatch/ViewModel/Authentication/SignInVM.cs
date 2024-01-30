@@ -4,8 +4,8 @@ namespace DentaMatch.ViewModel.Authentication
 {
     public class SignInVM
     {
-        [Required]
-        public string Email { get; set; }
+        [Required, MaxLength(11)]
+        public string Phone { get; set; }
         [Required]
         public string Password { get; set; }
     }

@@ -21,5 +21,7 @@ namespace DentaMatch.Models
         public bool Gender { get; set; } //0 -> male, 1 -> female
         [Required, MaxLength(100)]
         public string Government { get; set; }
+        [MaxLength(5)]
+        public string VerificationCode { get; set; }
     }
 }

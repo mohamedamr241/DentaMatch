@@ -1,12 +1,16 @@
 ﻿using DentaMatch.Data;
 using DentaMatch.Models;
 using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.Services;
 using DentaMatch.ViewModel.Authentication;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DentaMatch.Repository.Authentication
 {
@@ -15,24 +19,62 @@ namespace DentaMatch.Repository.Authentication
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration Configuration;
         private readonly ApplicationDbContext _db;
+        private readonly IMailService _mailService;
 
-        public PatientRepository(UserManager<ApplicationUser> userManager, IConfiguration configuration, ApplicationDbContext db)
+        public PatientRepository(UserManager<ApplicationUser> userManager, IConfiguration configuration, ApplicationDbContext db, IMailService mailService)
         {
             _userManager = userManager;
             Configuration = configuration;
             _db = db;
+            _mailService = mailService;
         }
 
-        public Task<AuthModel<PatientSignUpResponseVM>> SignInAsync(SignInVM model)
+       
+
+        public async Task<AuthModel<PatientSignUpResponseVM>> SignInAsync(SignInVM model)
         {
-            throw new NotImplementedException();
+            //var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone);
+            if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
+            {
+                return new AuthModel<PatientSignUpResponseVM> { Success = false, Message = "PhoneNumber or Password is incorrect" };
+            }
+            var userToken = await CreateJwtToken(user);
+            var userRole = await _userManager.GetRolesAsync(user);
+            var userDetails = await _db.PatientDetails.FirstOrDefaultAsync(p => p.UserId == user.Id);
+            
+            var PatientData = new PatientSignUpResponseVM
+            {
+                Email = user.Email,
+                ExpiresOn = userToken.ValidTo,
+                Role = userRole[0],
+                Token = new JwtSecurityTokenHandler().WriteToken(userToken),
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Government = user.Government,
+                PhoneNumber = user.PhoneNumber,
+                Gender = user.Gender,
+                Age = user.Age,
+                ChronicDiseases = userDetails.ChronicDiseases
+            };
+            return new AuthModel<PatientSignUpResponseVM>
+            {
+                Success = true,
+                Message = "Success SignIn",
+                Data = PatientData
+            };
         }
-        public async Task<AuthModel<PatientSignUpResponseVM>> SignUpAsync(PatientSignUpVM model)
+        public async Task<AuthModel<PatientSignUpResponseVM>> SignUpAsync<TModel>(TModel model) where TModel : SignUpVM
         {
             if (await _userManager.FindByEmailAsync(model.Email) is not null)
             {
                 return new AuthModel<PatientSignUpResponseVM>
                 { Success = false, Message = "Email is already exist" };
+            }
+            if (await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber) is not null)
+            {
+                return new AuthModel<PatientSignUpResponseVM>
+                { Success = false, Message = "PhoneNumber is already exist" };
             }
             var user = new ApplicationUser
             {
@@ -56,42 +98,45 @@ namespace DentaMatch.Repository.Authentication
                 return new AuthModel<PatientSignUpResponseVM> { Success = false, Message = errors };
             }
             await _userManager.AddToRoleAsync(user, "Patient");
-            var PatientDetail = new Patient
+            if (model is PatientSignUpVM patientModel)
             {
-                UserId = user.Id,
-                ChronicDiseases = model.ChronicDiseases
-            };
+                var patientDetail = new Patient
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    UserId = user.Id,
+                    ChronicDiseases = patientModel.ChronicDiseases // Accessing specific property
+                };
 
-            _db.PatientDetails.Add(PatientDetail);
-            _db.SaveChanges();
+                _db.PatientDetails.Add(patientDetail);
+                _db.SaveChanges();
+                var jwtToken = await CreateJwtToken(user);
 
-            var jwtToken = await CreateJwtToken(user);
-
-            var PatientData = new PatientSignUpResponseVM
+                var PatientData = new PatientSignUpResponseVM
+                {
+                    Email = user.Email,
+                    ExpiresOn = jwtToken.ValidTo,
+                    Role = "Patient",
+                    Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Government = model.Government,
+                    PhoneNumber = model.PhoneNumber,
+                    Gender = model.Gender,
+                    Age = model.Age,
+                    ChronicDiseases = patientModel.ChronicDiseases
+                };
+                return new AuthModel<PatientSignUpResponseVM>
+                {
+                    Success = true,
+                    Message = "Success SignUp",
+                    Data = PatientData
+                };
+            }
+            else
             {
-                Email = user.Email,
-                ExpiresOn = jwtToken.ValidTo,
-                Role = "Patient",
-                Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                Government = model.Government,
-                PhoneNumber = model.PhoneNumber,
-                Gender = model.Gender,
-                Age = model.Age,
-                ChronicDiseases = model.ChronicDiseases
-            };
-            return new AuthModel<PatientSignUpResponseVM>
-            {
-                Success = true,
-                Message = "Success SignUp",
-                Data = PatientData
-            };
-        }
+                return new AuthModel<PatientSignUpResponseVM> { Success = false, Message = "This user is not patient" };
+            }
 
-        public Task<AuthModel<PatientSignUpResponseVM>> SignUpAsync(SignUpVM model)
-        {
-            throw new NotImplementedException();
         }
 
         private async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
@@ -124,6 +169,23 @@ namespace DentaMatch.Repository.Authentication
                 signingCredentials: signingCredentials);
 
             return jwtSecurityToken;
+        }
+        public async Task<AuthModel<PatientSignUpResponseVM>> ForgetPassword(ForgetPasswordVM model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return new AuthModel<PatientSignUpResponseVM> { Success = false, Message = "No User associated with email" };
+            }
+            Random random = new Random();
+            int randomNumber = random.Next(10000, 100000);
+
+            user.VerificationCode = randomNumber.ToString();
+            _db.SaveChanges();
+
+            await _mailService.SendEmailAsync(model.Email, "Reset Password", "<h1>Follow the instructions to reset your password<h1>" +
+                $"<p>Your verification code is {randomNumber}</p>" + "<p>Don't share this code with anyone</p>");
+            return new AuthModel<PatientSignUpResponseVM> { Success = true, Message = "Email is sent successfully" };
         }
     }
 }
