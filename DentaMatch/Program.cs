@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
 using DentaMatch.Models;
+using DentaMatch.Services;
+using DentaMatch.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,8 +21,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
-//builder.Services.AddScoped<IAuthRepository, DoctorRepository>();
-//builder.Services.AddScoped<IAuthRepository, PatientRepository>();
+builder.Services.AddTransient<IMailService, MailService>();
 builder.Services.AddScoped<PatientRepository>();
 builder.Services.AddAuthentication(options =>
 {
