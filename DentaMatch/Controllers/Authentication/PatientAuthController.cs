@@ -10,9 +10,11 @@ namespace DentaMatch.Controllers.Authentication
     public class PatientAuthController : ControllerBase
     {
         private readonly PatientRepository _patient;
-        public PatientAuthController(PatientRepository patient)
+        private readonly IConfiguration _configuration;
+        public PatientAuthController(PatientRepository patient, IConfiguration configuration)
         {
             _patient = patient;
+            _configuration = configuration;
         }
         [HttpPost("SignUp")]
         public async Task<IActionResult> SignUpAsync(PatientSignUpVM model)
@@ -83,6 +85,21 @@ namespace DentaMatch.Controllers.Authentication
                 return BadRequest(result);
             }
             return Ok(result);
+        }
+        [HttpGet("ConfirmEmail")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string userid, [FromQuery] string token)
+        {
+            if (string.IsNullOrWhiteSpace(userid) || string.IsNullOrWhiteSpace(token))
+                return NotFound();
+
+            var result = await _patient.ConfirmEmailAsync(userid, token);
+
+            if (result.Success)
+            {
+                return Redirect($"{_configuration["AppUrl"]}/ConfirmEmail.html");
+            }
+
+            return BadRequest(result);
         }
     }
 }

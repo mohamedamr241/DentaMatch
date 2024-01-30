@@ -4,6 +4,7 @@ using DentaMatch.Repository.Authentication.IRepository;
 using DentaMatch.Services;
 using DentaMatch.ViewModel.Authentication;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
@@ -18,14 +19,14 @@ namespace DentaMatch.Repository.Authentication
     public class PatientRepository : IAuthRepository<PatientSignUpResponseVM>
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IConfiguration Configuration;
+        private readonly IConfiguration _configuration;
         private readonly ApplicationDbContext _db;
         private readonly IMailService _mailService;
 
         public PatientRepository(UserManager<ApplicationUser> userManager, IConfiguration configuration, ApplicationDbContext db, IMailService mailService)
         {
             _userManager = userManager;
-            Configuration = configuration;
+            _configuration = configuration;
             _db = db;
             _mailService = mailService;
         }
@@ -127,6 +128,14 @@ namespace DentaMatch.Repository.Authentication
                     Age = model.Age,
                     ChronicDiseases = patientModel.ChronicDiseases
                 };
+                var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
+                var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
+
+                string url = $"{_configuration["AppUrl"]}/api/PatientAuth/ConfirmEmail?userid={user.Id}&token={validEmailToken}";
+
+                await _mailService.SendEmailAsync(user.Email, "Confirm your email", $"<h1>Welcome to DentaMatch</h1>" +
+                    $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
                 return new AuthModel<PatientSignUpResponseVM>
                 {
                     Success = true,
@@ -159,15 +168,15 @@ namespace DentaMatch.Repository.Authentication
             }
             .Union(userClaims)
             .Union(roleClaims);
-            var my_key = Configuration["JWT:key"];
+            var my_key = _configuration["JWT:key"];
             var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(my_key));
             var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
 
             var jwtSecurityToken = new JwtSecurityToken(
-                issuer: Configuration["JWT:Issuer"],
-                audience: Configuration["JWT:Audience"],
+                issuer: _configuration["JWT:Issuer"],
+                audience: _configuration["JWT:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddDays(double.Parse(Configuration["JWT:DurationInDays"])),
+                expires: DateTime.Now.AddDays(double.Parse(_configuration["JWT:DurationInDays"])),
                 signingCredentials: signingCredentials);
 
             return jwtSecurityToken;
@@ -256,6 +265,34 @@ namespace DentaMatch.Repository.Authentication
                 _db.SaveChanges();
                 return new AuthModel<PatientSignUpResponseVM> { Success = false, Message = "Verification code is expired" };
             }
+        }
+        public async Task<AuthModel<PatientSignUpResponseVM>> ConfirmEmailAsync(string userId, string token)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return new AuthModel<PatientSignUpResponseVM>
+                {
+                    Success = false,
+                    Message = "User not found"
+                };
+
+            var decodedToken = WebEncoders.Base64UrlDecode(token);
+            string normalToken = Encoding.UTF8.GetString(decodedToken);
+
+            var result = await _userManager.ConfirmEmailAsync(user, normalToken);
+
+            if (result.Succeeded)
+                return new AuthModel<PatientSignUpResponseVM>
+                {
+                    Success = true,
+                    Message = "Email confirmed successfully!"
+                };
+
+            return new AuthModel<PatientSignUpResponseVM>
+            {
+                Success = false,
+                Message = string.Join("\n", result.Errors.Select(e => e.Description)),
+            };
         }
     }
 }

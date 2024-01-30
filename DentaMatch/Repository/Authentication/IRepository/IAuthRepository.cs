@@ -11,5 +11,6 @@ namespace DentaMatch.Repository.Authentication.IRepository
         Task<AuthModel<T>> VerifyCodeAsync(VerifyCodeVM model);
 
         Task<AuthModel<T>> ResetPasswordAsync(ResetPasswordVM model);
+        Task<AuthModel<PatientSignUpResponseVM>> ConfirmEmailAsync(string userId, string token);
     }
 }
