@@ -23,5 +23,9 @@ namespace DentaMatch.Models
         public string Government { get; set; }
         [MaxLength(5)]
         public string VerificationCode { get; set; }
+        [DataType(DataType.DateTime)]
+        public DateTime VerificationCodeTimeStamp { get; set; }
+
+        public Boolean IsVerified { get; set; } = false;
     }
 }

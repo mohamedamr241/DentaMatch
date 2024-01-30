@@ -2,11 +2,12 @@
 
 namespace DentaMatch.ViewModel.Authentication
 {
-    public class ForgetPasswordVM
+    public class ResetPasswordVM
     {
         [Required]
+        [EmailAddress]
         public string Email { get; set; }
-        [MaxLength(5)]
-        public string VerificationCode { get; set; }
+        [Required]
+        public string Password { get; set; }
     }
 }

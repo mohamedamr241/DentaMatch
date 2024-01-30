@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
+using NuGet.Packaging.Signing;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -85,7 +86,8 @@ namespace DentaMatch.Repository.Authentication
                 Government = model.Government,
                 PhoneNumber = model.PhoneNumber,
                 Gender = model.Gender,
-                Age = model.Age
+                Age = model.Age,
+                VerificationCode = GenerateCode().ToString()
             };
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
@@ -170,6 +172,12 @@ namespace DentaMatch.Repository.Authentication
 
             return jwtSecurityToken;
         }
+        private int GenerateCode()
+        {
+            Random random = new Random();
+            int randomNumber = random.Next(10000, 100000);
+            return randomNumber;
+        }
         public async Task<AuthModel<PatientSignUpResponseVM>> ForgetPassword(ForgetPasswordVM model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
@@ -177,15 +185,69 @@ namespace DentaMatch.Repository.Authentication
             {
                 return new AuthModel<PatientSignUpResponseVM> { Success = false, Message = "No User associated with email" };
             }
-            Random random = new Random();
-            int randomNumber = random.Next(10000, 100000);
 
+            int randomNumber = GenerateCode();
             user.VerificationCode = randomNumber.ToString();
+            user.VerificationCodeTimeStamp = DateTime.Now;
             _db.SaveChanges();
 
             await _mailService.SendEmailAsync(model.Email, "Reset Password", "<h1>Follow the instructions to reset your password<h1>" +
                 $"<p>Your verification code is {randomNumber}</p>" + "<p>Don't share this code with anyone</p>");
             return new AuthModel<PatientSignUpResponseVM> { Success = true, Message = "Email is sent successfully" };
+        }
+
+        public async Task<AuthModel<PatientSignUpResponseVM>> VerifyCode(ForgetPasswordVM model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return new AuthModel<PatientSignUpResponseVM> { Success = false, Message = "No User associated with email" };
+            }
+            TimeSpan timeDifference = DateTime.UtcNow - user.VerificationCodeTimeStamp;
+            if (user.Email == model.Email && user.VerificationCode == model.VerificationCode && timeDifference.TotalMinutes<=3)
+            {
+                user.IsVerified = true;
+                int randomNumber = GenerateCode();
+                user.VerificationCode = randomNumber.ToString();
+                _db.SaveChanges();
+                return new AuthModel<PatientSignUpResponseVM> { Success = true, Message = "User is verified" };
+            }
+            else
+            {
+                return new AuthModel<PatientSignUpResponseVM> { Success = false, Message = "User is not verified" };
+            }
+        }
+
+        public async Task<AuthModel<PatientSignUpResponseVM>> ResetPassword(ResetPasswordVM model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return new AuthModel<PatientSignUpResponseVM> { Success = false, Message = "No User associated with email" };
+            }
+            TimeSpan timeDifference = DateTime.UtcNow - user.VerificationCodeTimeStamp;
+            if (user.Email == model.Email && user.IsVerified==true && timeDifference.TotalMinutes <= 6)
+            {
+                user.IsVerified = false;
+                int randomNumber = GenerateCode();
+                user.VerificationCode = randomNumber.ToString();
+                user.VerificationCodeTimeStamp = DateTime.Now;
+                _db.SaveChanges();
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, token, model.Password);
+                if (result.Succeeded)
+                {
+                    return new AuthModel<PatientSignUpResponseVM> { Success = true, Message = "User Password changed successfully" };
+                }
+                else
+                {
+                    return new AuthModel<PatientSignUpResponseVM> { Success = false, Message = string.Join("\n", result.Errors.Select(e => e.Description)) };
+                }
+            }
+            else
+            {
+                return new AuthModel<PatientSignUpResponseVM> { Success = false, Message = "Verification code is expired" };
+            }
         }
     }
 }

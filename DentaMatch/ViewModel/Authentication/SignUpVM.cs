@@ -16,6 +16,5 @@ namespace DentaMatch.ViewModel.Authentication
 
         public string Role { get; set; }
 
-
     }
 }
