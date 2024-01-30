@@ -6,10 +6,10 @@ namespace DentaMatch.Repository.Authentication.IRepository
     {
         Task<AuthModel<T>> SignUpAsync<TModel>(TModel model) where TModel : SignUpVM;
         Task<AuthModel<T>> SignInAsync(SignInVM model);
-        Task<AuthModel<T>> ForgetPassword(ForgetPasswordVM model);
+        Task<AuthModel<T>> ForgetPasswordAsync(ForgetPasswordVM model);
 
-        Task<AuthModel<T>> VerifyCode(ForgetPasswordVM model);
+        Task<AuthModel<T>> VerifyCodeAsync(VerifyCodeVM model);
 
-        Task<AuthModel<T>> ResetPassword(ResetPasswordVM model);
+        Task<AuthModel<T>> ResetPasswordAsync(ResetPasswordVM model);
     }
 }

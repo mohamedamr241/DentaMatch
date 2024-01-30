@@ -49,7 +49,35 @@ namespace DentaMatch.Controllers.Authentication
             {
                 return BadRequest(new { Success = false, Message = "Reset Password failed", Data = new { errors = ModelState } });
             }
-            var result = await _patient.ForgetPassword(model);
+            var result = await _patient.ForgetPasswordAsync(model);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+        [HttpPost("VerifyCode")]
+        public async Task<IActionResult> VerifyCodeAsync([FromBody] VerifyCodeVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Success = false, Message = "Verify Code failed", Data = new { errors = ModelState } });
+            }
+            var result = await _patient.VerifyCodeAsync(model);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPasswordAsync([FromBody] ResetPasswordVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Success = false, Message = "Reset password failed", Data = new { errors = ModelState } });
+            }
+            var result = await _patient.ResetPasswordAsync(model);
             if (!result.Success)
             {
                 return BadRequest(result);

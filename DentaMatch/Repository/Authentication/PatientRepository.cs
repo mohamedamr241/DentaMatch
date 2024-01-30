@@ -178,7 +178,7 @@ namespace DentaMatch.Repository.Authentication
             int randomNumber = random.Next(10000, 100000);
             return randomNumber;
         }
-        public async Task<AuthModel<PatientSignUpResponseVM>> ForgetPassword(ForgetPasswordVM model)
+        public async Task<AuthModel<PatientSignUpResponseVM>> ForgetPasswordAsync(ForgetPasswordVM model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
@@ -196,9 +196,11 @@ namespace DentaMatch.Repository.Authentication
             return new AuthModel<PatientSignUpResponseVM> { Success = true, Message = "Email is sent successfully" };
         }
 
-        public async Task<AuthModel<PatientSignUpResponseVM>> VerifyCode(ForgetPasswordVM model)
+        public async Task<AuthModel<PatientSignUpResponseVM>> VerifyCodeAsync(VerifyCodeVM model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
+            user.IsVerified = false;
+            _db.SaveChanges();
             if (user == null)
             {
                 return new AuthModel<PatientSignUpResponseVM> { Success = false, Message = "No User associated with email" };
@@ -209,6 +211,7 @@ namespace DentaMatch.Repository.Authentication
                 user.IsVerified = true;
                 int randomNumber = GenerateCode();
                 user.VerificationCode = randomNumber.ToString();
+                user.VerificationCodeTimeStamp = DateTime.Now;
                 _db.SaveChanges();
                 return new AuthModel<PatientSignUpResponseVM> { Success = true, Message = "User is verified" };
             }
@@ -218,7 +221,7 @@ namespace DentaMatch.Repository.Authentication
             }
         }
 
-        public async Task<AuthModel<PatientSignUpResponseVM>> ResetPassword(ResetPasswordVM model)
+        public async Task<AuthModel<PatientSignUpResponseVM>> ResetPasswordAsync(ResetPasswordVM model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
@@ -226,7 +229,7 @@ namespace DentaMatch.Repository.Authentication
                 return new AuthModel<PatientSignUpResponseVM> { Success = false, Message = "No User associated with email" };
             }
             TimeSpan timeDifference = DateTime.UtcNow - user.VerificationCodeTimeStamp;
-            if (user.Email == model.Email && user.IsVerified==true && timeDifference.TotalMinutes <= 6)
+            if (user.Email == model.Email && user.IsVerified==true && timeDifference.TotalMinutes <= 5)
             {
                 user.IsVerified = false;
                 int randomNumber = GenerateCode();
@@ -246,6 +249,11 @@ namespace DentaMatch.Repository.Authentication
             }
             else
             {
+                user.IsVerified = false;
+                int randomNumber = GenerateCode();
+                user.VerificationCode = randomNumber.ToString();
+                user.VerificationCodeTimeStamp = DateTime.Now;
+                _db.SaveChanges();
                 return new AuthModel<PatientSignUpResponseVM> { Success = false, Message = "Verification code is expired" };
             }
         }
