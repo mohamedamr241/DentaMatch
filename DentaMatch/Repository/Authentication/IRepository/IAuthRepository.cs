@@ -1,16 +1,13 @@
-﻿using DentaMatch.ViewModel.Authentication;
+﻿using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
+using DentaMatch.ViewModel.Authentication.Response;
 
 namespace DentaMatch.Repository.Authentication.IRepository
 {
-    public interface IAuthRepository<T>
+    public interface IAuthRepository
     {
-        Task<AuthModel<T>> SignUpAsync<TModel>(TModel model) where TModel : SignUpVM;
-        Task<AuthModel<T>> SignInAsync(SignInVM model);
-        Task<AuthModel<T>> ForgetPasswordAsync(ForgetPasswordVM model);
-
-        Task<AuthModel<T>> VerifyCodeAsync(VerifyCodeVM model);
-
-        Task<AuthModel<T>> ResetPasswordAsync(ResetPasswordVM model);
-        Task<AuthModel<PatientSignUpResponseVM>> ConfirmEmailAsync(string userId, string token);
+        Task<AuthModel> ForgetPasswordAsync(ForgetPasswordVM model);
+        Task<AuthModel> VerifyCodeAsync(VerifyCodeVM model);
+        Task<AuthModel> ResetPasswordAsync(ResetPasswordVM model);
+        Task<AuthModel> ConfirmEmailAsync(string userId, string token);
     }
 }

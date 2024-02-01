@@ -1,15 +1,14 @@
 using DentaMatch.Data;
-using DentaMatch.Repository.Authentication.IRepository;
 using DentaMatch.Repository.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
 using System.Text;
 using DentaMatch.Models;
 using DentaMatch.Services;
-using DentaMatch.Services;
+using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +21,14 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 builder.Services.AddTransient<IMailService, MailService>();
-builder.Services.AddScoped<PatientRepository>();
+
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<AuthPatientRepository>();
+builder.Services.AddScoped<AuthAdminRepository>();
+builder.Services.AddScoped<AuthDoctorRepository>();
+
+builder.Services.AddScoped<AuthHelper>();
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

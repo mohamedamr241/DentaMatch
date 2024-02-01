@@ -1,8 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace DentaMatch.ViewModel.Authentication
+﻿namespace DentaMatch.ViewModel.Authentication.Response
 {
-    public class PatientSignUpResponseVM
+    public class UserResponseVM
     {
         public string Token { get; set; }
         public DateTime ExpiresOn { get; set; }
@@ -11,12 +9,9 @@ namespace DentaMatch.ViewModel.Authentication
         public string LastName { get; set; }
         public string Email { get; set; }
         public int Age { get; set; }
-        public bool Gender { get; set; } 
+        public bool Gender { get; set; }
         public string Government { get; set; }
         public string PhoneNumber { get; set; }
         public string Role { get; set; }
-        public string ChronicDiseases { get; set; }
-
-
     }
 }

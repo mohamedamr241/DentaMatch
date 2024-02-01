@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using DentaMatch.ViewModel.Authentication.Request;
 
-namespace DentaMatch.ViewModel.Authentication
+namespace DentaMatch.ViewModel.Authentication.Patient
 {
     public class PatientSignUpVM : SignUpVM
     {

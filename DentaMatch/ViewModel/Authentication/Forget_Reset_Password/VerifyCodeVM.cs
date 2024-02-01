@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DentaMatch.ViewModel.Authentication
+namespace DentaMatch.ViewModel.Authentication.Forget_Reset_Password
 {
     public class VerifyCodeVM
     {
