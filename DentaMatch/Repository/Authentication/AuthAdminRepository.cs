@@ -1,6 +1,7 @@
 ﻿using DentaMatch.Helpers;
 using DentaMatch.Models;
 using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.ViewModel.Authentication;
 using DentaMatch.ViewModel.Authentication.Request;
 using DentaMatch.ViewModel.Authentication.Response;
 using Microsoft.AspNetCore.Identity;
@@ -63,11 +64,16 @@ namespace DentaMatch.Repository.Authentication
                 return new AuthModel<UserResponseVM>
                 { Success = false, Message = "PhoneNumber is already exist" };
             }
+            if (!model.PhoneNumber.All(char.IsDigit))
+            {
+                return new AuthModel<UserResponseVM>
+                { Success = false, Message = "PhoneNumber must be numbers only" };
+            }
             var user = new ApplicationUser
             {
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                UserName = model.FirstName + model.LastName,
+                UserName = model.FirstName + model.LastName+ +(_authHelper.GenerateThreeDigitsCode()),
                 Email = model.Email,
                 Government = model.Government,
                 PhoneNumber = model.PhoneNumber,

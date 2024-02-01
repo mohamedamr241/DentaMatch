@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DentaMatch.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240130132458_IsVerified_User")]
-    partial class IsVerified_User
+    [Migration("20240201171345_make_PhoneNumber_Required_Identity")]
+    partial class make_PhoneNumber_Required_Identity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

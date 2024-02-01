@@ -8,10 +8,10 @@ namespace DentaMatch.Controllers.Authentication
     [ApiController]
     public class PatientAuthController : ControllerBase
     {
-        private readonly AuthPatientRepository _patient;
-        public PatientAuthController(AuthPatientRepository patient)
+        private readonly UnitOfWork _unitOfWork;
+        public PatientAuthController(UnitOfWork unitOfWork)
         {
-            _patient = patient;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpPost("SignUp")]
@@ -21,7 +21,7 @@ namespace DentaMatch.Controllers.Authentication
             {
                 return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
             }
-            var result = await _patient.SignUpAsync(model);
+            var result = await _unitOfWork._patient.SignUpAsync(model);
             if (!result.Success)
             {
                 return BadRequest(result);

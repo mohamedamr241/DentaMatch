@@ -8,7 +8,6 @@ namespace DentaMatch.Migrations
     public partial class Add_Roles : Migration
     {
         /// <inheritdoc />
-
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.InsertData(
@@ -35,3 +34,4 @@ namespace DentaMatch.Migrations
         }
     }
 }
+

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DentaMatch.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240201001414_make_phone_number_required_Identity")]
-    partial class make_phone_number_required_Identity
+    [Migration("20240201172056_Phone_Number_Unique")]
+    partial class Phone_Number_Unique
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

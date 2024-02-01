@@ -52,5 +52,11 @@ namespace DentaMatch.Helpers
             int randomNumber = random.Next(10000, 100000);
             return randomNumber;
         }
+        internal int GenerateThreeDigitsCode()
+        {
+            Random random = new Random();
+            int randomNumber = random.Next(100, 1000);
+            return randomNumber;
+        }
     }
 }

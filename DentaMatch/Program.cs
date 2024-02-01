@@ -22,12 +22,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 builder.Services.AddTransient<IMailService, MailService>();
 
-builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<AuthRepository>();
 builder.Services.AddScoped<AuthPatientRepository>();
 builder.Services.AddScoped<AuthAdminRepository>();
 builder.Services.AddScoped<AuthDoctorRepository>();
-
 builder.Services.AddScoped<AuthHelper>();
+builder.Services.AddScoped<UnitOfWork>();
 
 builder.Services.AddAuthentication(options =>
 {

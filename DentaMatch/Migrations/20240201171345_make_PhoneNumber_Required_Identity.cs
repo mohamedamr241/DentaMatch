@@ -5,7 +5,7 @@
 namespace DentaMatch.Migrations
 {
     /// <inheritdoc />
-    public partial class make_phone_number_required_Identity : Migration
+    public partial class make_PhoneNumber_Required_Identity : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,13 +20,13 @@ namespace DentaMatch.Migrations
                 oldType: "nvarchar(max)", // Specify the old type if necessary
                 oldNullable: true // Specify oldNullable if necessary
             );
-
-            migrationBuilder.Sql("ALTER TABLE AspNetUsers ADD CONSTRAINT CK_PhoneNumber_OnlyNumbers CHECK (PhoneNumber LIKE '%[0-9]%')");
+            migrationBuilder.Sql("ALTER TABLE AspNetUsers ADD CONSTRAINT CK_NumericPhoneNumber CHECK (ISNUMERIC(PhoneNumber) = 1);");
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("ALTER TABLE AspNetUsers DROP CONSTRAINT CK_PhoneNumber_OnlyNumbers");
+            migrationBuilder.Sql("ALTER TABLE AspNetUsers DROP CONSTRAINT CK_NumericPhoneNumber");
 
             migrationBuilder.AlterColumn<string>(
                 name: "PhoneNumber",
@@ -35,7 +35,7 @@ namespace DentaMatch.Migrations
                 nullable: true,
                 oldClrType: typeof(string),
                 oldType: "char(11)");
-        }
 
+        }
     }
 }

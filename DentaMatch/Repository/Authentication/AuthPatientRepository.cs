@@ -22,12 +22,13 @@ namespace DentaMatch.Repository.Authentication
         private readonly IMailService _mailService;
         private readonly AuthHelper _authHelper;
 
-        public AuthPatientRepository(UserManager<ApplicationUser> userManager, AuthHelper authHelper, ApplicationDbContext db, IMailService mailService) : base(userManager, authHelper, db, mailService)
+        public AuthPatientRepository(UserManager<ApplicationUser> userManager, IConfiguration configuration, AuthHelper authHelper, ApplicationDbContext db, IMailService mailService) : base(userManager, authHelper, db, mailService)
         {
             _userManager = userManager;
             _authHelper = authHelper;
             _db = db;
             _mailService = mailService;
+            _configuration = configuration;
         }
 
         public async Task<AuthModel<PatientResponseVM>> SignInAsync(SignInVM model)
@@ -75,11 +76,16 @@ namespace DentaMatch.Repository.Authentication
                 return new AuthModel<PatientResponseVM>
                 { Success = false, Message = "PhoneNumber is already exist" };
             }
+            if (!model.PhoneNumber.All(char.IsDigit))
+            {
+                return new AuthModel<PatientResponseVM>
+                { Success = false, Message = "PhoneNumber must be numbers only" };
+            }
             var user = new ApplicationUser
             {
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                UserName = model.FirstName + model.LastName,
+                UserName = model.FirstName + model.LastName + (_authHelper.GenerateThreeDigitsCode()),
                 Email = model.Email,
                 Government = model.Government,
                 PhoneNumber = model.PhoneNumber,
@@ -131,7 +137,7 @@ namespace DentaMatch.Repository.Authentication
                 var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
                 var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
 
-                string url = $"{_configuration["AppUrl"]}/api/Auth/ConfirmEmail?userid={user.Id}&token={validEmailToken}";
+                string url = $"{_configuration["AppUrl"]}api/Auth/ConfirmEmail?userid={user.Id}&token={validEmailToken}";
 
                 await _mailService.SendEmailAsync(user.Email, "Confirm your email", $"<h1>Welcome to DentaMatch</h1>" +
                     $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DentaMatch.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240130001644_User_VerificationCode")]
-    partial class User_VerificationCode
+    [Migration("20240201171001_Create_Identity_Model_Tables")]
+    partial class Create_Identity_Model_Tables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -60,6 +60,9 @@ namespace DentaMatch.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -105,6 +108,9 @@ namespace DentaMatch.Migrations
                         .IsRequired()
                         .HasMaxLength(5)
                         .HasColumnType("nvarchar(5)");
+
+                    b.Property<DateTime>("VerificationCodeTimeStamp")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

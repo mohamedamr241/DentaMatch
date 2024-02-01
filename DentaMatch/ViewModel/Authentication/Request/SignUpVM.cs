@@ -16,7 +16,7 @@ namespace DentaMatch.ViewModel.Authentication.Request
         public bool Gender { get; set; }
         [Required, MaxLength(100)]
         public string Government { get; set; }
-        [Required]
+        //[Required]
         public string Password { get; set; }
         [Required, StringLength(11, MinimumLength = 11)]
         public string PhoneNumber { get; set; }

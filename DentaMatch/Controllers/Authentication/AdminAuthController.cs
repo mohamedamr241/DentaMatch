@@ -8,10 +8,10 @@ namespace DentaMatch.Controllers.Authentication
     [ApiController]
     public class AdminAuthController : ControllerBase
     {
-        private readonly AuthAdminRepository _admin;
-        public AdminAuthController(AuthAdminRepository admin)
+        private readonly UnitOfWork _unitOfWork;
+        public AdminAuthController(UnitOfWork unitOfWork)
         {
-            _admin = admin;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpPost("SignUp")]
@@ -21,7 +21,7 @@ namespace DentaMatch.Controllers.Authentication
             {
                 return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
             }
-            var result = await _admin.SignUpAsync(model);
+            var result = await _unitOfWork._admin.SignUpAsync(model);
             if (!result.Success)
             {
                 return BadRequest(result);
