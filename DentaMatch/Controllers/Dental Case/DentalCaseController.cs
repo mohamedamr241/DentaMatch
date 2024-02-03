@@ -25,20 +25,26 @@ namespace DentaMatch.Controllers.Dental_Case
         [HttpPost("addcase")]
         public async Task<IActionResult> CreateCaseAsync(DentalCaseVm model)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
-            }
-            var userClaims = _httpContextAccessor.HttpContext.User.Claims;
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
+                }
+                var userClaims = _httpContextAccessor.HttpContext.User.Claims;
 
-            // Extract user ID from claims - assuming the claim type for user ID is "UserId"
-            var userId = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (userId != null)
-            {
-                var result = await _dentalCaseRepository.CreateCaseAsync(userId, model);
-                return Ok(result);
+                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value; ;
+                if (userId != null)
+                {
+                    var result = await _dentalCaseRepository.CreateCaseAsync(userId.ToString(), model);
+                    return Ok(result);
+                }
+                return BadRequest(new { Success = false, Message = "Dental Case creation Failed", Data = new { } });
+                
             }
-            return BadRequest(new { Success = false, Message = "Dental Case Failed", Data = new { } });
+            catch(Exception error) {
+                return BadRequest(new { Success = false, Message = $"Dental Case creation Failed: {error.Message}", Data = new { } });
+            }
 
         }
 

@@ -16,65 +16,70 @@ namespace DentaMatch.Repository.Dental_Cases
         }
         public async Task<AuthModel<DentalCaseVm>> CreateCaseAsync(string UserId, DentalCaseVm model)
         {
-
-            var patientId = _db.Patients.FirstOrDefault(c => c.UserId == UserId);
-
-            var dentalCase = new DentalCase
+            try
             {
-                Id = Guid.NewGuid().ToString(),
-                Description = model.Description,
-                IsAssigned = model.IsAssigned,
-                IsKnown = model.IsKnown,
-                PatientId = patientId.ToString()
-            };
-
-            _db.DentalCases.Add(dentalCase);
-            _db.SaveChanges();
-
-            var ChronicDiseasesIds = GetChronicDiseaseIds(model.ChronicDiseases);
-            foreach (var ChronicDiseasesId in ChronicDiseasesIds)
-            {
-                var chronicDisease = new CaseChronicDiseases
+                var user = _db.Patients.Where(c => c.UserId == UserId).FirstOrDefault();
+                if(user == null)
                 {
-                    CaseId = dentalCase.Id,
-                    DiseaseId = ChronicDiseasesId
+                    return new AuthModel<DentalCaseVm> { Success = false, Message = "User not found." };
+                }
+                string patientId = user?.Id;
+                var dentalCase = new DentalCase
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Description = model.Description,
+                    PatientId = patientId.ToString()
                 };
 
-                _db.CaseChronicDiseases.Add(chronicDisease);
-            }
+                _db.DentalCases.Add(dentalCase);
+                _db.SaveChanges();
 
-            var dentalDiseasesIds = GetDentalDiseaseIds(model.DentalDiseases);
-            foreach (var dentalDiseasesId in dentalDiseasesIds)
-            {
-                var dentalDisease = new CaseDentalDiseases
+                var ChronicDiseasesIds = GetChronicDiseaseIds(model.ChronicDiseases);
+                foreach (var ChronicDiseasesId in ChronicDiseasesIds)
                 {
-                    CaseId = dentalCase.Id,
-                    DiseaseId = dentalDiseasesId
+                    var chronicDisease = new CaseChronicDiseases
+                    {
+                        CaseId = dentalCase.Id,
+                        DiseaseId = ChronicDiseasesId
+                    };
+
+                    _db.CaseChronicDiseases.Add(chronicDisease);
+                }
+
+                var dentalDiseasesIds = GetDentalDiseaseIds(model.DentalDiseases);
+                foreach (var dentalDiseasesId in dentalDiseasesIds)
+                {
+                    var dentalDisease = new CaseDentalDiseases
+                    {
+                        CaseId = dentalCase.Id,
+                        DiseaseId = dentalDiseasesId
+                    };
+
+                    _db.CaseDentalDiseases.Add(dentalDisease);
+                }
+                var dentalCaseData = new DentalCaseVm
+                {
+                    Description = model.Description,
+                    DentalDiseases = model.DentalDiseases.ToList(),
+                    ChronicDiseases = model.ChronicDiseases.ToList(),
+                    MouthImages = model.MouthImages.ToList(),
+                    PrescriptionImages = model.PrescriptionImages.ToList(),
+                    XrayImages = model.XrayImages.ToList()
+                };
+                _db.SaveChanges();
+
+                return new AuthModel<DentalCaseVm>
+                {
+                    Success = true,
+                    Message = "Dental Case Created successfully",
+                    Data  = dentalCaseData
                 };
 
-                _db.CaseDentalDiseases.Add(dentalDisease);
             }
-
-            _db.SaveChanges();
-
-            var dentalCaseData = new DentalCaseVm
+            catch(Exception error)
             {
-                Description = model.Description,
-                IsAssigned = model.IsAssigned,
-                IsKnown = model.IsKnown,
-                DentalDiseases = model.DentalDiseases.ToList(),
-                ChronicDiseases = model.ChronicDiseases.ToList(),
-                MouthImages = model.MouthImages.ToList(),
-                PrescriptionImages = model.PrescriptionImages.ToList(),
-                XrayImages = model.XrayImages.ToList()
-            };
-
-            return new AuthModel<DentalCaseVm>
-            {
-                Success = true,
-                Message = "Dental Case Created successfully",
-                Data  = dentalCaseData
-            };
+                return new AuthModel<DentalCaseVm> { Success = false, Message = $"{error.Message}" };
+            }
         }
 
         private List<string> GetChronicDiseaseIds(List<string> chronicDiseaseNames)
@@ -87,9 +92,9 @@ namespace DentaMatch.Repository.Dental_Cases
 
         private List<string> GetDentalDiseaseIds(List<string> dentalDiseaseNames)
         {
-            return _db.ChronicDiseases
-                .Where(cd => dentalDiseaseNames.Contains(cd.DiseaseName))
-                .Select(cd => cd.Id)
+            return _db.DentalDiseases
+                .Where(dd => dentalDiseaseNames.Contains(dd.DiseaseName))
+                .Select(dd => dd.Id)
                 .ToList();
         }
     }

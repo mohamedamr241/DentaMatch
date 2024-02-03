@@ -40,8 +40,11 @@ namespace DentaMatch.Data
                 .WithOne()
                 .HasForeignKey<Doctor>(dd => dd.UserId);
 
-            modelBuilder.Entity<CaseChronicDiseases>().HasNoKey();
-            modelBuilder.Entity<CaseDentalDiseases>().HasNoKey();
+            modelBuilder.Entity<CaseDentalDiseases>()
+                .HasKey(cd => new { cd.CaseId, cd.DiseaseId });
+
+            modelBuilder.Entity<CaseChronicDiseases>()
+                .HasKey(cd => new { cd.CaseId, cd.DiseaseId });
         }
     }
 }
