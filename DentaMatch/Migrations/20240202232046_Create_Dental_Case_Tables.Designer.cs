@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DentaMatch.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240201171345_make_PhoneNumber_Required_Identity")]
-    partial class make_PhoneNumber_Required_Identity
+    [Migration("20240202232046_Create_Dental_Case_Tables")]
+    partial class Create_Dental_Case_Tables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -125,6 +125,26 @@ namespace DentaMatch.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("DentaMatch.Models.DentalCase", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PatientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("DentalCases");
+                });
+
             modelBuilder.Entity("DentaMatch.Models.Doctor", b =>
                 {
                     b.Property<string>("Id")
@@ -172,6 +192,128 @@ namespace DentaMatch.Migrations
                         .IsUnique();
 
                     b.ToTable("Patients");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Patient_Models.Dental_Case.Chronic_Diseases.CaseChronicDiseases", b =>
+                {
+                    b.Property<string>("CaseId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("DiseaseId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasIndex("CaseId");
+
+                    b.HasIndex("DiseaseId");
+
+                    b.ToTable("CaseChronicDiseases");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Patient_Models.Dental_Case.Chronic_Diseases.ChronicDisease", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("DiseaseName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ChronicDiseases");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Patient_Models.Dental_Case.Dental_Diseases.CaseDentalDiseases", b =>
+                {
+                    b.Property<string>("CaseId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("DiseaseId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasIndex("CaseId");
+
+                    b.HasIndex("DiseaseId");
+
+                    b.ToTable("CaseDentalDiseases");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Patient_Models.Dental_Case.Dental_Diseases.DentalDisease", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("DiseaseName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DentalDiseases");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Patient_Models.Dental_Case.Images.MouthImages", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CaseId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CaseId");
+
+                    b.ToTable("MouthImages");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Patient_Models.Dental_Case.Images.PrescriptionImages", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CaseId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CaseId");
+
+                    b.ToTable("PrescriptionImages");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Patient_Models.Dental_Case.Images.XrayIamges", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CaseId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CaseId");
+
+                    b.ToTable("XrayIamges");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -307,6 +449,17 @@ namespace DentaMatch.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("DentaMatch.Models.DentalCase", b =>
+                {
+                    b.HasOne("DentaMatch.Models.Patient", "Patient")
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
             modelBuilder.Entity("DentaMatch.Models.Doctor", b =>
                 {
                     b.HasOne("DentaMatch.Models.ApplicationUser", "User")
@@ -327,6 +480,77 @@ namespace DentaMatch.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Patient_Models.Dental_Case.Chronic_Diseases.CaseChronicDiseases", b =>
+                {
+                    b.HasOne("DentaMatch.Models.DentalCase", "DentalCases")
+                        .WithMany()
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DentaMatch.Models.Patient_Models.Dental_Case.Chronic_Diseases.ChronicDisease", "ChronicDiseases")
+                        .WithMany()
+                        .HasForeignKey("DiseaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChronicDiseases");
+
+                    b.Navigation("DentalCases");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Patient_Models.Dental_Case.Dental_Diseases.CaseDentalDiseases", b =>
+                {
+                    b.HasOne("DentaMatch.Models.DentalCase", "DentalCases")
+                        .WithMany()
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DentaMatch.Models.Patient_Models.Dental_Case.Dental_Diseases.DentalDisease", "DentalDiseases")
+                        .WithMany()
+                        .HasForeignKey("DiseaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DentalCases");
+
+                    b.Navigation("DentalDiseases");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Patient_Models.Dental_Case.Images.MouthImages", b =>
+                {
+                    b.HasOne("DentaMatch.Models.DentalCase", "Case")
+                        .WithMany()
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Case");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Patient_Models.Dental_Case.Images.PrescriptionImages", b =>
+                {
+                    b.HasOne("DentaMatch.Models.DentalCase", "Case")
+                        .WithMany()
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Case");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Patient_Models.Dental_Case.Images.XrayIamges", b =>
+                {
+                    b.HasOne("DentaMatch.Models.DentalCase", "Case")
+                        .WithMany()
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Case");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

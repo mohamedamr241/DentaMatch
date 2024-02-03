@@ -166,7 +166,7 @@ namespace DentaMatch.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DoctorDetails",
+                name: "Doctors",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
@@ -176,9 +176,9 @@ namespace DentaMatch.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DoctorDetails", x => x.Id);
+                    table.PrimaryKey("PK_Doctors", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DoctorDetails_AspNetUsers_UserId",
+                        name: "FK_Doctors_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -186,7 +186,7 @@ namespace DentaMatch.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PatientDetails",
+                name: "Patients",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
@@ -195,9 +195,9 @@ namespace DentaMatch.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PatientDetails", x => x.Id);
+                    table.PrimaryKey("PK_Patients", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_PatientDetails_AspNetUsers_UserId",
+                        name: "FK_Patients_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -244,14 +244,14 @@ namespace DentaMatch.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DoctorDetails_UserId",
-                table: "DoctorDetails",
+                name: "IX_Doctors_UserId",
+                table: "Doctors",
                 column: "UserId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_PatientDetails_UserId",
-                table: "PatientDetails",
+                name: "IX_Patients_UserId",
+                table: "Patients",
                 column: "UserId",
                 unique: true);
         }
@@ -275,10 +275,10 @@ namespace DentaMatch.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "DoctorDetails");
+                name: "Doctors");
 
             migrationBuilder.DropTable(
-                name: "PatientDetails");
+                name: "Patients");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

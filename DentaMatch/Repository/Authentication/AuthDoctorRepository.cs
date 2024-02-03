@@ -3,10 +3,9 @@ using DentaMatch.Helpers;
 using DentaMatch.Models;
 using DentaMatch.Repository.Authentication.IRepository;
 using DentaMatch.Services;
+using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication;
-using DentaMatch.ViewModel.Authentication.Patient;
 using DentaMatch.ViewModel.Authentication.Request;
-using DentaMatch.ViewModel.Authentication.Response;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
@@ -43,7 +42,7 @@ namespace DentaMatch.Repository.Authentication
                 return new AuthModel<DoctorResponseVM> { Success = false, Message = "PhoneNumber or Password is incorrect" };
             }
             var userToken = await _authHelper.CreateJwtToken(user);
-            var userDetails = await _db.DoctorDetails.FirstOrDefaultAsync(p => p.UserId == user.Id);
+            var userDetails = await _db.Doctors.FirstOrDefaultAsync(p => p.UserId == user.Id);
 
             var DoctorData = new DoctorResponseVM
             {
@@ -122,7 +121,7 @@ namespace DentaMatch.Repository.Authentication
                     CardImage = doctorModel.CardImage
                 };
 
-                _db.DoctorDetails.Add(DoctorDetails);
+                _db.Doctors.Add(DoctorDetails);
                 _db.SaveChanges();
                 var jwtToken = await _authHelper.CreateJwtToken(user);
 

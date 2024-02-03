@@ -1,4 +1,4 @@
-﻿namespace DentaMatch.ViewModel.Authentication.Response
+﻿namespace DentaMatch.ViewModel
 {
     public class AuthModel
     {

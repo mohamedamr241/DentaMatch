@@ -148,7 +148,7 @@ namespace DentaMatch.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("DoctorDetails");
+                    b.ToTable("Doctors");
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Patient", b =>
@@ -171,7 +171,7 @@ namespace DentaMatch.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("PatientDetails");
+                    b.ToTable("Patients");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

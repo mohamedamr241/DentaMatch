@@ -5,7 +5,7 @@ namespace DentaMatch.Repository.Authentication
     public class UnitOfWork
     {
         public IConfiguration _configuration;
-        public AuthDoctorRepository _doctor ;
+        public AuthDoctorRepository _doctor;
         public AuthPatientRepository _patient;
         public AuthAdminRepository _admin;
         public AuthRepository _authRepository;

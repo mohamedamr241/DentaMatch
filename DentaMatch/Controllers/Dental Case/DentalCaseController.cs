@@ -1,0 +1,46 @@
+﻿using DentaMatch.Models;
+using DentaMatch.Repository.Authentication;
+using DentaMatch.Repository.Dental_Cases;
+using DentaMatch.ViewModel.Authentication.Request;
+using DentaMatch.ViewModel.Dental_Cases;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
+namespace DentaMatch.Controllers.Dental_Case
+{
+    [Authorize(Roles = "Patient")]
+    [Route("patient/[controller]")]
+    [ApiController]
+    public class DentalCaseController : ControllerBase
+    {
+        private readonly IDentalCaseRepository _dentalCaseRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public DentalCaseController(IDentalCaseRepository dentalCaseRepository, IHttpContextAccessor httpContextAccessor)
+        {
+            _dentalCaseRepository = dentalCaseRepository;
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        [HttpPost("addcase")]
+        public async Task<IActionResult> CreateCaseAsync(DentalCaseVm model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
+            }
+            var userClaims = _httpContextAccessor.HttpContext.User.Claims;
+
+            // Extract user ID from claims - assuming the claim type for user ID is "UserId"
+            var userId = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (userId != null)
+            {
+                var result = await _dentalCaseRepository.CreateCaseAsync(userId, model);
+                return Ok(result);
+            }
+            return BadRequest(new { Success = false, Message = "Dental Case Failed", Data = new { } });
+
+        }
+
+    }
+}

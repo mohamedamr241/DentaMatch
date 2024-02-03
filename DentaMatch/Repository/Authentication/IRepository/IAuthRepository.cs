@@ -1,5 +1,5 @@
-﻿using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
-using DentaMatch.ViewModel.Authentication.Response;
+﻿using DentaMatch.ViewModel;
+using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
 
 namespace DentaMatch.Repository.Authentication.IRepository
 {

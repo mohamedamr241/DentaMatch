@@ -3,9 +3,9 @@ using DentaMatch.Helpers;
 using DentaMatch.Models;
 using DentaMatch.Repository.Authentication.IRepository;
 using DentaMatch.Services;
+using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Patient;
 using DentaMatch.ViewModel.Authentication.Request;
-using DentaMatch.ViewModel.Authentication.Response;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
@@ -41,7 +41,7 @@ namespace DentaMatch.Repository.Authentication
             }
             var userToken = await _authHelper.CreateJwtToken(user);
             var userRole = await _userManager.GetRolesAsync(user);
-            var userDetails = await _db.PatientDetails.FirstOrDefaultAsync(p => p.UserId == user.Id);
+            var userDetails = await _db.Patients.FirstOrDefaultAsync(p => p.UserId == user.Id);
 
             var PatientData = new PatientResponseVM
             {
@@ -115,7 +115,7 @@ namespace DentaMatch.Repository.Authentication
                     ChronicDiseases = patientModel.ChronicDiseases // Accessing specific property
                 };
 
-                _db.PatientDetails.Add(patientDetail);
+                _db.Patients.Add(patientDetail);
                 _db.SaveChanges();
                 var jwtToken = await _authHelper.CreateJwtToken(user);
 

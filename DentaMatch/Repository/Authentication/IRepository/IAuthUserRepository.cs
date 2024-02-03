@@ -1,5 +1,5 @@
-﻿using DentaMatch.ViewModel.Authentication.Request;
-using DentaMatch.ViewModel.Authentication.Response;
+﻿using DentaMatch.ViewModel;
+using DentaMatch.ViewModel.Authentication.Request;
 
 namespace DentaMatch.Repository.Authentication.IRepository
 {

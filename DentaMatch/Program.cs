@@ -9,6 +9,7 @@ using DentaMatch.Models;
 using DentaMatch.Services;
 using DentaMatch.Repository.Authentication.IRepository;
 using DentaMatch.Helpers;
+using DentaMatch.Repository.Dental_Cases;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,8 @@ builder.Services.AddScoped<AuthAdminRepository>();
 builder.Services.AddScoped<AuthDoctorRepository>();
 builder.Services.AddScoped<AuthHelper>();
 builder.Services.AddScoped<UnitOfWork>();
+builder.Services.AddScoped<IDentalCaseRepository, DentalCaseRepository>();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAuthentication(options =>
 {

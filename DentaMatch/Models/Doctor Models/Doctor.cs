@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DentaMatch.Models
 {
-    public class Doctor 
+    public class Doctor
     {
-        [Key,MaxLength(450)]
-        public String Id { get; set; }
+        [Key, MaxLength(450)]
+        public string Id { get; set; }
 
         [Required]
         public string University { get; set; }

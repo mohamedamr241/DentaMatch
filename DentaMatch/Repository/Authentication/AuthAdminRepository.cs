@@ -1,6 +1,7 @@
 ﻿using DentaMatch.Helpers;
 using DentaMatch.Models;
 using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication;
 using DentaMatch.ViewModel.Authentication.Request;
 using DentaMatch.ViewModel.Authentication.Response;
