@@ -7,11 +7,11 @@ namespace DentaMatch.ViewModel.Dental_Cases
         [Required]
         public string Description { get; set; }
         [Required]
-        public List<string> MouthImages { get; set; }
+        public List<IFormFile> MouthImages { get; set; }
         [Required]
-        public List<string> XrayImages { get; set; }
+        public List<IFormFile> XrayImages { get; set; }
         [Required]
-        public List<string> PrescriptionImages { get; set; }
+        public List<IFormFile> PrescriptionImages { get; set; }
         [Required]
         public List<string> DentalDiseases { get; set; }
         [Required]
