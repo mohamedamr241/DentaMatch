@@ -14,16 +14,16 @@ namespace DentaMatch.Controllers.Dental_Case
     [ApiController]
     public class DentalCaseController : ControllerBase
     {
-        private readonly IDentalCaseRepository _dentalCaseRepository;
+        private readonly IDentalCaseRepository<DentalCaseResponseVM> _dentalCaseRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public DentalCaseController(IDentalCaseRepository dentalCaseRepository, IHttpContextAccessor httpContextAccessor)
+        public DentalCaseController(IDentalCaseRepository<DentalCaseResponseVM> dentalCaseRepository, IHttpContextAccessor httpContextAccessor)
         {
             _dentalCaseRepository = dentalCaseRepository;
             _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpPost("addcase")]
-        public async Task<IActionResult> CreateCaseAsync(DentalCaseVm model)
+        public async Task<IActionResult> CreateCaseAsync(DentalCaseRequestVm model)
         {
             try
             {
@@ -40,9 +40,10 @@ namespace DentaMatch.Controllers.Dental_Case
                     return Ok(result);
                 }
                 return BadRequest(new { Success = false, Message = "Dental Case creation Failed", Data = new { } });
-                
+
             }
-            catch(Exception error) {
+            catch (Exception error)
+            {
                 return BadRequest(new { Success = false, Message = $"Dental Case creation Failed: {error.Message}", Data = new { } });
             }
 

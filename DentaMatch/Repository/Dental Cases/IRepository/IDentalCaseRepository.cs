@@ -3,8 +3,8 @@ using DentaMatch.ViewModel.Dental_Cases;
 
 namespace DentaMatch.Repository.Dental_Cases
 {
-    public interface IDentalCaseRepository
+    public interface IDentalCaseRepository<T> where T : class
     {
-        Task<AuthModel<DentalCaseVm>> CreateCaseAsync(string PatientId, DentalCaseVm model);
+        Task<AuthModel<T>> CreateCaseAsync(string PatientId, DentalCaseRequestVm model);
     }
 }

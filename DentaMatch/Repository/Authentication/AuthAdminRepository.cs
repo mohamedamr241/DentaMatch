@@ -38,8 +38,7 @@ namespace DentaMatch.Repository.Authentication
                 ExpiresOn = userToken.ValidTo,
                 Role = "Admin",
                 Token = new JwtSecurityTokenHandler().WriteToken(userToken),
-                FirstName = user.FirstName,
-                LastName = user.LastName,
+                FullName = user.FullName,
                 Government = user.Government,
                 PhoneNumber = user.PhoneNumber,
                 Gender = user.Gender,
@@ -72,9 +71,8 @@ namespace DentaMatch.Repository.Authentication
             }
             var user = new ApplicationUser
             {
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                UserName = model.FirstName + model.LastName+ +(_authHelper.GenerateThreeDigitsCode()),
+                FullName = model.FullName,
+                UserName = model.FullName.Replace(" ", "") + (_authHelper.GenerateThreeDigitsCode()),
                 Email = model.Email,
                 Government = model.Government,
                 PhoneNumber = model.PhoneNumber,
@@ -101,8 +99,7 @@ namespace DentaMatch.Repository.Authentication
                 ExpiresOn = jwtToken.ValidTo,
                 Role = model.Role,
                 Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
-                FirstName = model.FirstName,
-                LastName = model.LastName,
+                FullName = model.FullName,
                 Government = model.Government,
                 PhoneNumber = model.PhoneNumber,
                 Gender = model.Gender,

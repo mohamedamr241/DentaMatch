@@ -49,13 +49,11 @@ namespace DentaMatch.Repository.Authentication
                 ExpiresOn = userToken.ValidTo,
                 Role = userRole[0],
                 Token = new JwtSecurityTokenHandler().WriteToken(userToken),
-                FirstName = user.FirstName,
-                LastName = user.LastName,
+                FullName = user.FullName,
                 Government = user.Government,
                 PhoneNumber = user.PhoneNumber,
                 Gender = user.Gender,
-                Age = user.Age,
-                ChronicDiseases = userDetails.ChronicDiseases
+                Age = user.Age
             };
             return new AuthModel<PatientResponseVM>
             {
@@ -83,9 +81,8 @@ namespace DentaMatch.Repository.Authentication
             }
             var user = new ApplicationUser
             {
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                UserName = model.FirstName + model.LastName + (_authHelper.GenerateThreeDigitsCode()),
+                FullName = model.FullName,
+                UserName = model.FullName.Replace(" ", "") + (_authHelper.GenerateThreeDigitsCode()),
                 Email = model.Email,
                 Government = model.Government,
                 PhoneNumber = model.PhoneNumber,
@@ -111,8 +108,7 @@ namespace DentaMatch.Repository.Authentication
                 var patientDetail = new Patient
                 {
                     Id = Guid.NewGuid().ToString(),
-                    UserId = user.Id,
-                    ChronicDiseases = patientModel.ChronicDiseases // Accessing specific property
+                    UserId = user.Id
                 };
 
                 _db.Patients.Add(patientDetail);
@@ -125,13 +121,11 @@ namespace DentaMatch.Repository.Authentication
                     ExpiresOn = jwtToken.ValidTo,
                     Role = "Patient",
                     Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
+                    FullName = model.FullName,
                     Government = model.Government,
                     PhoneNumber = model.PhoneNumber,
                     Gender = model.Gender,
-                    Age = model.Age,
-                    ChronicDiseases = patientModel.ChronicDiseases
+                    Age = model.Age
                 };
                 var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);

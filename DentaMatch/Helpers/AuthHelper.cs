@@ -27,7 +27,7 @@ namespace DentaMatch.Helpers
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.FirstName+user.LastName),
+                new Claim(JwtRegisteredClaimNames.Sub, user.FullName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("uid", user.Id)

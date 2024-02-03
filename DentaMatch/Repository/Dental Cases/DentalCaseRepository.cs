@@ -5,32 +5,36 @@ using DentaMatch.Models.Patient_Models.Dental_Case.Dental_Diseases;
 using DentaMatch.Models.Patient_Models.Dental_Case.Images;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Dental_Cases;
-using Microsoft.CodeAnalysis.Operations;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DentaMatch.Repository.Dental_Cases
 {
-    public class DentalCaseRepository : IDentalCaseRepository
+    public class DentalCaseRepository : IDentalCaseRepository<DentalCaseResponseVM>
     {
         private readonly ApplicationDbContext _db;
         public DentalCaseRepository(ApplicationDbContext db)
         {
             _db = db;
         }
-        public async Task<AuthModel<DentalCaseVm>> CreateCaseAsync(string UserId, DentalCaseVm model)
+        public async Task<AuthModel<DentalCaseResponseVM>> CreateCaseAsync(string UserId, DentalCaseRequestVm model)
         {
             try
             {
                 var user = _db.Patients.Where(c => c.UserId == UserId).FirstOrDefault();
-                if(user == null)
+                if (user == null)
                 {
-                    return new AuthModel<DentalCaseVm> { Success = false, Message = "User not found." };
+                    return new AuthModel<DentalCaseResponseVM> { Success = false, Message = "User not found." };
                 }
-                string patientId = user?.Id;
+
+                if (!model.IsKnown && model.DentalDiseases.Count() > 0)
+                {
+                    return new AuthModel<DentalCaseResponseVM> { Success = false, Message = "Your dental case must be known to enter your dental diseases" };
+                }
+                string patientId = user.Id;
                 var dentalCase = new DentalCase
                 {
                     Id = Guid.NewGuid().ToString(),
                     Description = model.Description,
+                    IsKnown = model.IsKnown,
                     PatientId = patientId.ToString()
                 };
 
@@ -60,25 +64,27 @@ namespace DentaMatch.Repository.Dental_Cases
 
                     _db.CaseDentalDiseases.Add(dentalDisease);
                 }
-                if (model.MouthImages.Count() < 4)
+                if (model.MouthImages.Count() < 4 || model.MouthImages.Count() > 6)
                 {
-                    return new AuthModel<DentalCaseVm> { Success = false, Message = "Minimum Number of mouth Images is 4" };
-                }
-                if (model.MouthImages.Count() >6)
-                {
-                    return new AuthModel<DentalCaseVm> { Success = false, Message = "Maximum Number of mouth Images is 6" };
+                    return new AuthModel<DentalCaseResponseVM> { Success = false, Message = "The number of mouth images should be between 4 and 6, inclusive" };
                 }
                 if (model.XrayImages.Count() > 2)
                 {
-                    return new AuthModel<DentalCaseVm> { Success = false, Message = "Maximum Number of XRay Images is 2" };
+                    return new AuthModel<DentalCaseResponseVM> { Success = false, Message = "Maximum Number of XRay Images is 2" };
                 }
                 if (model.PrescriptionImages.Count() > 2)
                 {
-                    return new AuthModel<DentalCaseVm> { Success = false, Message = "Maximum Number of Prescription Images is 2" };
+                    return new AuthModel<DentalCaseResponseVM> { Success = false, Message = "Maximum Number of Prescription Images is 2" };
                 }
-                if (model.MouthImages != null )
+
+                List<string> MouthImagesPaths = new List<string>(); 
+                List<string> XrayImagesPaths = new List<string>(); 
+                List<string> PrescriptionImagesPaths = new List<string>(); 
+
+                if (model.MouthImages != null)
                 {
-                    foreach( var Mouthimage in model.MouthImages)
+                  
+                    foreach (var Mouthimage in model.MouthImages)
                     {
                         string fileName = Guid.NewGuid().ToString() + Path.GetExtension(Mouthimage.FileName);
                         string ImagePath = @"Images\MouthImages";
@@ -99,15 +105,16 @@ namespace DentaMatch.Repository.Dental_Cases
                         {
                             Id = Guid.NewGuid().ToString(),
                             CaseId = dentalCase.Id,
-                            Image= @"\Images\MouthImages\" + fileName
+                            Image = @"\Images\MouthImages\" + fileName
                         };
                         _db.MouthImages.Add(mouthImage);
+                        MouthImagesPaths.Add(mouthImage.Image);
                     }
                 }
                 foreach (var xrayimage in model.XrayImages)
                 {
-                        string fileName = Guid.NewGuid().ToString() + Path.GetExtension(xrayimage.FileName);
-                        string ImagePath = @"Images\XRayImages";
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(xrayimage.FileName);
+                    string ImagePath = @"Images\XRayImages";
 
                     //if (!string.IsNullOrEmpty(productVm.product.ImageUrl))
                     //{
@@ -118,17 +125,18 @@ namespace DentaMatch.Repository.Dental_Cases
                     //    }
                     //}
                     using (var fileStream = new FileStream(Path.Combine(ImagePath, fileName), FileMode.Create))
-                        {
-                            xrayimage.CopyTo(fileStream);
-                        }
-                        var xrayImage = new XrayIamges
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            CaseId = dentalCase.Id,
-                            Image = @"\Images\XRayImages\" + fileName
-                        };
-                        _db.XrayIamges.Add(xrayImage);
-                
+                    {
+                        xrayimage.CopyTo(fileStream);
+                    }
+                    var xrayImage = new XrayIamges
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        CaseId = dentalCase.Id,
+                        Image = @"\Images\XRayImages\" + fileName
+                    };
+                    _db.XrayIamges.Add(xrayImage);
+                    XrayImagesPaths.Add(xrayImage.Image);
+
                 }
                 foreach (var prescriptionimage in model.PrescriptionImages)
                 {
@@ -154,31 +162,32 @@ namespace DentaMatch.Repository.Dental_Cases
                         Image = @"\Images\PrescriptionImages\" + fileName
                     };
                     _db.PrescriptionImages.Add(prescriptionImage);
+                    PrescriptionImagesPaths.Add(prescriptionImage.Image);
 
-                    
                 }
-                var dentalCaseData = new DentalCaseVm
+                var dentalCaseData = new DentalCaseResponseVM
                 {
                     Description = model.Description,
                     DentalDiseases = model.DentalDiseases.ToList(),
                     ChronicDiseases = model.ChronicDiseases.ToList(),
-                    MouthImages = model.MouthImages.ToList(),
-                    PrescriptionImages = model.PrescriptionImages.ToList(),
-                    XrayImages = model.XrayImages.ToList()
+                    IsKnown = model.IsKnown,
+                    MouthImages = MouthImagesPaths,
+                    PrescriptionImages = PrescriptionImagesPaths,
+                    XrayImages = XrayImagesPaths
                 };
                 _db.SaveChanges();
 
-                return new AuthModel<DentalCaseVm>
+                return new AuthModel<DentalCaseResponseVM>
                 {
                     Success = true,
                     Message = "Dental Case Created successfully",
-                    Data  = dentalCaseData
+                    Data = dentalCaseData
                 };
 
             }
-            catch(Exception error)
+            catch (Exception error)
             {
-                return new AuthModel<DentalCaseVm> { Success = false, Message = $"{error.Message}" };
+                return new AuthModel<DentalCaseResponseVM> { Success = false, Message = $"{error.Message}" };
             }
         }
 
