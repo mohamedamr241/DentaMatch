@@ -1,5 +1,6 @@
 ﻿using DentaMatch.Helpers;
 using DentaMatch.Models;
+using DentaMatch.Repository.IRepository;
 using DentaMatch.Services.Authentication.IRepository;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication;
@@ -15,7 +16,6 @@ namespace DentaMatch.Services.Authentication
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly AuthHelper _authHelper;
-
         public AuthAdminRepository(UserManager<ApplicationUser> userManager, AuthHelper authHelper)
         {
             _userManager = userManager;

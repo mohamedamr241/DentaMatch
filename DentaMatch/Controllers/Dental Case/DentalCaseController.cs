@@ -1,5 +1,5 @@
 ﻿using DentaMatch.Models;
-using DentaMatch.Repository.Authentication;
+using DentaMatch.Services.Authentication;
 using DentaMatch.Repository.Dental_Cases;
 using DentaMatch.ViewModel.Authentication.Request;
 using DentaMatch.ViewModel.Dental_Cases;

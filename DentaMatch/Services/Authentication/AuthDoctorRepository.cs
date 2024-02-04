@@ -1,6 +1,7 @@
 ﻿using DentaMatch.Data;
 using DentaMatch.Helpers;
 using DentaMatch.Models;
+using DentaMatch.Repository;
 using DentaMatch.Repository.IRepository;
 using DentaMatch.Services;
 using DentaMatch.Services.Authentication.IRepository;
@@ -21,16 +22,16 @@ namespace DentaMatch.Services.Authentication
         private readonly IConfiguration _configuration;
         private readonly IMailService _mailService;
         private readonly AuthHelper _authHelper;
-        private readonly IUserRepository<Doctor> _doctorRepository;
 
+        private readonly IUnitOfWork _unitOfWork;
 
         public AuthDoctorRepository(UserManager<ApplicationUser> userManager, IConfiguration configuration, 
-            AuthHelper authHelper, IMailService mailService)
-            : base(userManager, authHelper, mailService)
+            AuthHelper authHelper, IMailService mailService, IUnitOfWork unitOfWork)
+            : base(userManager, authHelper, mailService, unitOfWork)
         {
             _userManager = userManager;
             _authHelper = authHelper;
-            _db = db;
+            _unitOfWork = unitOfWork;
             _mailService = mailService;
             _configuration = configuration;
         }
@@ -45,8 +46,8 @@ namespace DentaMatch.Services.Authentication
                 return new AuthModel<DoctorResponseVM> { Success = false, Message = "PhoneNumber or Password is incorrect" };
             }
             var userToken = await _authHelper.CreateJwtToken(user);
-            var userDetails = await _db.Doctors.FirstOrDefaultAsync(p => p.UserId == user.Id);
-
+            //var userDetails = await _db.Doctors.FirstOrDefaultAsync(p => p.UserId == user.Id);
+            var userDetails = _unitOfWork.UserDoctorRepository.Get(u => u.UserId == user.Id);
             var DoctorData = new DoctorResponseVM
             {
                 Email = user.Email,
@@ -122,8 +123,11 @@ namespace DentaMatch.Services.Authentication
                     CardImage = doctorModel.CardImage
                 };
 
-                _db.Doctors.Add(DoctorDetails);
-                _db.SaveChanges();
+                _unitOfWork.UserDoctorRepository.Add(DoctorDetails);
+                _unitOfWork.Save();
+
+                //_db.Doctors.Add(DoctorDetails);
+                //_db.SaveChanges();
                 var jwtToken = await _authHelper.CreateJwtToken(user);
 
                 var DoctortData = new DoctorResponseVM

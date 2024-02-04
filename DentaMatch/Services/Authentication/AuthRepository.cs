@@ -1,9 +1,6 @@
-﻿using DentaMatch.Data;
-using DentaMatch.Helpers;
+﻿using DentaMatch.Helpers;
 using DentaMatch.Models;
-using DentaMatch.Repository;
 using DentaMatch.Repository.IRepository;
-using DentaMatch.Services;
 using DentaMatch.Services.Authentication.IRepository;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
@@ -14,22 +11,22 @@ using System.Text;
 
 namespace DentaMatch.Services.Authentication
 {
-    public class AuthRepository<T> : IAuthRepository where T : class
+    public class AuthRepository : IAuthRepository
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMailService _mailService;
         private readonly AuthHelper _authHelper;
 
-        private readonly IUserRepository<T> _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
 
         public AuthRepository(UserManager<ApplicationUser> userManager, AuthHelper authHelper, 
-            IMailService mailService, IUserRepository<T> userRepository)
+            IMailService mailService, IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _mailService = mailService;
             _authHelper = authHelper;
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<AuthModel> ForgetPasswordAsync(ForgetPasswordVM model)
@@ -41,8 +38,8 @@ namespace DentaMatch.Services.Authentication
             }
 
             int randomNumber = _authHelper.GenerateCode();
-            _userRepository.UpdateVerificationCode(user, randomNumber.ToString());
-            _userRepository.Save();
+            _unitOfWork.UserManagerRepository.UpdateVerificationCode(user, randomNumber.ToString(), false);
+            _unitOfWork.Save();
 
             //user.VerificationCode = randomNumber.ToString();
             //user.VerificationCodeTimeStamp = DateTime.Now;
@@ -72,8 +69,8 @@ namespace DentaMatch.Services.Authentication
                 //_db.SaveChanges();
 
                 int randomNumber = _authHelper.GenerateCode();
-                _userRepository.UpdateVerificationCode(user, randomNumber.ToString(), true);
-                _userRepository.Save();
+                _unitOfWork.UserManagerRepository.UpdateVerificationCode(user, randomNumber.ToString(), true);
+                _unitOfWork.Save();
                 return new AuthModel { Success = true, Message = "User is verified" };
             }
             else
@@ -91,9 +88,6 @@ namespace DentaMatch.Services.Authentication
             }
             TimeSpan timeDifference = DateTime.UtcNow - user.VerificationCodeTimeStamp;
 
-            int randomNumber = _authHelper.GenerateCode();
-            _userRepository.UpdateVerificationCode(user, randomNumber.ToString());
-            _userRepository.Save();
 
             if (user.Email == model.Email && user.IsVerified == true && timeDifference.TotalMinutes <= 5)
             {
@@ -102,7 +96,9 @@ namespace DentaMatch.Services.Authentication
                 //user.VerificationCode = randomNumber.ToString();
                 //user.VerificationCodeTimeStamp = DateTime.Now;
                 //_db.SaveChanges();
-
+                int randomNumber = _authHelper.GenerateCode();
+                _unitOfWork.UserManagerRepository.UpdateVerificationCode(user, randomNumber.ToString(),false);
+                _unitOfWork.Save();
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var result = await _userManager.ResetPasswordAsync(user, token, model.Password);
                 if (result.Succeeded)
@@ -121,7 +117,9 @@ namespace DentaMatch.Services.Authentication
                 //user.VerificationCode = randomNumber.ToString();
                 //user.VerificationCodeTimeStamp = DateTime.Now;
                 //_db.SaveChanges();
-
+                int randomNumber = _authHelper.GenerateCode();
+                _unitOfWork.UserManagerRepository.UpdateVerificationCode(user, randomNumber.ToString(),false);
+                _unitOfWork.Save();
                 return new AuthModel { Success = false, Message = "Verification code is expired" };
             }
         }

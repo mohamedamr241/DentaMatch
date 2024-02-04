@@ -1,23 +1,26 @@
 ﻿using DentaMatch.Data;
-using DentaMatch.Services.Authentication;
+using DentaMatch.Models;
+using DentaMatch.Repository.IRepository;
 
 namespace DentaMatch.Repository
 {
-    public class UnitOfWork
+    public class UnitOfWork : IUnitOfWork
     {
-        public IConfiguration _configuration;
-        public AuthDoctorRepository _doctor;
-        public AuthPatientRepository _patient;
-        public AuthAdminRepository _admin;
-        public AuthRepository _authRepository;
-
-        public UnitOfWork(IConfiguration configuration, AuthDoctorRepository doctor, AuthPatientRepository patient, AuthAdminRepository admin, AuthRepository authRepository)
+        private readonly ApplicationDbContext _db;
+        public UserManagerRepository UserManagerRepository { get; set; }
+        public UserRepository<Patient> UserPatientRepository { get; set; }
+        public UserRepository<Doctor> UserDoctorRepository { get; set; }
+        public UnitOfWork(ApplicationDbContext db)
         {
-            _configuration = configuration;
-            _doctor = doctor;
-            _patient = patient;
-            _admin = admin;
-            _authRepository = authRepository;
+            _db = db;
+            UserManagerRepository = new UserManagerRepository(db);
+            UserPatientRepository = new UserRepository<Patient>(db);
+            UserDoctorRepository = new UserRepository<Doctor> (db);
+        }
+
+        public void Save()
+        {
+            _db.SaveChanges();
         }
     }
 }

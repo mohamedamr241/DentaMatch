@@ -15,23 +15,24 @@ using System.Text;
 
 namespace DentaMatch.Services.Authentication
 {
-    public class AuthPatientRepository : AuthRepository<Patient>, IAuthUserRepository<PatientResponseVM>
+    public class AuthPatientRepository : AuthRepository, IAuthUserRepository<PatientResponseVM>
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
         private readonly IMailService _mailService;
         private readonly AuthHelper _authHelper;
-        private readonly IUserRepository<Patient> _patientRepository;
+
+        private readonly IUnitOfWork _unitOfWork;
 
         public AuthPatientRepository(UserManager<ApplicationUser> userManager, IConfiguration configuration, 
-            AuthHelper authHelper, IMailService mailService, IUserRepository<Patient> patientRepository) 
-            : base(userManager, authHelper, mailService, patientRepository)
+            AuthHelper authHelper, IMailService mailService, IUnitOfWork unitOfWork) 
+            : base(userManager, authHelper, mailService, unitOfWork)
         {
             _userManager = userManager;
             _authHelper = authHelper;
             _mailService = mailService;
             _configuration = configuration;
-            _patientRepository = patientRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<AuthModel<PatientResponseVM>> SignInAsync(SignInVM model)
@@ -44,7 +45,7 @@ namespace DentaMatch.Services.Authentication
             }
             var userToken = await _authHelper.CreateJwtToken(user);
             var userRole = await _userManager.GetRolesAsync(user);
-            var userDetails = _patientRepository.Get(u => u.UserId == user.Id);
+            var userDetails = _unitOfWork.UserPatientRepository.Get(p=> p.UserId == user.Id);
             //var userDetails = await _db.Patients.FirstOrDefaultAsync(p => p.UserId == user.Id);
 
             var PatientData = new PatientResponseVM
@@ -114,8 +115,8 @@ namespace DentaMatch.Services.Authentication
                     Id = Guid.NewGuid().ToString(),
                     UserId = user.Id
                 };
-                _patientRepository.Add(patientDetail);
-                _patientRepository.Save();
+                _unitOfWork.UserPatientRepository.Add(patientDetail);
+                _unitOfWork.Save();
                 //_db.Patients.Add(patientDetail);
                 //_db.SaveChanges();
                 var jwtToken = await _authHelper.CreateJwtToken(user);
