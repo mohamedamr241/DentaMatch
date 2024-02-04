@@ -1,8 +1,10 @@
 ﻿using DentaMatch.Data;
 using DentaMatch.Helpers;
 using DentaMatch.Models;
-using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.Repository;
+using DentaMatch.Repository.IRepository;
 using DentaMatch.Services;
+using DentaMatch.Services.Authentication.IRepository;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
 using Microsoft.AspNetCore.Identity;
@@ -10,23 +12,24 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 
-namespace DentaMatch.Repository.Authentication
+namespace DentaMatch.Services.Authentication
 {
-    public class AuthRepository : IAuthRepository
+    public class AuthRepository<T> : IAuthRepository where T : class
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly ApplicationDbContext _db;
         private readonly IMailService _mailService;
         private readonly AuthHelper _authHelper;
 
+        private readonly IUserRepository<T> _userRepository;
+
 
         public AuthRepository(UserManager<ApplicationUser> userManager, AuthHelper authHelper, 
-            ApplicationDbContext? db = null, IMailService? mailService = null)
+            IMailService mailService, IUserRepository<T> userRepository)
         {
             _userManager = userManager;
-            _db = db;
             _mailService = mailService;
             _authHelper = authHelper;
+            _userRepository = userRepository;
         }
 
         public async Task<AuthModel> ForgetPasswordAsync(ForgetPasswordVM model)
@@ -38,9 +41,12 @@ namespace DentaMatch.Repository.Authentication
             }
 
             int randomNumber = _authHelper.GenerateCode();
-            user.VerificationCode = randomNumber.ToString();
-            user.VerificationCodeTimeStamp = DateTime.Now;
-            _db.SaveChanges();
+            _userRepository.UpdateVerificationCode(user, randomNumber.ToString());
+            _userRepository.Save();
+
+            //user.VerificationCode = randomNumber.ToString();
+            //user.VerificationCodeTimeStamp = DateTime.Now;
+            //_db.SaveChanges();
 
             await _mailService.SendEmailAsync(model.Email, "Reset Password", "<h1>Follow the instructions to reset your password<h1>" +
                 $"<p>Your verification code is {randomNumber}</p>" + "<p>Don't share this code with anyone</p>");
@@ -50,8 +56,8 @@ namespace DentaMatch.Repository.Authentication
         public async Task<AuthModel> VerifyCodeAsync(VerifyCodeVM model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
-            user.IsVerified = false;
-            _db.SaveChanges();
+            //user.IsVerified = false;
+            //_userRepository.Save();
             if (user == null)
             {
                 return new AuthModel { Success = false, Message = "No User associated with email" };
@@ -59,11 +65,15 @@ namespace DentaMatch.Repository.Authentication
             TimeSpan timeDifference = DateTime.UtcNow - user.VerificationCodeTimeStamp;
             if (user.Email == model.Email && user.VerificationCode == model.VerificationCode && timeDifference.TotalMinutes <= 3)
             {
-                user.IsVerified = true;
+                //user.IsVerified = true;
+                //int randomNumber = _authHelper.GenerateCode();
+                //user.VerificationCode = randomNumber.ToString();
+                //user.VerificationCodeTimeStamp = DateTime.Now;
+                //_db.SaveChanges();
+
                 int randomNumber = _authHelper.GenerateCode();
-                user.VerificationCode = randomNumber.ToString();
-                user.VerificationCodeTimeStamp = DateTime.Now;
-                _db.SaveChanges();
+                _userRepository.UpdateVerificationCode(user, randomNumber.ToString(), true);
+                _userRepository.Save();
                 return new AuthModel { Success = true, Message = "User is verified" };
             }
             else
@@ -80,13 +90,19 @@ namespace DentaMatch.Repository.Authentication
                 return new AuthModel { Success = false, Message = "No User associated with email" };
             }
             TimeSpan timeDifference = DateTime.UtcNow - user.VerificationCodeTimeStamp;
+
+            int randomNumber = _authHelper.GenerateCode();
+            _userRepository.UpdateVerificationCode(user, randomNumber.ToString());
+            _userRepository.Save();
+
             if (user.Email == model.Email && user.IsVerified == true && timeDifference.TotalMinutes <= 5)
             {
-                user.IsVerified = false;
-                int randomNumber = _authHelper.GenerateCode();
-                user.VerificationCode = randomNumber.ToString();
-                user.VerificationCodeTimeStamp = DateTime.Now;
-                _db.SaveChanges();
+                //user.IsVerified = false;
+                //int randomNumber = _authHelper.GenerateCode();
+                //user.VerificationCode = randomNumber.ToString();
+                //user.VerificationCodeTimeStamp = DateTime.Now;
+                //_db.SaveChanges();
+
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var result = await _userManager.ResetPasswordAsync(user, token, model.Password);
                 if (result.Succeeded)
@@ -100,11 +116,12 @@ namespace DentaMatch.Repository.Authentication
             }
             else
             {
-                user.IsVerified = false;
-                int randomNumber = _authHelper.GenerateCode();
-                user.VerificationCode = randomNumber.ToString();
-                user.VerificationCodeTimeStamp = DateTime.Now;
-                _db.SaveChanges();
+                //user.IsVerified = false;
+                //int randomNumber = _authHelper.GenerateCode();
+                //user.VerificationCode = randomNumber.ToString();
+                //user.VerificationCodeTimeStamp = DateTime.Now;
+                //_db.SaveChanges();
+
                 return new AuthModel { Success = false, Message = "Verification code is expired" };
             }
         }
@@ -135,7 +152,7 @@ namespace DentaMatch.Repository.Authentication
                 Success = false,
                 Message = string.Join("\n", result.Errors.Select(e => e.Description)),
             };
-           
+
         }
         public async Task<string> GetRoleAsync(string phoneNumber)
         {

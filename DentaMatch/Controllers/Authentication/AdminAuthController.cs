@@ -1,4 +1,4 @@
-﻿using DentaMatch.Repository.Authentication;
+﻿using DentaMatch.Repository;
 using DentaMatch.ViewModel.Authentication.Request;
 using Microsoft.AspNetCore.Mvc;
 

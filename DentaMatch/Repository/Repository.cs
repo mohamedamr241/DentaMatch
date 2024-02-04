@@ -1,17 +1,17 @@
 ﻿
 using DentaMatch.Data;
-using DentaMatch.Repository.IRepo;
+using DentaMatch.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace DentaMatch.Repository
 {
-    public class CRUDRepository<T> : ICRUDRepository<T> where T : class
+    public class Repository<T> : IRepository<T> where T : class
     {
         // T - Category
         private readonly ApplicationDbContext _db;
         private DbSet<T> dbSet;
-        public CRUDRepository(ApplicationDbContext db)
+        public Repository(ApplicationDbContext db)
         {
             _db = db;
             this.dbSet = _db.Set<T>();
@@ -62,6 +62,11 @@ namespace DentaMatch.Repository
         public void RemoveRange(IEnumerable<T> entity)
         {
             dbSet.RemoveRange(entity);
+        }
+
+        public void Save()
+        {
+            _db.SaveChanges();
         }
     }
 }

@@ -1,16 +1,16 @@
 using DentaMatch.Data;
-using DentaMatch.Repository.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using DentaMatch.Models;
-using DentaMatch.Services;
 using DentaMatch.Helpers;
 using DentaMatch.Repository.Dental_Cases;
 using DentaMatch.ViewModel.Dental_Cases;
 using DentaMatch.Repository.IRepo;
+using DentaMatch.Services;
+using DentaMatch.Services.Authentication;
 using DentaMatch.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +33,8 @@ builder.Services.AddScoped<AuthHelper>();
 builder.Services.AddScoped<UnitOfWork>();
 //builder.Services.AddScoped<ICRADRepository,CRADRepository>() ;
 builder.Services.AddScoped<IDentalCaseRepository<DentalCaseResponseVM>, DentalCaseRepository>();
+
+//builder.Services.AddScoped<IDentalCaseRepository<DentalCaseResponseVM>, DentalCaseRepository>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAuthentication(options =>

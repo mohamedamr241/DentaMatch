@@ -1,10 +1,11 @@
 ﻿using DentaMatch.Data;
 using DentaMatch.Helpers;
 using DentaMatch.Models;
-using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.Repository.IRepository;
 using DentaMatch.Services;
+using DentaMatch.Services.Authentication.IRepository;
 using DentaMatch.ViewModel;
-using DentaMatch.ViewModel.Authentication;
+using DentaMatch.ViewModel.Authentication.Patient;
 using DentaMatch.ViewModel.Authentication.Request;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
@@ -12,81 +13,80 @@ using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
-namespace DentaMatch.Repository.Authentication
+namespace DentaMatch.Services.Authentication
 {
-    public class AuthDoctorRepository : AuthRepository, IAuthUserRepository<DoctorResponseVM>
+    public class AuthPatientRepository : AuthRepository<Patient>, IAuthUserRepository<PatientResponseVM>
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
-        private readonly ApplicationDbContext _db;
         private readonly IMailService _mailService;
         private readonly AuthHelper _authHelper;
+        private readonly IUserRepository<Patient> _patientRepository;
 
-        public AuthDoctorRepository(UserManager<ApplicationUser> userManager, IConfiguration configuration, AuthHelper authHelper, ApplicationDbContext db, IMailService mailService) 
-            : base(userManager, authHelper, db, mailService)
+        public AuthPatientRepository(UserManager<ApplicationUser> userManager, IConfiguration configuration, 
+            AuthHelper authHelper, IMailService mailService, IUserRepository<Patient> patientRepository) 
+            : base(userManager, authHelper, mailService, patientRepository)
         {
             _userManager = userManager;
             _authHelper = authHelper;
-            _db = db;
             _mailService = mailService;
             _configuration = configuration;
+            _patientRepository = patientRepository;
         }
 
-        public async Task<AuthModel<DoctorResponseVM>> SignInAsync(SignInVM model)
+        public async Task<AuthModel<PatientResponseVM>> SignInAsync(SignInVM model)
         {
             //var user = await _userManager.FindByEmailAsync(model.Email);
             var user = await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone);
-            var userRole = await _userManager.GetRolesAsync(user);
             if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                return new AuthModel<DoctorResponseVM> { Success = false, Message = "PhoneNumber or Password is incorrect" };
+                return new AuthModel<PatientResponseVM> { Success = false, Message = "Phone Number or Password is incorrect" };
             }
             var userToken = await _authHelper.CreateJwtToken(user);
-            var userDetails = await _db.Doctors.FirstOrDefaultAsync(p => p.UserId == user.Id);
+            var userRole = await _userManager.GetRolesAsync(user);
+            var userDetails = _patientRepository.Get(u => u.UserId == user.Id);
+            //var userDetails = await _db.Patients.FirstOrDefaultAsync(p => p.UserId == user.Id);
 
-            var DoctorData = new DoctorResponseVM
+            var PatientData = new PatientResponseVM
             {
                 Email = user.Email,
                 ExpiresOn = userToken.ValidTo,
-                Role = "Doctor",
+                Role = userRole[0],
                 Token = new JwtSecurityTokenHandler().WriteToken(userToken),
                 FullName = user.FullName,
                 Government = user.Government,
                 PhoneNumber = user.PhoneNumber,
                 Gender = user.Gender,
-                Age = user.Age,
-                University = userDetails.University,
-                CardImage = userDetails.CardImage
+                Age = user.Age
             };
-            return new AuthModel<DoctorResponseVM>
+            return new AuthModel<PatientResponseVM>
             {
                 Success = true,
                 Message = "Success SignIn",
-                Data = DoctorData
+                Data = PatientData
             };
         }
-
-        public async Task<AuthModel<DoctorResponseVM>> SignUpAsync<TModel>(TModel model) where TModel : SignUpVM
+        public async Task<AuthModel<PatientResponseVM>> SignUpAsync<TModel>(TModel model) where TModel : SignUpVM
         {
             if (await _userManager.FindByEmailAsync(model.Email) is not null)
             {
-                return new AuthModel<DoctorResponseVM>
+                return new AuthModel<PatientResponseVM>
                 { Success = false, Message = "Email is already exist" };
             }
             if (await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber) is not null)
             {
-                return new AuthModel<DoctorResponseVM>
+                return new AuthModel<PatientResponseVM>
                 { Success = false, Message = "PhoneNumber is already exist" };
             }
             if (!model.PhoneNumber.All(char.IsDigit))
             {
-                return new AuthModel<DoctorResponseVM>
+                return new AuthModel<PatientResponseVM>
                 { Success = false, Message = "PhoneNumber must be numbers only" };
             }
             var user = new ApplicationUser
             {
                 FullName = model.FullName,
-                UserName = model.FullName.Replace(" ", "") + (_authHelper.GenerateThreeDigitsCode()),
+                UserName = model.FullName.Replace(" ", "") + _authHelper.GenerateThreeDigitsCode(),
                 Email = model.Email,
                 Government = model.Government,
                 PhoneNumber = model.PhoneNumber,
@@ -102,41 +102,35 @@ namespace DentaMatch.Repository.Authentication
                 {
                     errors += $"{error.Description}, ";
                 }
-                return new AuthModel<DoctorResponseVM> { Success = false, Message = errors };
+                return new AuthModel<PatientResponseVM> { Success = false, Message = errors };
             }
-            await _userManager.AddToRoleAsync(user, model.Role);
+            await _userManager.AddToRoleAsync(user, "Patient");
 
-            var doctorModel = model as DoctorSignUpVM;
-
-
-            if (doctorModel != null)
+            var patientModel = model as PatientSignUpVM;
+            if (patientModel != null)
             {
-                var DoctorDetails = new Doctor
+                var patientDetail = new Patient
                 {
                     Id = Guid.NewGuid().ToString(),
-                    UserId = user.Id,
-                    University = doctorModel.University,
-                    CardImage = doctorModel.CardImage
+                    UserId = user.Id
                 };
-
-                _db.Doctors.Add(DoctorDetails);
-                _db.SaveChanges();
+                _patientRepository.Add(patientDetail);
+                _patientRepository.Save();
+                //_db.Patients.Add(patientDetail);
+                //_db.SaveChanges();
                 var jwtToken = await _authHelper.CreateJwtToken(user);
 
-                var DoctortData = new DoctorResponseVM
+                var PatientData = new PatientResponseVM
                 {
                     Email = user.Email,
                     ExpiresOn = jwtToken.ValidTo,
-                    Role = "Doctor",
+                    Role = "Patient",
                     Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
                     FullName = model.FullName,
                     Government = model.Government,
                     PhoneNumber = model.PhoneNumber,
                     Gender = model.Gender,
-                    Age = model.Age,
-                    University = doctorModel.University,
-                    CardImage = doctorModel.CardImage
-
+                    Age = model.Age
                 };
                 var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
@@ -146,18 +140,19 @@ namespace DentaMatch.Repository.Authentication
 
                 await _mailService.SendEmailAsync(user.Email, "Confirm your email", $"<h1>Welcome to DentaMatch</h1>" +
                     $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
-                return new AuthModel<DoctorResponseVM>
+                return new AuthModel<PatientResponseVM>
                 {
                     Success = true,
-                    Message = "Success Sign Up",
-                    Data = DoctortData
+                    Message = "Success SignUp",
+                    Data = PatientData
                 };
             }
-            return new AuthModel<DoctorResponseVM>
+            else
             {
-                Success = false,
-                Message = "Failed To Sign Up",
-            };
+                return new AuthModel<PatientResponseVM> { Success = false, Message = "Failed To Sign Up" };
+            }
+
+
         }
     }
 }

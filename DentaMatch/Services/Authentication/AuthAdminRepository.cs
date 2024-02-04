@@ -1,6 +1,6 @@
 ﻿using DentaMatch.Helpers;
 using DentaMatch.Models;
-using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.Services.Authentication.IRepository;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication;
 using DentaMatch.ViewModel.Authentication.Request;
@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 
-namespace DentaMatch.Repository.Authentication
+namespace DentaMatch.Services.Authentication
 {
     public class AuthAdminRepository : IAuthUserRepository<UserResponseVM>
     {
@@ -72,7 +72,7 @@ namespace DentaMatch.Repository.Authentication
             var user = new ApplicationUser
             {
                 FullName = model.FullName,
-                UserName = model.FullName.Replace(" ", "") + (_authHelper.GenerateThreeDigitsCode()),
+                UserName = model.FullName.Replace(" ", "") + _authHelper.GenerateThreeDigitsCode(),
                 Email = model.Email,
                 Government = model.Government,
                 PhoneNumber = model.PhoneNumber,

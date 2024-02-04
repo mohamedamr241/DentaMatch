@@ -1,7 +1,7 @@
 ﻿using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Request;
 
-namespace DentaMatch.Repository.Authentication.IRepository
+namespace DentaMatch.Services.Authentication.IRepository
 {
     public interface IAuthUserRepository<T> where T : class
     {

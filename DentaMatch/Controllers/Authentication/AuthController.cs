@@ -1,4 +1,4 @@
-﻿using DentaMatch.Repository.Authentication;
+﻿using DentaMatch.Repository;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication;
 using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;

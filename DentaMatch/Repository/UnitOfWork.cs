@@ -1,6 +1,7 @@
 ﻿using DentaMatch.Data;
+using DentaMatch.Services.Authentication;
 
-namespace DentaMatch.Repository.Authentication
+namespace DentaMatch.Repository
 {
     public class UnitOfWork
     {

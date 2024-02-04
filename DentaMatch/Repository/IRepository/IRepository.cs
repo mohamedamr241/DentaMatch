@@ -1,8 +1,8 @@
 ﻿using System.Linq.Expressions;
 
-namespace DentaMatch.Repository.IRepo
+namespace DentaMatch.Repository.IRepository
 {
-    public interface ICRUDRepository<T> where T : class
+    public interface IRepository<T> where T : class
     {
         //T - Category
         IEnumerable<T> GetAll(string? includeProperties = null);
@@ -11,6 +11,7 @@ namespace DentaMatch.Repository.IRepo
         void Remove(T entity);
         void RemoveRange(IEnumerable<T> entity);
         void Update(T entity);
+        void Save();
 
     }
 }
