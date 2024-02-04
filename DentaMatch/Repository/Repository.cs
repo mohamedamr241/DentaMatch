@@ -1,9 +1,8 @@
 ﻿using DentaMatch.Data;
-using DentaMatch.Repository.Authentication.IRepository;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
-namespace DentaMatch.Repository.Authentication
+namespace DentaMatch.Repository
 {
     public class Repository<T> : IRepository<T> where T : class
     {
@@ -40,7 +39,7 @@ namespace DentaMatch.Repository.Authentication
             return query.FirstOrDefault();
         }
 
-        public IEnumerable<T> GetAll(string? includeProperties = null)
+        public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, string? includeProperties = null)
         {
             IQueryable<T> query = dbSet;
             if (!string.IsNullOrEmpty(includeProperties))
@@ -49,6 +48,10 @@ namespace DentaMatch.Repository.Authentication
                 {
                     query = query.Include(includeProp);
                 }
+            }
+            if(filter != null)
+            {
+                query = query.Where(filter);
             }
             return query.ToList();
         }

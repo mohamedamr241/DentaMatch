@@ -9,7 +9,7 @@ namespace DentaMatch.Models
     {
         [Key]
         public string Id { get; set; }
-        [Required, StringLength(20, MinimumLength = 350, ErrorMessage = "Minimum Length is 20 and Maximum is 350")]
+        [Required, StringLength(350, MinimumLength = 20, ErrorMessage = "Minimum Length is 20 and Maximum is 350")]
         public string Description { get; set; }
         [Required]
         public bool IsKnown { get; set; } = false;

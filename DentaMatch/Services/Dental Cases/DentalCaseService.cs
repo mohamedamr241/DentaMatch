@@ -4,24 +4,28 @@ using DentaMatch.Models;
 using DentaMatch.Models.Patient_Models.Dental_Case.Chronic_Diseases;
 using DentaMatch.Models.Patient_Models.Dental_Case.Dental_Diseases;
 using DentaMatch.Models.Patient_Models.Dental_Case.Images;
-using DentaMatch.Repository.Authentication;
+using DentaMatch.Repository;
+using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.Repository.Dental_Case.IRepository;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Dental_Cases;
 
 namespace DentaMatch.Services.Dental_Cases
 {
-    public class DentalCaseService : Repository<DentalCase>, IDentalCaseService<DentalCaseResponseVM>
+    public class DentalCaseService : IDentalCaseService<DentalCaseResponseVM>
     {
-        private readonly ApplicationDbContext _db;
-        public DentalCaseService(ApplicationDbContext db): base(db)
+        private readonly IDentalCaseUnitOfWork _unitOfWork;
+        public DentalCaseService(IDentalCaseUnitOfWork unitOfWork)
         {
-            _db = db;
+
+            _unitOfWork = unitOfWork;
         }
         public async Task<AuthModel<DentalCaseResponseVM>> CreateCaseAsync(string UserId, DentalCaseRequestVm model)
         {
             try
             {
-                var user = _db.Patients.Where(c => c.UserId == UserId).FirstOrDefault();
+                //var user = _db.Patients.Where(c => c.UserId == UserId).FirstOrDefault();
+                var user = _unitOfWork.Patients.Get(c => c.UserId == UserId);
                 if (user == null)
                 {
                     return new AuthModel<DentalCaseResponseVM> { Success = false, Message = "User not found." };
@@ -40,8 +44,10 @@ namespace DentaMatch.Services.Dental_Cases
                     PatientId = patientId.ToString()
                 };
 
-                _db.DentalCases.Add(dentalCase);
-                _db.SaveChanges();
+                _unitOfWork.DentalCases.Add(dentalCase);
+                _unitOfWork.Save();
+                //_db.DentalCases.Add(dentalCase);
+                //_db.SaveChanges();
 
                 var ChronicDiseasesIds = GetChronicDiseaseIds(model.ChronicDiseases);
                 foreach (var ChronicDiseasesId in ChronicDiseasesIds)
@@ -52,7 +58,8 @@ namespace DentaMatch.Services.Dental_Cases
                         DiseaseId = ChronicDiseasesId
                     };
 
-                    _db.CaseChronicDiseases.Add(chronicDisease);
+                    //_db.CaseChronicDiseases.Add(chronicDisease);
+                    _unitOfWork.CaseChronicDiseases.Add(chronicDisease);
                 }
 
                 var dentalDiseasesIds = GetDentalDiseaseIds(model.DentalDiseases);
@@ -64,7 +71,8 @@ namespace DentaMatch.Services.Dental_Cases
                         DiseaseId = dentalDiseasesId
                     };
 
-                    _db.CaseDentalDiseases.Add(dentalDisease);
+                    //_db.CaseDentalDiseases.Add(dentalDisease);
+                    _unitOfWork.CaseDentalDiseases.Add(dentalDisease);
                 }
                 if (model.MouthImages.Count() < 4 || model.MouthImages.Count() > 6)
                 {
@@ -109,7 +117,8 @@ namespace DentaMatch.Services.Dental_Cases
                             CaseId = dentalCase.Id,
                             Image = @"\Images\MouthImages\" + fileName
                         };
-                        _db.MouthImages.Add(mouthImage);
+                        //_db.MouthImages.Add(mouthImage);
+                        _unitOfWork.MouthImages.Add(mouthImage);
                         MouthImagesPaths.Add(mouthImage.Image);
                     }
                 }
@@ -136,7 +145,8 @@ namespace DentaMatch.Services.Dental_Cases
                         CaseId = dentalCase.Id,
                         Image = @"\Images\XRayImages\" + fileName
                     };
-                    _db.XrayIamges.Add(xrayImage);
+                    //_db.XrayIamges.Add(xrayImage);
+                    _unitOfWork.XRayImages.Add(xrayImage);
                     XrayImagesPaths.Add(xrayImage.Image);
 
                 }
@@ -163,7 +173,8 @@ namespace DentaMatch.Services.Dental_Cases
                         CaseId = dentalCase.Id,
                         Image = @"\Images\PrescriptionImages\" + fileName
                     };
-                    _db.PrescriptionImages.Add(prescriptionImage);
+                    //_db.PrescriptionImages.Add(prescriptionImage);
+                    _unitOfWork.PrescriptionImages.Add(prescriptionImage);
                     PrescriptionImagesPaths.Add(prescriptionImage.Image);
 
                 }
@@ -177,7 +188,7 @@ namespace DentaMatch.Services.Dental_Cases
                     PrescriptionImages = PrescriptionImagesPaths,
                     XrayImages = XrayImagesPaths
                 };
-                _db.SaveChanges();
+                _unitOfWork.Save();
 
                 return new AuthModel<DentalCaseResponseVM>
                 {
@@ -195,16 +206,16 @@ namespace DentaMatch.Services.Dental_Cases
 
         private List<string> GetChronicDiseaseIds(List<string> chronicDiseaseNames)
         {
-            return _db.ChronicDiseases
-                .Where(cd => chronicDiseaseNames.Contains(cd.DiseaseName))
+            return _unitOfWork.ChronicDiseases
+                .GetAll(cd => chronicDiseaseNames.Contains(cd.DiseaseName))
                 .Select(cd => cd.Id)
                 .ToList();
         }
 
         private List<string> GetDentalDiseaseIds(List<string> dentalDiseaseNames)
         {
-            return _db.DentalDiseases
-                .Where(dd => dentalDiseaseNames.Contains(dd.DiseaseName))
+            return _unitOfWork.DentalDiseases
+                .GetAll(dd => dentalDiseaseNames.Contains(dd.DiseaseName))
                 .Select(dd => dd.Id)
                 .ToList();
         }
