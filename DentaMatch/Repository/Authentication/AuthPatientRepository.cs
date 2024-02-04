@@ -37,7 +37,7 @@ namespace DentaMatch.Repository.Authentication
             var user = await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone);
             if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                return new AuthModel<PatientResponseVM> { Success = false, Message = "PhoneNumber or Password is incorrect" };
+                return new AuthModel<PatientResponseVM> { Success = false, Message = "Phone Number or Password is incorrect" };
             }
             var userToken = await _authHelper.CreateJwtToken(user);
             var userRole = await _userManager.GetRolesAsync(user);

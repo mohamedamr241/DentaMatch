@@ -8,10 +8,10 @@ using DentaMatch.ViewModel.Dental_Cases;
 
 namespace DentaMatch.Repository.Dental_Cases
 {
-    public class DentalCaseRepository : IDentalCaseRepository<DentalCaseResponseVM>
+    public class DentalCaseRepository : CRUDRepository<DentalCase>, IDentalCaseRepository<DentalCaseResponseVM>
     {
         private readonly ApplicationDbContext _db;
-        public DentalCaseRepository(ApplicationDbContext db)
+        public DentalCaseRepository(ApplicationDbContext db): base(db)
         {
             _db = db;
         }
