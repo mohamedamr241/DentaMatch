@@ -1,12 +1,9 @@
-﻿using DentaMatch.Data;
-using DentaMatch.Helpers;
+﻿using DentaMatch.Helpers;
 using DentaMatch.Models;
-using DentaMatch.Repository;
-using DentaMatch.Repository.IRepository;
-using DentaMatch.Services;
-using DentaMatch.Services.Authentication.IRepository;
+using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.ViewModel;
-using DentaMatch.ViewModel.Authentication;
+using DentaMatch.ViewModel.Authentication.Patient;
 using DentaMatch.ViewModel.Authentication.Request;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
@@ -16,7 +13,7 @@ using System.Text;
 
 namespace DentaMatch.Services.Authentication
 {
-    public class AuthDoctorRepository : AuthRepository, IAuthUserRepository<DoctorResponseVM>
+    public class AuthPatientService : AuthService, IAuthUserService<PatientResponseVM>
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
@@ -25,66 +22,64 @@ namespace DentaMatch.Services.Authentication
 
         private readonly IUnitOfWork _unitOfWork;
 
-        public AuthDoctorRepository(UserManager<ApplicationUser> userManager, IConfiguration configuration, 
+        public AuthPatientService(UserManager<ApplicationUser> userManager, IConfiguration configuration,
             AuthHelper authHelper, IMailService mailService, IUnitOfWork unitOfWork)
             : base(userManager, authHelper, mailService, unitOfWork)
         {
             _userManager = userManager;
             _authHelper = authHelper;
-            _unitOfWork = unitOfWork;
             _mailService = mailService;
             _configuration = configuration;
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task<AuthModel<DoctorResponseVM>> SignInAsync(SignInVM model)
+        public async Task<AuthModel<PatientResponseVM>> SignInAsync(SignInVM model)
         {
             //var user = await _userManager.FindByEmailAsync(model.Email);
             var user = await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone);
-            var userRole = await _userManager.GetRolesAsync(user);
             if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                return new AuthModel<DoctorResponseVM> { Success = false, Message = "PhoneNumber or Password is incorrect" };
+                return new AuthModel<PatientResponseVM> { Success = false, Message = "Phone Number or Password is incorrect" };
             }
             var userToken = await _authHelper.CreateJwtToken(user);
-            //var userDetails = await _db.Doctors.FirstOrDefaultAsync(p => p.UserId == user.Id);
-            var userDetails = _unitOfWork.UserDoctorRepository.Get(u => u.UserId == user.Id);
-            var DoctorData = new DoctorResponseVM
+            var userRole = await _userManager.GetRolesAsync(user);
+            var userDetails = _unitOfWork.UserPatientRepository.Get(p => p.UserId == user.Id);
+            //var userDetails = await _db.Patients.FirstOrDefaultAsync(p => p.UserId == user.Id);
+
+            var PatientData = new PatientResponseVM
             {
                 Email = user.Email,
                 ExpiresOn = userToken.ValidTo,
-                Role = "Doctor",
+                Role = userRole[0],
                 Token = new JwtSecurityTokenHandler().WriteToken(userToken),
                 FullName = user.FullName,
                 Government = user.Government,
                 PhoneNumber = user.PhoneNumber,
                 Gender = user.Gender,
-                Age = user.Age,
-                University = userDetails.University,
-                CardImage = userDetails.CardImage
+                Age = user.Age
             };
-            return new AuthModel<DoctorResponseVM>
+            return new AuthModel<PatientResponseVM>
             {
                 Success = true,
                 Message = "Success SignIn",
-                Data = DoctorData
+                Data = PatientData
             };
         }
-
-        public async Task<AuthModel<DoctorResponseVM>> SignUpAsync<TModel>(TModel model) where TModel : SignUpVM
+        public async Task<AuthModel<PatientResponseVM>> SignUpAsync<TModel>(TModel model) where TModel : SignUpVM
         {
             if (await _userManager.FindByEmailAsync(model.Email) is not null)
             {
-                return new AuthModel<DoctorResponseVM>
+                return new AuthModel<PatientResponseVM>
                 { Success = false, Message = "Email is already exist" };
             }
             if (await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber) is not null)
             {
-                return new AuthModel<DoctorResponseVM>
+                return new AuthModel<PatientResponseVM>
                 { Success = false, Message = "PhoneNumber is already exist" };
             }
             if (!model.PhoneNumber.All(char.IsDigit))
             {
-                return new AuthModel<DoctorResponseVM>
+                return new AuthModel<PatientResponseVM>
                 { Success = false, Message = "PhoneNumber must be numbers only" };
             }
             var user = new ApplicationUser
@@ -106,44 +101,35 @@ namespace DentaMatch.Services.Authentication
                 {
                     errors += $"{error.Description}, ";
                 }
-                return new AuthModel<DoctorResponseVM> { Success = false, Message = errors };
+                return new AuthModel<PatientResponseVM> { Success = false, Message = errors };
             }
-            await _userManager.AddToRoleAsync(user, model.Role);
+            await _userManager.AddToRoleAsync(user, "Patient");
 
-            var doctorModel = model as DoctorSignUpVM;
-
-
-            if (doctorModel != null)
+            var patientModel = model as PatientSignUpVM;
+            if (patientModel != null)
             {
-                var DoctorDetails = new Doctor
+                var patientDetail = new Patient
                 {
                     Id = Guid.NewGuid().ToString(),
-                    UserId = user.Id,
-                    University = doctorModel.University,
-                    CardImage = doctorModel.CardImage
+                    UserId = user.Id
                 };
-
-                _unitOfWork.UserDoctorRepository.Add(DoctorDetails);
+                _unitOfWork.UserPatientRepository.Add(patientDetail);
                 _unitOfWork.Save();
-
-                //_db.Doctors.Add(DoctorDetails);
+                //_db.Patients.Add(patientDetail);
                 //_db.SaveChanges();
                 var jwtToken = await _authHelper.CreateJwtToken(user);
 
-                var DoctortData = new DoctorResponseVM
+                var PatientData = new PatientResponseVM
                 {
                     Email = user.Email,
                     ExpiresOn = jwtToken.ValidTo,
-                    Role = "Doctor",
+                    Role = "Patient",
                     Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
                     FullName = model.FullName,
                     Government = model.Government,
                     PhoneNumber = model.PhoneNumber,
                     Gender = model.Gender,
-                    Age = model.Age,
-                    University = doctorModel.University,
-                    CardImage = doctorModel.CardImage
-
+                    Age = model.Age
                 };
                 var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
@@ -153,18 +139,19 @@ namespace DentaMatch.Services.Authentication
 
                 await _mailService.SendEmailAsync(user.Email, "Confirm your email", $"<h1>Welcome to DentaMatch</h1>" +
                     $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
-                return new AuthModel<DoctorResponseVM>
+                return new AuthModel<PatientResponseVM>
                 {
                     Success = true,
-                    Message = "Success Sign Up",
-                    Data = DoctortData
+                    Message = "Success SignUp",
+                    Data = PatientData
                 };
             }
-            return new AuthModel<DoctorResponseVM>
+            else
             {
-                Success = false,
-                Message = "Failed To Sign Up",
-            };
+                return new AuthModel<PatientResponseVM> { Success = false, Message = "Failed To Sign Up" };
+            }
+
+
         }
     }
 }

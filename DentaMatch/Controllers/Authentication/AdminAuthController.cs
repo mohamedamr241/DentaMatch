@@ -9,8 +9,8 @@ namespace DentaMatch.Controllers.Authentication
     [ApiController]
     public class AdminAuthController : ControllerBase
     {
-        private readonly AuthAdminRepository _admin;
-        public AdminAuthController(AuthAdminRepository admin)
+        private readonly AuthAdminService _admin;
+        public AdminAuthController(AuthAdminService admin)
         {
             _admin = admin;
         }

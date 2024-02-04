@@ -1,9 +1,7 @@
 ﻿using DentaMatch.Helpers;
 using DentaMatch.Models;
-using DentaMatch.Repository.IRepository;
-using DentaMatch.Services.Authentication.IRepository;
+using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.ViewModel;
-using DentaMatch.ViewModel.Authentication;
 using DentaMatch.ViewModel.Authentication.Request;
 using DentaMatch.ViewModel.Authentication.Response;
 using Microsoft.AspNetCore.Identity;
@@ -12,11 +10,12 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace DentaMatch.Services.Authentication
 {
-    public class AuthAdminRepository : IAuthUserRepository<UserResponseVM>
+    public class AuthAdminService : IAuthUserService<UserResponseVM>
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly AuthHelper _authHelper;
-        public AuthAdminRepository(UserManager<ApplicationUser> userManager, AuthHelper authHelper)
+
+        public AuthAdminService(UserManager<ApplicationUser> userManager, AuthHelper authHelper)
         {
             _userManager = userManager;
             _authHelper = authHelper;

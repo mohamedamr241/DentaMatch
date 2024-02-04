@@ -1,8 +1,8 @@
 ﻿using DentaMatch.Data;
 using DentaMatch.Models;
-using DentaMatch.Repository.IRepository;
+using DentaMatch.Repository.Authentication.IRepository;
 
-namespace DentaMatch.Repository
+namespace DentaMatch.Repository.Authentication
 {
     public class UserManagerRepository : Repository<ApplicationUser>, IUserManagerRepository
     {

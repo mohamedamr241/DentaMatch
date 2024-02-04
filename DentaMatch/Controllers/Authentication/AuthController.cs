@@ -17,18 +17,19 @@ namespace DentaMatch.Controllers.Authentication
 
 
         public IConfiguration _configuration;
-        public AuthDoctorRepository _doctor;
-        public AuthPatientRepository _patient;
-        public AuthAdminRepository _admin;
-        public AuthRepository _authRepository;
+        public AuthDoctorService _doctor;
+        public AuthPatientService _patient;
+        public AuthAdminService _admin;
+        public AuthService _authService;
 
-        public AuthController(IConfiguration configuration, AuthDoctorRepository doctor, AuthPatientRepository patient, AuthAdminRepository admin, AuthRepository authRepository)
+        public AuthController(IConfiguration configuration, AuthDoctorService doctor,
+            AuthPatientService patient, AuthAdminService admin, AuthService authService)
         {
             _configuration = configuration;
             _doctor = doctor;
             _patient = patient;
             _admin = admin;
-            _authRepository = authRepository;
+            _authService = authService;
         }
 
         [HttpPost("SignIn")]
@@ -37,7 +38,7 @@ namespace DentaMatch.Controllers.Authentication
             if (!ModelState.IsValid)
                 return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
 
-            var role = await _authRepository.GetRoleAsync(model.Phone);
+            var role = await _authService.GetRoleAsync(model.Phone);
             if (string.IsNullOrEmpty(role))
                 return BadRequest(new { Success = false, Message = "Phone number or password is not correct", Data = new { } });
 
@@ -69,7 +70,7 @@ namespace DentaMatch.Controllers.Authentication
             {
                 return BadRequest(new { Success = false, Message = "Reset Password failed", Data = new { errors = ModelState } });
             }
-            var result = await _authRepository.ForgetPasswordAsync(model);
+            var result = await _authService.ForgetPasswordAsync(model);
             if (!result.Success)
             {
                 return BadRequest(result);
@@ -84,7 +85,7 @@ namespace DentaMatch.Controllers.Authentication
             {
                 return BadRequest(new { Success = false, Message = "Verify Code failed", Data = new { errors = ModelState } });
             }
-            var result = await _authRepository.VerifyCodeAsync(model);
+            var result = await _authService.VerifyCodeAsync(model);
             if (!result.Success)
             {
                 return BadRequest(result);
@@ -99,7 +100,7 @@ namespace DentaMatch.Controllers.Authentication
             {
                 return BadRequest(new { Success = false, Message = "Reset password failed", Data = new { errors = ModelState } });
             }
-            var result = await _authRepository.ResetPasswordAsync(model);
+            var result = await _authService.ResetPasswordAsync(model);
             if (!result.Success)
             {
                 return BadRequest(result);
@@ -113,7 +114,7 @@ namespace DentaMatch.Controllers.Authentication
             if (string.IsNullOrWhiteSpace(userid) || string.IsNullOrWhiteSpace(token))
                 return NotFound();
 
-            var result = await _authRepository.ConfirmEmailAsync(userid, token);
+            var result = await _authService.ConfirmEmailAsync(userid, token);
 
             if (result.Success)
             {

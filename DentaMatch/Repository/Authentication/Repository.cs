@@ -1,10 +1,9 @@
-﻿
-using DentaMatch.Data;
-using DentaMatch.Repository.IRepository;
+﻿using DentaMatch.Data;
+using DentaMatch.Repository.Authentication.IRepository;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
-namespace DentaMatch.Repository
+namespace DentaMatch.Repository.Authentication
 {
     public class Repository<T> : IRepository<T> where T : class
     {
@@ -14,7 +13,7 @@ namespace DentaMatch.Repository
         public Repository(ApplicationDbContext db)
         {
             _db = db;
-            this.dbSet = _db.Set<T>();
+            dbSet = _db.Set<T>();
         }
 
         public void Update(T entity)
@@ -46,7 +45,7 @@ namespace DentaMatch.Repository
             IQueryable<T> query = dbSet;
             if (!string.IsNullOrEmpty(includeProperties))
             {
-                foreach(var includeProp in includeProperties.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries))
+                foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     query = query.Include(includeProp);
                 }
@@ -56,7 +55,7 @@ namespace DentaMatch.Repository
 
         public void Remove(T entity)
         {
-           dbSet.Remove(entity);
+            dbSet.Remove(entity);
         }
 
         public void RemoveRange(IEnumerable<T> entity)
@@ -64,6 +63,6 @@ namespace DentaMatch.Repository
             dbSet.RemoveRange(entity);
         }
 
-        
+
     }
 }

@@ -6,13 +6,13 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using DentaMatch.Models;
 using DentaMatch.Helpers;
-using DentaMatch.Repository.Dental_Cases;
 using DentaMatch.ViewModel.Dental_Cases;
 using DentaMatch.Services;
 using DentaMatch.Services.Authentication;
-using DentaMatch.Services.Authentication.IRepository;
-using DentaMatch.Repository;
-using DentaMatch.Repository.IRepository;
+using DentaMatch.IServices.Dental_Cases;
+using DentaMatch.Services.Dental_Cases;
+using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.Repository.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,13 +26,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
 builder.Services.AddTransient<IMailService, MailService>();
-builder.Services.AddScoped<AuthRepository>();
-builder.Services.AddScoped<AuthPatientRepository>();
-builder.Services.AddScoped<AuthAdminRepository>();
-builder.Services.AddScoped<AuthDoctorRepository>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped< AuthPatientService>();
+builder.Services.AddScoped<AuthAdminService>();
+builder.Services.AddScoped<AuthDoctorService>();
 builder.Services.AddScoped<AuthHelper>();
-builder.Services.AddScoped<IUnitOfWork,UnitOfWork>();
-builder.Services.AddScoped<IDentalCaseRepository<DentalCaseResponseVM>, DentalCaseRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IDentalCaseService<DentalCaseResponseVM>, DentalCaseService>();
 
 //builder.Services.AddScoped<IDentalCaseRepository<DentalCaseResponseVM>, DentalCaseRepository>();
 builder.Services.AddHttpContextAccessor();

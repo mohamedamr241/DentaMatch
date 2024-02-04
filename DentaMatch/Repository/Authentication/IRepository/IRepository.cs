@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace DentaMatch.Repository.IRepository
+namespace DentaMatch.Repository.Authentication.IRepository
 {
     public interface IRepository<T> where T : class
     {

@@ -1,17 +1,19 @@
 ﻿using DentaMatch.Data;
+using DentaMatch.IServices.Dental_Cases;
 using DentaMatch.Models;
 using DentaMatch.Models.Patient_Models.Dental_Case.Chronic_Diseases;
 using DentaMatch.Models.Patient_Models.Dental_Case.Dental_Diseases;
 using DentaMatch.Models.Patient_Models.Dental_Case.Images;
+using DentaMatch.Repository.Authentication;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Dental_Cases;
 
-namespace DentaMatch.Repository.Dental_Cases
+namespace DentaMatch.Services.Dental_Cases
 {
-    public class DentalCaseRepository : Repository<DentalCase>, IDentalCaseRepository<DentalCaseResponseVM>
+    public class DentalCaseService : Repository<DentalCase>, IDentalCaseService<DentalCaseResponseVM>
     {
         private readonly ApplicationDbContext _db;
-        public DentalCaseRepository(ApplicationDbContext db): base(db)
+        public DentalCaseService(ApplicationDbContext db): base(db)
         {
             _db = db;
         }

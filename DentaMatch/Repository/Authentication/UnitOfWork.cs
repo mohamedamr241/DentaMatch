@@ -1,8 +1,8 @@
 ﻿using DentaMatch.Data;
 using DentaMatch.Models;
-using DentaMatch.Repository.IRepository;
+using DentaMatch.Repository.Authentication.IRepository;
 
-namespace DentaMatch.Repository
+namespace DentaMatch.Repository.Authentication
 {
     public class UnitOfWork : IUnitOfWork
     {
@@ -15,7 +15,7 @@ namespace DentaMatch.Repository
             _db = db;
             UserManagerRepository = new UserManagerRepository(db);
             UserPatientRepository = new UserRepository<Patient>(db);
-            UserDoctorRepository = new UserRepository<Doctor> (db);
+            UserDoctorRepository = new UserRepository<Doctor>(db);
         }
 
         public void Save()

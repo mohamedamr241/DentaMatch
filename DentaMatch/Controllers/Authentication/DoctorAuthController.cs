@@ -1,6 +1,4 @@
-﻿using DentaMatch.Repository;
-using DentaMatch.Services.Authentication.IRepository;
-using DentaMatch.Services.Authentication;
+﻿using DentaMatch.Services.Authentication;
 using DentaMatch.ViewModel.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,10 +8,10 @@ namespace DentaMatch.Controllers.Authentication
     [ApiController]
     public class DoctorAuthController : ControllerBase
     {
-        private readonly AuthDoctorRepository _doctor;
-        public DoctorAuthController(AuthDoctorRepository doctor)
+        private readonly AuthDoctorService _doctorService;
+        public DoctorAuthController(AuthDoctorService doctorService)
         {
-            _doctor = doctor;
+            _doctorService = doctorService;
         }
 
         [HttpPost("SignUp")]
@@ -23,7 +21,7 @@ namespace DentaMatch.Controllers.Authentication
             {
                 return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
             }
-            var result = await _doctor.SignUpAsync(model);
+            var result = await _doctorService.SignUpAsync(model);
             if (!result.Success)
             {
                 return BadRequest(result);

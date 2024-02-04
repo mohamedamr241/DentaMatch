@@ -1,9 +1,9 @@
 ﻿using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
 
-namespace DentaMatch.Services.Authentication.IRepository
+namespace DentaMatch.Services.Authentication.IServices
 {
-    public interface IAuthRepository
+    public interface IAuthService
     {
         Task<AuthModel> ForgetPasswordAsync(ForgetPasswordVM model);
         Task<AuthModel> VerifyCodeAsync(VerifyCodeVM model);

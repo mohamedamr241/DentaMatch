@@ -1,11 +1,7 @@
-﻿using DentaMatch.Models;
-using DentaMatch.Services.Authentication;
-using DentaMatch.Repository.Dental_Cases;
-using DentaMatch.ViewModel.Authentication.Request;
+﻿using DentaMatch.IServices.Dental_Cases;
 using DentaMatch.ViewModel.Dental_Cases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace DentaMatch.Controllers.Dental_Case
 {
@@ -14,11 +10,11 @@ namespace DentaMatch.Controllers.Dental_Case
     [ApiController]
     public class DentalCaseController : ControllerBase
     {
-        private readonly IDentalCaseRepository<DentalCaseResponseVM> _dentalCaseRepository;
+        private readonly IDentalCaseService<DentalCaseResponseVM> _dentalCaseService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public DentalCaseController(IDentalCaseRepository<DentalCaseResponseVM> dentalCaseRepository, IHttpContextAccessor httpContextAccessor)
+        public DentalCaseController(IDentalCaseService<DentalCaseResponseVM> dentalCaseService, IHttpContextAccessor httpContextAccessor)
         {
-            _dentalCaseRepository = dentalCaseRepository;
+            _dentalCaseService = dentalCaseService;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -36,7 +32,7 @@ namespace DentaMatch.Controllers.Dental_Case
                 var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value; ;
                 if (userId != null)
                 {
-                    var result = await _dentalCaseRepository.CreateCaseAsync(userId.ToString(), model);
+                    var result = await _dentalCaseService.CreateCaseAsync(userId.ToString(), model);
                     return Ok(result);
                 }
                 return BadRequest(new { Success = false, Message = "Dental Case creation Failed", Data = new { } });

@@ -1,6 +1,6 @@
 ﻿using DentaMatch.Models;
 
-namespace DentaMatch.Repository.IRepository
+namespace DentaMatch.Repository.Authentication.IRepository
 {
     public interface IUnitOfWork
     {
@@ -9,6 +9,6 @@ namespace DentaMatch.Repository.IRepository
         UserRepository<Doctor> UserDoctorRepository { get; set; }
 
         void Save();
-        
+
     }
 }

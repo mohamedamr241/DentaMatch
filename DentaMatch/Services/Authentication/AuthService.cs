@@ -1,7 +1,7 @@
 ﻿using DentaMatch.Helpers;
 using DentaMatch.Models;
-using DentaMatch.Repository.IRepository;
-using DentaMatch.Services.Authentication.IRepository;
+using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
 using Microsoft.AspNetCore.Identity;
@@ -11,7 +11,7 @@ using System.Text;
 
 namespace DentaMatch.Services.Authentication
 {
-    public class AuthRepository : IAuthRepository
+    public class AuthService : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMailService _mailService;
@@ -20,7 +20,7 @@ namespace DentaMatch.Services.Authentication
         private readonly IUnitOfWork _unitOfWork;
 
 
-        public AuthRepository(UserManager<ApplicationUser> userManager, AuthHelper authHelper, 
+        public AuthService(UserManager<ApplicationUser> userManager, AuthHelper authHelper, 
             IMailService mailService, IUnitOfWork unitOfWork)
         {
             _userManager = userManager;

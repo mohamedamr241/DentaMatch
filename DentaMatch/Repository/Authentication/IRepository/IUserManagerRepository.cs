@@ -1,8 +1,8 @@
 ﻿using DentaMatch.Models;
 
-namespace DentaMatch.Repository.IRepository
+namespace DentaMatch.Repository.Authentication.IRepository
 {
-    public interface IUserManagerRepository : IRepository<ApplicationUser> 
+    public interface IUserManagerRepository : IRepository<ApplicationUser>
     {
         void UpdateVerificationCode(ApplicationUser user, string verficationCode, bool isVerified = false);
     }
