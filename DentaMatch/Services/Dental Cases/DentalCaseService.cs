@@ -8,6 +8,8 @@ using DentaMatch.Models.Patient_Models.Dental_Case.Images;
 using DentaMatch.Repository.Dental_Case.IRepository;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Dental_Cases;
+using Microsoft.CodeAnalysis.Operations;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DentaMatch.Services.Dental_Cases
 {
@@ -137,15 +139,6 @@ namespace DentaMatch.Services.Dental_Cases
                 {
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(xrayimage.FileName);
                     string ImagePath = @"Images\XRayImages";
-
-                    //if (!string.IsNullOrEmpty(productVm.product.ImageUrl))
-                    //{
-                    //    var imagePath = Path.Combine(wwwRootPath, productVm.product.ImageUrl.TrimStart('\\'));
-                    //    if (System.IO.File.Exists(imagePath))
-                    //    {
-                    //        System.IO.File.Delete(imagePath);
-                    //    }
-                    //}
                     using (var fileStream = new FileStream(Path.Combine(ImagePath, fileName), FileMode.Create))
                     {
                         xrayimage.CopyTo(fileStream);
@@ -156,7 +149,6 @@ namespace DentaMatch.Services.Dental_Cases
                         CaseId = dentalCase.Id,
                         Image = @"\Images\XRayImages\" + fileName
                     };
-                    //_db.XrayIamges.Add(xrayImage);
                     _dentalCaseUnitOfWork.XRayImages.Add(xrayImage);
                     XrayImagesPaths.Add(xrayImage.Image);
 
@@ -168,16 +160,7 @@ namespace DentaMatch.Services.Dental_Cases
                 foreach (var prescriptionimage in model.PrescriptionImages)
                 {
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(prescriptionimage.FileName);
-                    string ImagePath = @"Images\PrescriptionImages";
-
-                    //if (!string.IsNullOrEmpty(productVm.product.ImageUrl))
-                    //{
-                    //    var imagePath = Path.Combine(wwwRootPath, productVm.product.ImageUrl.TrimStart('\\'));
-                    //    if (System.IO.File.Exists(imagePath))
-                    //    {
-                    //        System.IO.File.Delete(imagePath);
-                    //    }
-                    //}
+                    string ImagePath = @"Images\PrescriptionImages";      
                     using (var fileStream = new FileStream(Path.Combine(ImagePath, fileName), FileMode.Create))
                     {
                         prescriptionimage.CopyTo(fileStream);
@@ -221,22 +204,31 @@ namespace DentaMatch.Services.Dental_Cases
 
         public AuthModel DeleteCase(string caseId)
         {
-            var dentalCase = _dentalCaseUnitOfWork.DentalCases.Get(u => u.Id == caseId);
-            if (dentalCase == null)
+            try
             {
-                return new AuthModel { Success = false, Message = "Dental Case Not Found" };
-            }
-            var mouthImagesPaths = _dentalCaseUnitOfWork.MouthImages.GetAll(u => u.CaseId == caseId).Select(u => u.Image);
-            var XRayImagesPaths = _dentalCaseUnitOfWork.XRayImages.GetAll(u => u.CaseId == caseId).Select(u => u.Image);
-            var PrescriptionImages = _dentalCaseUnitOfWork.PrescriptionImages.GetAll(u => u.CaseId == caseId).Select(u => u.Image);
-            _dentalCaseHelper.DeleteImages(mouthImagesPaths);
-            _dentalCaseHelper.DeleteImages(XRayImagesPaths);
-            _dentalCaseHelper.DeleteImages(PrescriptionImages);
+                var dentalCase = _dentalCaseUnitOfWork.DentalCases.Get(u => u.Id == caseId);
+                if (dentalCase == null)
+                {
+                    return new AuthModel { Success = false, Message = "Dental Case Not Found" };
+                }
+                var mouthImagesPaths = _dentalCaseUnitOfWork.MouthImages.GetAll(u => u.CaseId == caseId).Select(u => u.Image);
+                var XRayImagesPaths = _dentalCaseUnitOfWork.XRayImages.GetAll(u => u.CaseId == caseId).Select(u => u.Image);
+                var PrescriptionImages = _dentalCaseUnitOfWork.PrescriptionImages.GetAll(u => u.CaseId == caseId).Select(u => u.Image);
+                _dentalCaseHelper.DeleteImages(mouthImagesPaths);
+                _dentalCaseHelper.DeleteImages(XRayImagesPaths);
+                _dentalCaseHelper.DeleteImages(PrescriptionImages);
 
-            _dentalCaseUnitOfWork.DentalCases.Remove(dentalCase);
-            _dentalCaseUnitOfWork.Save();
-            return new AuthModel { Success = true, Message = "Dental Case deleted successfully" };
+                _dentalCaseUnitOfWork.DentalCases.Remove(dentalCase);
+                _dentalCaseUnitOfWork.Save();
+                return new AuthModel { Success = true, Message = "Dental Case deleted successfully" };
+            }
+            catch(Exception error) 
+            {
+                return new AuthModel<DentalCaseResponseVM> { Success = false, Message = $"Error Deleting dental case: {error.Message}" };
+            }
         }
+
+        
 
         public AuthModel<DentalCaseResponseVM> UpdateCase(string caseId, DentalCaseRequestVm model)
         {
@@ -307,63 +299,7 @@ namespace DentaMatch.Services.Dental_Cases
                         _dentalCaseUnitOfWork.CaseDentalDiseases.Add(dentalDisease);
                     }
                 }
-                // Update MouthImages
-                //var existingMouthImages = _dentalCaseUnitOfWork.MouthImages.GetAll(u => u.CaseId == caseId).ToList();
-                //var mouthImagesToKeep = model.MouthImages
-                //    .Where(m => existingMouthImages.Any(em => em.Image == @"\Images\MouthImages\" + m.FileName)).ToList();
-
-                //_dentalCaseUnitOfWork.MouthImages.RemoveRange(existingMouthImages
-                //    .Where(em => !mouthImagesToKeep.Any(m => @"\Images\MouthImages\" + m.FileName == em.Image)));
-
-                //foreach (var mouthImage in model.MouthImages.Except(mouthImagesToKeep))
-                //{
-                //    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(mouthImage.FileName);
-                //    string imagePath = @"Images\MouthImages";
-
-                //    using (var fileStream = new FileStream(Path.Combine(imagePath, fileName), FileMode.Create))
-                //    {
-                //        mouthImage.CopyTo(fileStream);
-                //    }
-
-                //    var newMouthImage = new MouthImages
-                //    {
-                //        Id = Guid.NewGuid().ToString(),
-                //        CaseId = dentalCase.Id,
-                //        Image = @"\Images\MouthImages\" + fileName
-                //    };
-
-                //    _dentalCaseUnitOfWork.MouthImages.Add(newMouthImage);
-                //}
-
-                //// Similar logic for XRayImages and PrescriptionImages
-                //// Update XRayImages
-                //var existingXRayImages = _dentalCaseUnitOfWork.XRayImages.GetAll(u => u.CaseId == caseId).ToList();
-                //var xrayImagesToKeep = model.XrayImages?.Where(x => existingXRayImages.Any(ex => ex.Image == x)).ToList();
-                //_dentalCaseUnitOfWork.XRayImages.RemoveRange(existingXRayImages.Where(ex => !xrayImagesToKeep?.Contains(ex.Image) ?? false));
-
-                //foreach (var xrayImage in model.XrayImages?.Except(xrayImagesToKeep ?? Enumerable.Empty<IFormFile>()))
-                //{
-                //    // Process XrayImage similar to MouthImages
-                //}
-
-                //// Update PrescriptionImages
-                //var existingPrescriptionImages = _dentalCaseUnitOfWork.PrescriptionImages.GetAll(u => u.CaseId == caseId).ToList();
-                //var prescriptionImagesToKeep = model.PrescriptionImages?.Where(p => existingPrescriptionImages.Any(ep => ep.Image == p)).ToList();
-                //_dentalCaseUnitOfWork.PrescriptionImages.RemoveRange(existingPrescriptionImages.Where(ep => !prescriptionImagesToKeep?.Contains(ep.Image) ?? false));
-
-                //foreach (var prescriptionImage in model.PrescriptionImages?.Except(prescriptionImagesToKeep ?? Enumerable.Empty<IFormFile>()))
-                //{
-                //    // Process PrescriptionImage similar to MouthImages
-                //}
-
-                //// Save changes
-                //_dentalCaseUnitOfWork.Save();
-
-                // Images update logic would be similar:
-                // 1. Determine which images to keep.
-                // 2. Delete images that are not in the updated list.
-                // 3. Add new images.
-                // You would use the same pattern as above for MouthImages, XrayImages, and PrescriptionImages.
+                
 
                 _dentalCaseUnitOfWork.DentalCases.Update(dentalCase);
                 _dentalCaseUnitOfWork.Save();
@@ -386,6 +322,67 @@ namespace DentaMatch.Services.Dental_Cases
             catch (Exception error)
             {
                 return new AuthModel<DentalCaseResponseVM> { Success = false, Message = $"Error updating dental case: {error.Message}" };
+            }
+        }
+        public AuthModel<DentalCaseResponseVM> GetCase(string caseId)
+        {
+            try
+            {
+                var dentalCase = _dentalCaseUnitOfWork.DentalCases.Get(u => u.Id == caseId, "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages");
+                if (dentalCase == null)
+                {
+                    return new AuthModel<DentalCaseResponseVM> { Success = false, Message = "Dental Case Not Found" };
+                }
+                var ChronicDiseases = dentalCase.CaseChronicDiseases.Select(u => u.ChronicDiseases.DiseaseName).ToList();
+                var DentalDiseases = dentalCase.CaseDentalDiseases.Select(u => u.DentalDiseases.DiseaseName).ToList();
+                var MouthImages = dentalCase.MouthImages.Select(u => u.Image).ToList();
+                var XRayImages = dentalCase.XrayImages.Select(u => u.Image).ToList();
+                var PrescriptionImages = dentalCase.PrescriptionImages.Select(u => u.Image).ToList();
+                var dentalCaseData = new DentalCaseResponseVM
+                {
+                    Id = dentalCase.Id,
+                    PatientId = dentalCase.PatientId,
+                    Description = dentalCase.Description,
+                    DentalDiseases = DentalDiseases,
+                    ChronicDiseases = ChronicDiseases,
+                    IsKnown = dentalCase.IsKnown,
+                    PrescriptionImages= PrescriptionImages,
+                    XrayImages= XRayImages,
+                    MouthImages= MouthImages,
+               };
+                return new AuthModel<DentalCaseResponseVM>
+                {
+                    Success = true,
+                    Message = "Dental Case retrieved successfully",
+                    Data = dentalCaseData
+                };
+            }
+            catch(Exception error)
+            {
+                return new AuthModel<DentalCaseResponseVM> { Success = false, Message = $"Error Retrieving dental case: {error.Message}" };
+            }
+        }
+
+        public AuthModel<IEnumerable<DentalCase>> GetAllCase(string UserId)
+        {
+            try
+            {
+                var user = _dentalCaseUnitOfWork.Patients.Get(c => c.UserId == UserId);
+                if (user == null)
+                {
+                    return new AuthModel<IEnumerable<DentalCase>> { Success = false, Message = "User not found." };
+                }
+                var AllPatientCases = _dentalCaseUnitOfWork.DentalCases.GetAll((u => u.PatientId == user.Id), "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages");
+                return new AuthModel<IEnumerable<DentalCase>>
+                {
+                    Success = true,
+                    Message = "Dental Cases retrieved successfully",
+                    Data = AllPatientCases
+                };
+            }
+            catch(Exception error)
+            {
+                return new AuthModel<IEnumerable<DentalCase>> { Success = false, Message = $"Error Retrieving dental case: {error.Message}" };
             }
         }
     }

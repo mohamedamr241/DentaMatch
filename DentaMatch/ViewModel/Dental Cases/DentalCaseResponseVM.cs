@@ -4,6 +4,8 @@ namespace DentaMatch.ViewModel.Dental_Cases
 {
     public class DentalCaseResponseVM
     {
+        public string Id { get; set; }
+        public string PatientId { get; set; }
         public string Description { get; set; }
         public bool IsKnown { get; set; }
         public bool IsAssigned { get; set; }

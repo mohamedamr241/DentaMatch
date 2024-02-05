@@ -104,6 +104,56 @@ namespace DentaMatch.Controllers.Dental_Case
             }
 
         }
+        [HttpGet("GetCase")]
+        public IActionResult GetCase(string caseId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(caseId))
+                {
+                    return BadRequest(new { Success = false, Message = "Case Id is required", Data = new { } });
+                }
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
+                }
+
+                var result = _dentalCaseService.GetCase(caseId);
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Ok(result);
+
+            }
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Getting Dental Case Failed: {error.Message}", Data = new { } });
+            }
+
+        }
+        [HttpGet("GetAllCases")]
+        public IActionResult GetAllCase()
+        {
+            try
+            {
+                var userClaims = _httpContextAccessor.HttpContext.User.Claims;
+
+                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value; ;
+                if (userId != null)
+                {
+                    var result = _dentalCaseService.GetAllCase(userId.ToString());
+                    return Ok(result);
+                }
+                return BadRequest(new { Success = false, Message = "Dental Case Retrieving Failed", Data = new { } });
+
+            }
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Retrieving Dental Case Failed: {error.Message}", Data = new { } });
+            }
+
+        }
 
     }
 }
