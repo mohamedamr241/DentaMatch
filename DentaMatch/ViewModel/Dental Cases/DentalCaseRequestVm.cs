@@ -17,7 +17,7 @@ namespace DentaMatch.ViewModel.Dental_Cases
         public List<IFormFile> PrescriptionImages { get; set; }
         [ValidateNever]
         public List<string> DentalDiseases { get; set; }
-        //[ValidateNever]
+        [ValidateNever]
         public List<string> ChronicDiseases { get; set; }
     }
 }

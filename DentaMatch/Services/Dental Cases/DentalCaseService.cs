@@ -260,41 +260,53 @@ namespace DentaMatch.Services.Dental_Cases
                 dentalCase.Description = model.Description;
                 dentalCase.IsKnown = model.IsKnown;
 
+
                 var existingChronicDiseases = _dentalCaseUnitOfWork.CaseChronicDiseases.GetAll(u => u.CaseId == caseId, includeProperties: "ChronicDiseases").ToList();
-                var chronicDiseasesToKeep = model.ChronicDiseases
-                    .Where(diseaseName => existingChronicDiseases.Any(ed => ed.ChronicDiseases.DiseaseName == diseaseName))
-                    .ToList();
-                _dentalCaseUnitOfWork.CaseChronicDiseases.RemoveRange(existingChronicDiseases.Where(ed => !chronicDiseasesToKeep.Contains(ed.ChronicDiseases.DiseaseName)));
-
-                foreach (var chronicDiseaseName in model.ChronicDiseases.Except(chronicDiseasesToKeep))
+                if(model.ChronicDiseases == null)
                 {
-                    var chronicdiseaseId = _dentalCaseUnitOfWork.ChronicDiseases.Get(u => u.DiseaseName == chronicDiseaseName).Id;
-                    var chronicDisease = new CaseChronicDiseases
-                    {
-                        CaseId = dentalCase.Id,
-                        DiseaseId = chronicdiseaseId.ToString()
-                    };
-                    _dentalCaseUnitOfWork.CaseChronicDiseases.Add(chronicDisease);
+                    _dentalCaseUnitOfWork.CaseChronicDiseases.RemoveRange(existingChronicDiseases);
                 }
+                else
+                {
+                    var chronicDiseasesToKeep = model.ChronicDiseases
+                            .Where(diseaseName => existingChronicDiseases.Any(ed => ed.ChronicDiseases.DiseaseName == diseaseName))
+                            .ToList();
+                    _dentalCaseUnitOfWork.CaseChronicDiseases.RemoveRange(existingChronicDiseases.Where(ed => !chronicDiseasesToKeep.Contains(ed.ChronicDiseases.DiseaseName)));
 
-
+                    foreach (var chronicDiseaseName in model.ChronicDiseases.Except(chronicDiseasesToKeep))
+                    {
+                            var chronicdiseaseId = _dentalCaseUnitOfWork.ChronicDiseases.Get(u => u.DiseaseName == chronicDiseaseName).Id;
+                            var chronicDisease = new CaseChronicDiseases
+                            {
+                                CaseId = dentalCase.Id,
+                                DiseaseId = chronicdiseaseId.ToString()
+                            };
+                         _dentalCaseUnitOfWork.CaseChronicDiseases.Add(chronicDisease);
+                    }
+                }
                 var existingDentalDiseases = _dentalCaseUnitOfWork.CaseDentalDiseases.GetAll(u => u.CaseId == caseId, includeProperties: "DentalDiseases").ToList();
-                var dentalDiseasesToKeep = model.DentalDiseases
-                    .Where(diseaseName => existingDentalDiseases.Any(ed => ed.DentalDiseases.DiseaseName == diseaseName))
-                    .ToList();
-                _dentalCaseUnitOfWork.CaseDentalDiseases.RemoveRange(existingDentalDiseases.Where(ed => !dentalDiseasesToKeep.Contains(ed.DentalDiseases.DiseaseName)));
-
-                foreach (var dentalDiseaseName in model.DentalDiseases.Except(dentalDiseasesToKeep))
+                if(model.DentalDiseases == null)
                 {
-                    var DentaldiseaseId = _dentalCaseUnitOfWork.DentalDiseases.Get(u => u.DiseaseName == dentalDiseaseName).Id;
-                    var dentalDisease = new CaseDentalDiseases
-                    {
-                        CaseId = dentalCase.Id,
-                        DiseaseId = DentaldiseaseId.ToString()
-                    };
-                    _dentalCaseUnitOfWork.CaseDentalDiseases.Add(dentalDisease);
+                    _dentalCaseUnitOfWork.CaseDentalDiseases.RemoveRange(existingDentalDiseases);
                 }
+                else
+                {
+                    var dentalDiseasesToKeep = model.DentalDiseases
+                        .Where(diseaseName => existingDentalDiseases.Any(ed => ed.DentalDiseases.DiseaseName == diseaseName))
+                        .ToList();
+                    _dentalCaseUnitOfWork.CaseDentalDiseases.RemoveRange(existingDentalDiseases.Where(ed => !dentalDiseasesToKeep.Contains(ed.DentalDiseases.DiseaseName)));
 
+                    foreach (var dentalDiseaseName in model.DentalDiseases.Except(dentalDiseasesToKeep))
+                    {
+                        var DentaldiseaseId = _dentalCaseUnitOfWork.DentalDiseases.Get(u => u.DiseaseName == dentalDiseaseName).Id;
+                        var dentalDisease = new CaseDentalDiseases
+                        {
+                            CaseId = dentalCase.Id,
+                            DiseaseId = DentaldiseaseId.ToString()
+                        };
+                        _dentalCaseUnitOfWork.CaseDentalDiseases.Add(dentalDisease);
+                    }
+                }
                 // Update MouthImages
                 //var existingMouthImages = _dentalCaseUnitOfWork.MouthImages.GetAll(u => u.CaseId == caseId).ToList();
                 //var mouthImagesToKeep = model.MouthImages
@@ -359,10 +371,9 @@ namespace DentaMatch.Services.Dental_Cases
                 var dentalCaseData = new DentalCaseResponseVM
                 {
                     Description = dentalCase.Description,
-                    DentalDiseases = model.DentalDiseases.ToList(),
-                    ChronicDiseases = model.ChronicDiseases.ToList(),
+                    DentalDiseases = model.DentalDiseases,
+                    ChronicDiseases = model.ChronicDiseases,
                     IsKnown = dentalCase.IsKnown,
-                    // Populate the paths of the images if they are updated
                 };
 
                 return new AuthModel<DentalCaseResponseVM>
@@ -377,7 +388,5 @@ namespace DentaMatch.Services.Dental_Cases
                 return new AuthModel<DentalCaseResponseVM> { Success = false, Message = $"Error updating dental case: {error.Message}" };
             }
         }
-
-
     }
 }
