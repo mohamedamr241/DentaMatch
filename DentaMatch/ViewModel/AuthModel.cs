@@ -6,7 +6,7 @@
         public string Message { get; set; }
     }
 
-    public class AuthModel<T> : AuthModel where T : class
+    public class AuthModel<T> : AuthModel 
     {
         public T Data { get; set; }
     }

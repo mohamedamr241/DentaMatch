@@ -1,19 +1,17 @@
-﻿using DentaMatch.Data;
-using DentaMatch.Helpers;
+﻿using DentaMatch.Helpers;
 using DentaMatch.IServices.Dental_Cases;
 using DentaMatch.Models;
-using DentaMatch.Models.Patient_Models.Dental_Case.Chronic_Diseases;
-using DentaMatch.Models.Patient_Models.Dental_Case.Dental_Diseases;
-using DentaMatch.Models.Patient_Models.Dental_Case.Images;
+using DentaMatch.Models.Dental_Case.Chronic_Diseases;
+using DentaMatch.Models.Dental_Case.Dental_Diseases;
+using DentaMatch.Models.Dental_Case.Images;
 using DentaMatch.Repository.Dental_Case.IRepository;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Dental_Cases;
-using Microsoft.CodeAnalysis.Operations;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 namespace DentaMatch.Services.Dental_Cases
 {
-    public class DentalCaseService : IDentalCaseService<DentalCaseResponseVM>
+    public class DentalCaseService : IDentalCaseService
     {
         private readonly IDentalCaseUnitOfWork _dentalCaseUnitOfWork;
         private readonly DentalCaseHelper _dentalCaseHelper;

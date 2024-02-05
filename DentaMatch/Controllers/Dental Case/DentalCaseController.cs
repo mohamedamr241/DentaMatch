@@ -10,9 +10,9 @@ namespace DentaMatch.Controllers.Dental_Case
     [ApiController]
     public class DentalCaseController : ControllerBase
     {
-        private readonly IDentalCaseService<DentalCaseResponseVM> _dentalCaseService;
+        private readonly IDentalCaseService _dentalCaseService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public DentalCaseController(IDentalCaseService<DentalCaseResponseVM> dentalCaseService, IHttpContextAccessor httpContextAccessor)
+        public DentalCaseController(IDentalCaseService dentalCaseService, IHttpContextAccessor httpContextAccessor)
         {
             _dentalCaseService = dentalCaseService;
             _httpContextAccessor = httpContextAccessor;

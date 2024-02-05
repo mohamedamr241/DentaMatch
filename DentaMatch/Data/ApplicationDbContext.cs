@@ -1,7 +1,7 @@
 ﻿using DentaMatch.Models;
-using DentaMatch.Models.Patient_Models.Dental_Case.Chronic_Diseases;
-using DentaMatch.Models.Patient_Models.Dental_Case.Dental_Diseases;
-using DentaMatch.Models.Patient_Models.Dental_Case.Images;
+using DentaMatch.Models.Dental_Case.Chronic_Diseases;
+using DentaMatch.Models.Dental_Case.Dental_Diseases;
+using DentaMatch.Models.Dental_Case.Images;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -45,6 +45,20 @@ namespace DentaMatch.Data
 
             modelBuilder.Entity<CaseChronicDiseases>()
                 .HasKey(cd => new { cd.CaseId, cd.DiseaseId });
+
+            modelBuilder.Entity<DentalCase>()
+                .HasOne(d => d.Doctor)
+                .WithMany(p => p.DrAssignedCases)
+                .HasForeignKey(d => d.DoctorId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            modelBuilder.Entity<DentalCase>()
+                .HasOne(d => d.Patient)
+                .WithMany(p => p.PatientCases)
+                .HasForeignKey(d => d.PatientId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+
         }
     }
 }

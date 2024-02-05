@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DentaMatch.Models.Patient_Models.Dental_Case.Images
+namespace DentaMatch.Models.Dental_Case.Images
 {
     public class PrescriptionImages
     {

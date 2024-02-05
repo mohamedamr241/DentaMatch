@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DentaMatch.Models.Patient_Models.Dental_Case.Dental_Diseases
+namespace DentaMatch.Models.Dental_Case.Chronic_Diseases
 {
-    public class DentalDisease
+    public class ChronicDisease
     {
         [Key]
         public string Id { get; set; }

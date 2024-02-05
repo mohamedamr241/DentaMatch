@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using DentaMatch.Models.Dental_Case.Chronic_Diseases;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DentaMatch.Models.Patient_Models.Dental_Case.Chronic_Diseases
+namespace DentaMatch.Models.Dental_Case.Chronic_Diseases
 {
     public class CaseChronicDiseases
     {

@@ -1,8 +1,8 @@
 ﻿using DentaMatch.Data;
 using DentaMatch.Models;
-using DentaMatch.Models.Patient_Models.Dental_Case.Chronic_Diseases;
-using DentaMatch.Models.Patient_Models.Dental_Case.Dental_Diseases;
-using DentaMatch.Models.Patient_Models.Dental_Case.Images;
+using DentaMatch.Models.Dental_Case.Chronic_Diseases;
+using DentaMatch.Models.Dental_Case.Dental_Diseases;
+using DentaMatch.Models.Dental_Case.Images;
 using DentaMatch.Repository.Authentication;
 using DentaMatch.Repository.Dental_Case.IRepository;
 
