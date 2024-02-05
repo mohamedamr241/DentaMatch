@@ -59,6 +59,15 @@ namespace DentaMatch.Repository
         public void Remove(T entity)
         {
             dbSet.Remove(entity);
+            //try
+            //{
+
+            //    return string.Empty;
+            //}
+            //catch (Exception e)
+            //{
+            //    return e.Message;
+            //}
         }
 
         public void RemoveRange(IEnumerable<T> entity)

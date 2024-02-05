@@ -1,5 +1,6 @@
 ﻿using DentaMatch.Models.Patient_Models.Dental_Case.Chronic_Diseases;
 using DentaMatch.Models.Patient_Models.Dental_Case.Dental_Diseases;
+using DentaMatch.Models.Patient_Models.Dental_Case.Images;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -19,7 +20,10 @@ namespace DentaMatch.Models
         [ForeignKey("Patient")]
         public string PatientId { get; set; }
         public virtual Patient Patient { get; set; }
-        public virtual ICollection<CaseDentalDiseases> CaseDentalDiseases { get; set; }
         public virtual ICollection<CaseChronicDiseases> CaseChronicDiseases { get; set; }
+        public virtual ICollection<CaseDentalDiseases> CaseDentalDiseases { get; set; }
+        public virtual ICollection<MouthImages> MouthImages { get; set; }
+        public virtual ICollection<XrayIamges> XrayImages { get; set; }
+        public virtual ICollection<PrescriptionImages> PrescriptionImages { get; set; }
     }
 }

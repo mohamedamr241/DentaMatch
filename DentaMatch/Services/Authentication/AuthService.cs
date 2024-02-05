@@ -2,6 +2,7 @@
 using DentaMatch.Models;
 using DentaMatch.Repository.Authentication.IRepository;
 using DentaMatch.Services.Authentication.IServices;
+using DentaMatch.Services.Mail;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
 using Microsoft.AspNetCore.Identity;

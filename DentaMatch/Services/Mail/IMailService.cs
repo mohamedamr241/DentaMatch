@@ -1,4 +1,4 @@
-﻿namespace DentaMatch.Services
+﻿namespace DentaMatch.Services.Mail
 {
     public interface IMailService
     {

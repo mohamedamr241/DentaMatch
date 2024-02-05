@@ -7,7 +7,6 @@ using System.Text;
 using DentaMatch.Models;
 using DentaMatch.Helpers;
 using DentaMatch.ViewModel.Dental_Cases;
-using DentaMatch.Services;
 using DentaMatch.Services.Authentication;
 using DentaMatch.IServices.Dental_Cases;
 using DentaMatch.Services.Dental_Cases;
@@ -15,6 +14,7 @@ using DentaMatch.Repository.Authentication.IRepository;
 using DentaMatch.Repository.Authentication;
 using DentaMatch.Repository.Dental_Case.IRepository;
 using DentaMatch.Repository.Dental_Case;
+using DentaMatch.Services.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +33,7 @@ builder.Services.AddScoped< AuthPatientService>();
 builder.Services.AddScoped<AuthAdminService>();
 builder.Services.AddScoped<AuthDoctorService>();
 builder.Services.AddScoped<AuthHelper>();
+builder.Services.AddScoped<DentalCaseHelper>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IDentalCaseUnitOfWork, DentalCaseUnitOfWork>();
 builder.Services.AddScoped<IDentalCaseService<DentalCaseResponseVM>, DentalCaseService>();

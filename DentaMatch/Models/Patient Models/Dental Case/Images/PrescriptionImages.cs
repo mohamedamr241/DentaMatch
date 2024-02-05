@@ -10,7 +10,6 @@ namespace DentaMatch.Models.Patient_Models.Dental_Case.Images
         [ForeignKey("Case")]
         public string CaseId { get; set; }
         public virtual DentalCase Case { get; set; }
-        [Required]
         public string Image { get; set; }
 
 

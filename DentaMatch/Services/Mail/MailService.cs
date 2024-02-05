@@ -3,7 +3,7 @@ using SendGrid.Helpers.Mail;
 using SendGrid;
 using System.Drawing.Text;
 
-namespace DentaMatch.Services
+namespace DentaMatch.Services.Mail
 {
     public class MailService : IMailService
     {

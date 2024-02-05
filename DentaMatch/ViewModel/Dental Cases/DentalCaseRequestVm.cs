@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 
 namespace DentaMatch.ViewModel.Dental_Cases
 {
@@ -10,13 +11,13 @@ namespace DentaMatch.ViewModel.Dental_Cases
         public bool IsKnown { get; set; }
         [Required]
         public List<IFormFile> MouthImages { get; set; }
-        [Required]
-        public List<IFormFile> XrayImages { get; set; }
-        [Required]
+        [ValidateNever]
+        public List<IFormFile> XrayImages { get; set; } 
+        [ValidateNever]
         public List<IFormFile> PrescriptionImages { get; set; }
-        [Required]
+        [ValidateNever]
         public List<string> DentalDiseases { get; set; }
-        [Required]
+        //[ValidateNever]
         public List<string> ChronicDiseases { get; set; }
     }
 }
