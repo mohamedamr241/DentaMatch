@@ -50,19 +50,18 @@ namespace DentaMatch.Services.Cases_Appointment
         {
             try 
             {
-                var doctor = _appointmentUnitOfWork.Doctors.Get(u => u.UserId == userId);
                 var dentalCase = _appointmentUnitOfWork.DentalCases.Get(c => c.Id == caseId, "Patient.User");
-
 
                 if (dentalCase == null)
                 {
                     return new AuthModel<string> { Success = false, Message = "Dental Case Not Found" };
                 }
-
                 if (dentalCase.IsAssigned)
                 {
                     return new AuthModel<string> { Success = false, Message = "Dental Case is already assigned to a doctor" };
                 }
+
+                var doctor = _appointmentUnitOfWork.Doctors.Get(u => u.UserId == userId);
                 _appointmentUnitOfWork.DentalCases.UpdateAssigningCase(dentalCase, true, doctor.Id);
                 _appointmentUnitOfWork.Save();
 

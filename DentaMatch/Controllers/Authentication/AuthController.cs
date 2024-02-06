@@ -10,12 +10,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DentaMatch.Controllers.Authentication
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
-
-
         public IConfiguration _configuration;
         public AuthDoctorService _doctor;
         public AuthPatientService _patient;
@@ -32,96 +30,131 @@ namespace DentaMatch.Controllers.Authentication
             _authService = authService;
         }
 
-        [HttpPost("SignIn")]
+        [HttpPost("Signin")]
         public async Task<IActionResult> SignInAsync(SignInVM model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
-
-            var role = await _authService.GetRoleAsync(model.Phone);
-            if (string.IsNullOrEmpty(role))
-                return BadRequest(new { Success = false, Message = "Phone number or password is not correct", Data = new { } });
-
-            if (role == "Doctor")
+            try
             {
-                AuthModel<DoctorResponseVM> doctorResponse = await _doctor.SignInAsync(model);
-                return doctorResponse.Success ? Ok(doctorResponse) : BadRequest(doctorResponse);
-            }
+                if (!ModelState.IsValid)
+                    return BadRequest(new { Success = false, Message = ModelState });
 
-            if (role == "Patient")
+                var role = await _authService.GetRoleAsync(model.Phone);
+                if (string.IsNullOrEmpty(role))
+                    return BadRequest(new { Success = false, Message = "Phone number or password is not correct" });
+
+                if (role == "Doctor")
+                {
+                    AuthModel<DoctorResponseVM> doctorResponse = await _doctor.SignInAsync(model);
+                    return doctorResponse.Success ? Ok(doctorResponse) : BadRequest(doctorResponse);
+                }
+
+                if (role == "Patient")
+                {
+                    AuthModel<PatientResponseVM> patientResponse = await _patient.SignInAsync(model);
+                    return patientResponse.Success ? Ok(patientResponse) : BadRequest(patientResponse);
+                }
+
+                if (role == "Admin")
+                {
+                    AuthModel<UserResponseVM> adminResponse = await _admin.SignInAsync(model);
+                    return adminResponse.Success ? Ok(adminResponse) : BadRequest(adminResponse);
+                }
+
+                return BadRequest();
+            }
+            catch (Exception error)
             {
-                AuthModel<PatientResponseVM> patientResponse = await _patient.SignInAsync(model);
-                return patientResponse.Success ? Ok(patientResponse) : BadRequest(patientResponse);
+                return BadRequest(new { Success = false, Message = $"Signin Failed: {error.Message}" });
             }
-
-            if (role == "Admin")
-            {
-                AuthModel<UserResponseVM> adminResponse = await _admin.SignInAsync(model);
-                return adminResponse.Success ? Ok(adminResponse) : BadRequest(adminResponse);
-            }
-
-            return BadRequest();
         }
 
-        [HttpPost("forgetPassword")]
+        [HttpPost("ForgetPassword")]
         public async Task<IActionResult> ForgetPasswordAsync(ForgetPasswordVM model)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(new { Success = false, Message = "Reset Password failed", Data = new { errors = ModelState } });
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new { Success = false, Message = ModelState });
+                }
+                var result = await _authService.ForgetPasswordAsync(model);
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Ok(result);
             }
-            var result = await _authService.ForgetPasswordAsync(model);
-            if (!result.Success)
+            catch (Exception error)
             {
-                return BadRequest(result);
+                return BadRequest(new { Success = false, Message = $"Forget Password Request Failed: {error.Message}" });
             }
-            return Ok(result);
         }
 
         [HttpPost("VerifyCode")]
         public async Task<IActionResult> VerifyCodeAsync(VerifyCodeVM model)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(new { Success = false, Message = "Verify Code failed", Data = new { errors = ModelState } });
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new { Success = false, Message = ModelState });
+                }
+                var result = await _authService.VerifyCodeAsync(model);
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Ok(result);
             }
-            var result = await _authService.VerifyCodeAsync(model);
-            if (!result.Success)
+            catch (Exception error)
             {
-                return BadRequest(result);
+                return BadRequest(new { Success = false, Message = $"Verify Code Request Failed: {error.Message}" });
             }
-            return Ok(result);
         }
 
         [HttpPost("ResetPassword")]
         public async Task<IActionResult> ResetPasswordAsync(ResetPasswordVM model)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(new { Success = false, Message = "Reset password failed", Data = new { errors = ModelState } });
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new { Success = false, Message = ModelState });
+                }
+                var result = await _authService.ResetPasswordAsync(model);
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Ok(result);
             }
-            var result = await _authService.ResetPasswordAsync(model);
-            if (!result.Success)
+            catch (Exception error)
             {
-                return BadRequest(result);
+                return BadRequest(new { Success = false, Message = $"Reset Password Failed: {error.Message}" });
             }
-            return Ok(result);
         }
 
         [HttpGet("ConfirmEmail")]
-        public async Task<IActionResult> ConfirmEmail([FromQuery] string userid, [FromQuery] string token)
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
-            if (string.IsNullOrWhiteSpace(userid) || string.IsNullOrWhiteSpace(token))
-                return NotFound();
-
-            var result = await _authService.ConfirmEmailAsync(userid, token);
-
-            if (result.Success)
+            try
             {
+                if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
+                {
+                    return NotFound();
+                }
+                var result = await _authService.ConfirmEmailAsync(userId, token);
+
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
                 return Redirect($"{_configuration["AppUrl"]}/ConfirmEmail.html");
             }
-
-            return BadRequest(result);
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Confirm Email Failed: {error.Message}" });
+            }
         }
     }
 }

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DentaMatch.Controllers.Authentication
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class DoctorAuthController : ControllerBase
     {
@@ -14,21 +14,27 @@ namespace DentaMatch.Controllers.Authentication
             _doctorService = doctorService;
         }
 
-        [HttpPost("SignUp")]
+        [HttpPost("Signup")]
         public async Task<IActionResult> SignUpAsync(DoctorSignUpVM model)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new { Success = false, Message = ModelState });
+                }
+                var result = await _doctorService.SignUpAsync(model);
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Ok(result);
             }
-            var result = await _doctorService.SignUpAsync(model);
-            if (!result.Success)
+            catch (Exception error)
             {
-                return BadRequest(result);
+                return BadRequest(new { Success = false, Message = $"Signup Failed: {error.Message}" });
             }
-            return Ok(result);
         }
-
 
     }
 }

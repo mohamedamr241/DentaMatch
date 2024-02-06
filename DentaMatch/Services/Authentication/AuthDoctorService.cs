@@ -78,12 +78,12 @@ namespace DentaMatch.Services.Authentication
             if (await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber) is not null)
             {
                 return new AuthModel<DoctorResponseVM>
-                { Success = false, Message = "PhoneNumber is already exist" };
+                { Success = false, Message = "Phone number is already exist" };
             }
             if (!model.PhoneNumber.All(char.IsDigit))
             {
                 return new AuthModel<DoctorResponseVM>
-                { Success = false, Message = "PhoneNumber must be numbers only" };
+                { Success = false, Message = "Phone number must be numbers only" };
             }
             var user = new ApplicationUser
             {
@@ -124,8 +124,6 @@ namespace DentaMatch.Services.Authentication
                 _unitOfWork.UserDoctorRepository.Add(DoctorDetails);
                 _unitOfWork.Save();
 
-                //_db.Doctors.Add(DoctorDetails);
-                //_db.SaveChanges();
                 var jwtToken = await _authHelper.CreateJwtToken(user);
 
                 var DoctortData = new DoctorResponseVM
@@ -147,7 +145,7 @@ namespace DentaMatch.Services.Authentication
                 var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
                 var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
 
-                string url = $"{_configuration["AppUrl"]}api/Auth/ConfirmEmail?userid={user.Id}&token={validEmailToken}";
+                string url = $"{_configuration["AppUrl"]}Auth/ConfirmEmail?userid={user.Id}&token={validEmailToken}";
 
                 await _mailService.SendEmailAsync(user.Email, "Confirm your email", $"<h1>Welcome to DentaMatch</h1>" +
                     $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");

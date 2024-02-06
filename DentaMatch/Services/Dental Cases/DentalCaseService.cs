@@ -363,7 +363,7 @@ namespace DentaMatch.Services.Dental_Cases
             }
         }
 
-        public AuthModel<IEnumerable<DentalCase>> GetCasesPatient(string UserId)
+        public AuthModel<IEnumerable<DentalCase>> GetPatientCases(string UserId)
         {
             try
             {
@@ -412,7 +412,7 @@ namespace DentaMatch.Services.Dental_Cases
                 var doctor = _dentalCaseUnitOfWork.Doctors.Get(c => c.UserId == UserId);
                 if (doctor == null)
                 {
-                    return new AuthModel<IEnumerable<DentalCase>> { Success = false, Message = "User not found." };
+                    return new AuthModel<IEnumerable<DentalCase>> { Success = false, Message = "User not found" };
                 }
                 var AllDoctorCases = _dentalCaseUnitOfWork.DentalCases.GetAll((u => u.DoctorId == doctor.Id),
                     "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages");

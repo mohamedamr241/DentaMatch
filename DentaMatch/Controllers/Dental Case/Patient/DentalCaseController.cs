@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DentaMatch.Controllers.Dental_Case.Patient
 {
     [Authorize(Roles = "Patient")]
-    [Route("patient/[controller]")]
+    [Route("Patient/[controller]")]
     [ApiController]
     public class DentalCaseController : ControllerBase
     {
@@ -18,7 +18,7 @@ namespace DentaMatch.Controllers.Dental_Case.Patient
             _httpContextAccessor = httpContextAccessor;
         }
 
-        [HttpPost("addcase")]
+        [HttpPost("AddCase")]
         public ActionResult AddCase(DentalCaseRequestVm model)
         {
             try
@@ -29,35 +29,36 @@ namespace DentaMatch.Controllers.Dental_Case.Patient
                 }
                 var userClaims = _httpContextAccessor.HttpContext.User.Claims;
 
-                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value; ;
-                if (userId != null)
+                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value;
+                var result = _dentalCaseService.CreateCase(userId.ToString(), model);
+
+                if (!result.Success)
                 {
-                    var result = _dentalCaseService.CreateCase(userId.ToString(), model);
-                    return Ok(result);
+                    return BadRequest(result);
                 }
-                return BadRequest(new { Success = false, Message = "Dental Case creation Failed", Data = new { } });
+                return Ok(result);
 
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Dental Case creation Failed: {error.Message}", Data = new { } });
+                return BadRequest(new { Success = false, Message = $"Create Dental Case Failed: {error.Message}" });
             }
 
         }
 
 
-        [HttpPost("deletecase")]
+        [HttpPost("DeleteCase")]
         public IActionResult DeleteCase(string caseId)
         {
             try
             {
                 if (string.IsNullOrEmpty(caseId))
                 {
-                    return BadRequest(new { Success = false, Message = "Case Id is required", Data = new { } });
+                    return BadRequest(new { Success = false, Message = "Case Id Is Required"});
                 }
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
+                    return BadRequest(new { Success = false, Message = ModelState });
                 }
 
                 var result =  _dentalCaseService.DeleteCase(caseId);
@@ -70,24 +71,24 @@ namespace DentaMatch.Controllers.Dental_Case.Patient
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Dental Case deletion Failed: {error.Message}", Data = new { } });
+                return BadRequest(new { Success = false, Message = $"Dental Case deletion Failed: {error.Message}" });
             }
 
         }
 
 
-        [HttpPost("updatecase")]
+        [HttpPost("UpdateCase")]
         public IActionResult UpdateCase(string caseId, DentalCaseRequestVm model)
         {
             try
             {
                 if (string.IsNullOrEmpty(caseId))
                 {
-                    return BadRequest(new { Success = false, Message = "Case Id is required", Data = new { } });
+                    return BadRequest(new { Success = false, Message = "Case Id Is Required" });
                 }
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
+                    return BadRequest(new { Success = false, Message = ModelState });
                 }
 
                 var result = _dentalCaseService.UpdateCase(caseId, model);
@@ -100,13 +101,13 @@ namespace DentaMatch.Controllers.Dental_Case.Patient
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Dental Case update Failed: {error.Message}", Data = new { } });
+                return BadRequest(new { Success = false, Message = $"Update Dental Case Failed: {error.Message}" });
             }
 
         }
       
 
-        [HttpGet("getcases")]
+        [HttpGet("GetCases")]
         public IActionResult GetPatientCases()
         {
             try
@@ -114,17 +115,17 @@ namespace DentaMatch.Controllers.Dental_Case.Patient
                 var userClaims = _httpContextAccessor.HttpContext.User.Claims;
 
                 var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value; ;
-                if (userId != null)
+                var result = _dentalCaseService.GetPatientCases(userId.ToString());
+                if (!result.Success)
                 {
-                    var result = _dentalCaseService.GetCasesPatient(userId.ToString());
-                    return Ok(result);
+                    return BadRequest(result);
                 }
-                return BadRequest(new { Success = false, Message = "Dental Case Retrieving Failed", Data = new { } });
+                return Ok(result);
 
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Retrieving Dental Case Failed: {error.Message}", Data = new { } });
+                return BadRequest(new { Success = false, Message = $"Retrieving Patient Dental Cases Failed: {error.Message}" });
             }
 
         }

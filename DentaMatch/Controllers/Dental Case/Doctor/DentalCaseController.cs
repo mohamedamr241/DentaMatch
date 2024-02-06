@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DentaMatch.Controllers.Dental_Case.Doctor
 {
     [Authorize(Roles = "Doctor")]
-    [Route("doctor/[controller]")]
+    [Route("Doctor/[controller]")]
     [ApiController]
     public class DentalCaseController : ControllerBase
     {
@@ -17,7 +17,7 @@ namespace DentaMatch.Controllers.Dental_Case.Doctor
             _httpContextAccessor = httpContextAccessor;
         }
 
-        [HttpGet("getunassignedcases")]
+        [HttpGet("GetUnassignedCases")]
         public IActionResult GetPatientCases()
         {
             try
@@ -25,37 +25,38 @@ namespace DentaMatch.Controllers.Dental_Case.Doctor
                 var result = _dentalCaseService.GetUnAssignedCases();
                 if (!result.Success)
                 {
-                    return BadRequest(new { Success = false, Message = "Dental Cases Retrieving Failed", Data = new { } });
+                    return BadRequest(result);
                 }
                 return Ok(result);
 
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Retrieving Dental Cases Failed: {error.Message}", Data = new { } });
+                return BadRequest(new { Success = false, Message = $"Retrieving Dental Cases Failed: {error.Message}"});
             }
 
         }
 
-        [HttpGet("getassignedcases")]
+        [HttpGet("GetAssignedCases")]
         public IActionResult GetAssignedCases()
         {
             try
             {
                 var userClaims = _httpContextAccessor.HttpContext.User.Claims;
 
-                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value; ;
-                if (userId != null)
+                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value;
+                var result = _dentalCaseService.GetAssignedCases(userId.ToString());
+
+                if (!result.Success)
                 {
-                    var result = _dentalCaseService.GetAssignedCases(userId.ToString());
-                    return Ok(result);
+                    return BadRequest(result);
                 }
-                return BadRequest(new { Success = false, Message = "Retrieving Assigned Doctor Dental Cases Failed", Data = new { } });
+                return Ok(result);
 
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Retrieving Assigned Doctor Dental Cases Failed: {error.Message}", Data = new { } });
+                return BadRequest(new { Success = false, Message = $"Retrieving Assigned Doctor Dental Cases Failed: {error.Message}" });
             }
 
         }

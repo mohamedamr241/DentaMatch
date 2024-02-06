@@ -22,11 +22,11 @@ namespace DentaMatch.Controllers.Dental_Case
             {
                 if (string.IsNullOrEmpty(caseId))
                 {
-                    return BadRequest(new { Success = false, Message = "Case Id is required", Data = new { } });
+                    return BadRequest(new { Success = false, Message = "Case Id is required" });
                 }
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
+                    return BadRequest(new { Success = false, Message = ModelState });
                 }
 
                 var result = _dentalCaseService.GetCase(caseId);
@@ -39,7 +39,7 @@ namespace DentaMatch.Controllers.Dental_Case
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Getting Dental Case Failed: {error.Message}", Data = new { } });
+                return BadRequest(new { Success = false, Message = $"Retrieving Dental Case Failed: {error.Message}" });
             }
 
         }

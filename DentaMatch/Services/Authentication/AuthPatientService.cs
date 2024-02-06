@@ -45,7 +45,6 @@ namespace DentaMatch.Services.Authentication
             var userToken = await _authHelper.CreateJwtToken(user);
             var userRole = await _userManager.GetRolesAsync(user);
             var userDetails = _unitOfWork.UserPatientRepository.Get(p => p.UserId == user.Id);
-            //var userDetails = await _db.Patients.FirstOrDefaultAsync(p => p.UserId == user.Id);
 
             var PatientData = new PatientResponseVM
             {
@@ -116,8 +115,7 @@ namespace DentaMatch.Services.Authentication
                 };
                 _unitOfWork.UserPatientRepository.Add(patientDetail);
                 _unitOfWork.Save();
-                //_db.Patients.Add(patientDetail);
-                //_db.SaveChanges();
+
                 var jwtToken = await _authHelper.CreateJwtToken(user);
 
                 var PatientData = new PatientResponseVM
@@ -136,7 +134,7 @@ namespace DentaMatch.Services.Authentication
                 var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
                 var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
 
-                string url = $"{_configuration["AppUrl"]}api/Auth/ConfirmEmail?userid={user.Id}&token={validEmailToken}";
+                string url = $"{_configuration["AppUrl"]}Auth/ConfirmEmail?userid={user.Id}&token={validEmailToken}";
 
                 await _mailService.SendEmailAsync(user.Email, "Confirm your email", $"<h1>Welcome to DentaMatch</h1>" +
                     $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
