@@ -9,6 +9,7 @@ namespace DentaMatch.Repository.Dental_Case.IRepository
     public interface IDentalCaseUnitOfWork
     {
         DentalCaseRepository<DentalCase> DentalCases { get; set; }
+        DentalCaseRepository<Doctor> Doctors { get; set; }
         DentalCaseRepository<Patient> Patients { get; set; }
         DentalCaseRepository<CaseChronicDiseases> CaseChronicDiseases { get; set; }
         DentalCaseRepository<CaseDentalDiseases> CaseDentalDiseases { get; set; }

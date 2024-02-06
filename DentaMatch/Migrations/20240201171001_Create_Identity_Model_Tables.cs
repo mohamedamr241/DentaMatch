@@ -169,7 +169,7 @@ namespace DentaMatch.Migrations
                 name: "Doctors",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(450)",maxLength:450, nullable: false),
                     University = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CardImage = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)

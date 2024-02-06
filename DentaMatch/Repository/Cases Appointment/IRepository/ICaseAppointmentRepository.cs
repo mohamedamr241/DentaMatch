@@ -1,6 +1,9 @@
-﻿namespace DentaMatch.Repository.Cases_Appointment.IRepository
+﻿using DentaMatch.Models;
+
+namespace DentaMatch.Repository.Cases_Appointment.IRepository
 {
     public interface ICaseAppointmentRepository<T> where T : class  
     {
+        void UpdateAssigningCase(DentalCase dentalCase, bool isAssigned, string doctorId = null);
     }
 }

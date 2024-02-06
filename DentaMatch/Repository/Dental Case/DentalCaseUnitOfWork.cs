@@ -3,7 +3,6 @@ using DentaMatch.Models;
 using DentaMatch.Models.Dental_Case.Chronic_Diseases;
 using DentaMatch.Models.Dental_Case.Dental_Diseases;
 using DentaMatch.Models.Dental_Case.Images;
-using DentaMatch.Repository.Authentication;
 using DentaMatch.Repository.Dental_Case.IRepository;
 
 namespace DentaMatch.Repository.Dental_Case
@@ -12,6 +11,7 @@ namespace DentaMatch.Repository.Dental_Case
     {
         public DentalCaseRepository<DentalCase> DentalCases { get; set; }
         public DentalCaseRepository<Patient> Patients { get; set; }
+        public DentalCaseRepository<Doctor> Doctors { get; set; }
         public DentalCaseRepository<CaseChronicDiseases> CaseChronicDiseases { get; set; }
         public DentalCaseRepository<CaseDentalDiseases> CaseDentalDiseases { get; set; }
         public DentalCaseRepository<MouthImages> MouthImages { get; set; }
@@ -26,6 +26,7 @@ namespace DentaMatch.Repository.Dental_Case
             _db = db;
             DentalCases = new DentalCaseRepository<DentalCase>(db);
             Patients = new DentalCaseRepository<Patient>(db);
+            Doctors = new DentalCaseRepository<Doctor>(db);
 
             CaseChronicDiseases = new DentalCaseRepository<CaseChronicDiseases>(db);
             CaseDentalDiseases = new DentalCaseRepository<CaseDentalDiseases>(db);

@@ -4,6 +4,7 @@ namespace DentaMatch.Services.Cases_Appointment.IServices
 {
     public interface ICaseAppointmentService
     {
-        AuthModel<string> RequestCase(string caseId, string doctorId); 
+        AuthModel<string> RequestCase(string caseId, string userId); 
+        AuthModel CancelCase(string caseId); 
     }
 }

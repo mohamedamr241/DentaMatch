@@ -32,10 +32,10 @@ namespace DentaMatch.Controllers.Case_Appointment
                 }
                 var userClaims = _httpContextAccessor.HttpContext.User.Claims;
 
-                var doctorId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value; ;
-                if (doctorId != null)
+                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value; ;
+                if (userId != null)
                 {
-                    var result = _appointmentService.RequestCase(caseId , doctorId.ToString());
+                    var result = _appointmentService.RequestCase(caseId , userId.ToString());
                     return Ok(result);
                 }
                 return BadRequest(new { Success = false, Message = "Request Case Failed", Data = new { } });
@@ -44,6 +44,30 @@ namespace DentaMatch.Controllers.Case_Appointment
             catch (Exception error)
             {
                 return BadRequest(new { Success = false, Message = $"Request Case Failed!: {error.Message}", Data = new { } });
+            }
+        }
+
+
+        [HttpPost("cancelrequest")]
+        public ActionResult CancelCase(string caseId)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
+                }
+                var result = _appointmentService.CancelCase(caseId);
+
+                if (!result.Success)
+                {
+                    return BadRequest(new { Success = false, Message = "Cancel Requested Case Failed", Data = new { } });
+                }
+                return Ok(result);
+            }
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Cancel Requested Case Failed!: {error.Message}", Data = new { } });
             }
         }
     }

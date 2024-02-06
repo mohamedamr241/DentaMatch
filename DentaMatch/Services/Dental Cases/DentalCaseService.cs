@@ -4,6 +4,7 @@ using DentaMatch.Models;
 using DentaMatch.Models.Dental_Case.Chronic_Diseases;
 using DentaMatch.Models.Dental_Case.Dental_Diseases;
 using DentaMatch.Models.Dental_Case.Images;
+using DentaMatch.Repository.Dental_Case;
 using DentaMatch.Repository.Dental_Case.IRepository;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Dental_Cases;
@@ -24,8 +25,8 @@ namespace DentaMatch.Services.Dental_Cases
         {
             try
             {
-                var user = _dentalCaseUnitOfWork.Patients.Get(c => c.UserId == UserId);
-                if (user == null)
+                var patient = _dentalCaseUnitOfWork.Patients.Get(c => c.UserId == UserId);
+                if (patient == null)
                 {
                     return new AuthModel<DentalCaseResponseVM> { Success = false, Message = "User not found." };
                 }
@@ -39,13 +40,14 @@ namespace DentaMatch.Services.Dental_Cases
                 {
                     return new AuthModel<DentalCaseResponseVM> { Success = false, Message = "Dental diseases must be provided" };
                 }
-                string patientId = user.Id;
+                string patientId = patient.Id;
                 var dentalCase = new DentalCase
                 {
                     Id = Guid.NewGuid().ToString(),
                     Description = model.Description,
                     IsKnown = model.IsKnown,
-                    PatientId = patientId.ToString()
+                    PatientId = patientId.ToString(),
+                    Patient = patient
                 };
 
                 _dentalCaseUnitOfWork.DentalCases.Add(dentalCase);
@@ -361,16 +363,16 @@ namespace DentaMatch.Services.Dental_Cases
             }
         }
 
-        public AuthModel<IEnumerable<DentalCase>> GetAllCase(string UserId)
+        public AuthModel<IEnumerable<DentalCase>> GetCasesPatient(string UserId)
         {
             try
             {
-                var user = _dentalCaseUnitOfWork.Patients.Get(c => c.UserId == UserId);
-                if (user == null)
+                var patient = _dentalCaseUnitOfWork.Patients.Get(c => c.UserId == UserId);
+                if (patient == null)
                 {
                     return new AuthModel<IEnumerable<DentalCase>> { Success = false, Message = "User not found." };
                 }
-                var AllPatientCases = _dentalCaseUnitOfWork.DentalCases.GetAll((u => u.PatientId == user.Id), "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages");
+                var AllPatientCases = _dentalCaseUnitOfWork.DentalCases.GetAll((u => u.PatientId == patient.Id), "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages");
                 return new AuthModel<IEnumerable<DentalCase>>
                 {
                     Success = true,
@@ -381,6 +383,49 @@ namespace DentaMatch.Services.Dental_Cases
             catch(Exception error)
             {
                 return new AuthModel<IEnumerable<DentalCase>> { Success = false, Message = $"Error Retrieving dental case: {error.Message}" };
+            }
+        }
+
+        public AuthModel<IEnumerable<DentalCase>> GetUnAssignedCases()
+        {
+            try
+            {
+                var AllPatientCases = _dentalCaseUnitOfWork.DentalCases.GetAll((u => !u.IsAssigned), 
+                    "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages");
+                return new AuthModel<IEnumerable<DentalCase>>
+                {
+                    Success = true,
+                    Message = "Dental Cases retrieved successfully",
+                    Data = AllPatientCases
+                };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel<IEnumerable<DentalCase>> { Success = false, Message = $"Error Retrieving dental cases: {error.Message}" };
+            }
+        }
+
+        public AuthModel<IEnumerable<DentalCase>> GetAssignedCases(string UserId)
+        {
+            try
+            {
+                var doctor = _dentalCaseUnitOfWork.Doctors.Get(c => c.UserId == UserId);
+                if (doctor == null)
+                {
+                    return new AuthModel<IEnumerable<DentalCase>> { Success = false, Message = "User not found." };
+                }
+                var AllDoctorCases = _dentalCaseUnitOfWork.DentalCases.GetAll((u => u.DoctorId == doctor.Id),
+                    "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages");
+                return new AuthModel<IEnumerable<DentalCase>>
+                {
+                    Success = true,
+                    Message = "Assigned Doctor Dental Cases retrieved successfully",
+                    Data = AllDoctorCases
+                };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel<IEnumerable<DentalCase>> { Success = false, Message = $"Error Retrieving assigned doctor dental cases: {error.Message}" };
             }
         }
     }

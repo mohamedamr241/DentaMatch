@@ -5,7 +5,7 @@ namespace DentaMatch.Models
 {
     public class Doctor
     {
-        [Key, MaxLength(450)]
+        [Key]
         public string Id { get; set; }
 
         [Required]
