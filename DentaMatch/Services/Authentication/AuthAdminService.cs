@@ -38,7 +38,7 @@ namespace DentaMatch.Services.Authentication
                 Role = "Admin",
                 Token = new JwtSecurityTokenHandler().WriteToken(userToken),
                 FullName = user.FullName,
-                Government = user.Government,
+                City = user.City,
                 PhoneNumber = user.PhoneNumber,
                 Gender = user.Gender,
                 Age = user.Age
@@ -73,7 +73,7 @@ namespace DentaMatch.Services.Authentication
                 FullName = model.FullName,
                 UserName = model.FullName.Replace(" ", "") + _authHelper.GenerateThreeDigitsCode(),
                 Email = model.Email,
-                Government = model.Government,
+                City = model.City,
                 PhoneNumber = model.PhoneNumber,
                 Gender = model.Gender,
                 Age = model.Age,
@@ -99,7 +99,7 @@ namespace DentaMatch.Services.Authentication
                 Role = model.Role,
                 Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
                 FullName = model.FullName,
-                Government = model.Government,
+                City = model.City,
                 PhoneNumber = model.PhoneNumber,
                 Gender = model.Gender,
                 Age = model.Age

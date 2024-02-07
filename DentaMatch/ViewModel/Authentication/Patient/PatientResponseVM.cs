@@ -5,5 +5,6 @@ namespace DentaMatch.ViewModel.Authentication.Patient
 {
     public class PatientResponseVM : UserResponseVM
     {
+        public string Address { get; set; }
     }
 }

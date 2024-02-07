@@ -1,5 +1,6 @@
 ﻿using DentaMatch.Helpers;
 using DentaMatch.Models;
+using DentaMatch.Models.Dental_Case.Images;
 using DentaMatch.Repository.Authentication.IRepository;
 using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.Services.Mail;
@@ -37,14 +38,14 @@ namespace DentaMatch.Services.Authentication
         public async Task<AuthModel<PatientResponseVM>> SignInAsync(SignInVM model)
         {
             //var user = await _userManager.FindByEmailAsync(model.Email);
-            var user = await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone);
+            var user = model.Phone != null ? await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone) : await _userManager.Users.SingleOrDefaultAsync(u => u.Email == model.Email);
             if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
             {
                 return new AuthModel<PatientResponseVM> { Success = false, Message = "Phone Number or Password is incorrect" };
             }
             var userToken = await _authHelper.CreateJwtToken(user);
             var userRole = await _userManager.GetRolesAsync(user);
-            var userDetails = _unitOfWork.UserPatientRepository.Get(p => p.UserId == user.Id);
+            var PatientDetails = _unitOfWork.UserPatientRepository.Get(p => p.UserId == user.Id);
 
             var PatientData = new PatientResponseVM
             {
@@ -53,10 +54,11 @@ namespace DentaMatch.Services.Authentication
                 Role = userRole[0],
                 Token = new JwtSecurityTokenHandler().WriteToken(userToken),
                 FullName = user.FullName,
-                Government = user.Government,
+                City = user.City,
                 PhoneNumber = user.PhoneNumber,
                 Gender = user.Gender,
-                Age = user.Age
+                Age = user.Age,
+                Address= PatientDetails.Address
             };
             return new AuthModel<PatientResponseVM>
             {
@@ -82,12 +84,29 @@ namespace DentaMatch.Services.Authentication
                 return new AuthModel<PatientResponseVM>
                 { Success = false, Message = "PhoneNumber must be numbers only" };
             }
+            string fileName = null;
+            if (model.ProfileImage != null)
+            {
+                fileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ProfileImage.FileName);
+                //string ImagePath = @"Images\Patient\ProfileImages";
+                string ImagePath = Path.Combine("wwwroot", "Images", "Patient", "ProfileImages");
+
+                if (!Directory.Exists(ImagePath))
+                {
+                    Directory.CreateDirectory(ImagePath);
+                }
+                using (var fileStream = new FileStream(Path.Combine(ImagePath, fileName), FileMode.Create))
+                {
+                    model.ProfileImage.CopyTo(fileStream);
+                }
+            }
             var user = new ApplicationUser
             {
+                ProfileImage = fileName ==null?null:@"Images\Patient\ProfileImages" + fileName,
                 FullName = model.FullName,
                 UserName = model.FullName.Replace(" ", "") + _authHelper.GenerateThreeDigitsCode(),
                 Email = model.Email,
-                Government = model.Government,
+                City = model.City,
                 PhoneNumber = model.PhoneNumber,
                 Gender = model.Gender,
                 Age = model.Age,
@@ -111,6 +130,7 @@ namespace DentaMatch.Services.Authentication
                 var patientDetail = new Patient
                 {
                     Id = Guid.NewGuid().ToString(),
+                    Address= patientModel.Address,
                     UserId = user.Id
                 };
                 _unitOfWork.UserPatientRepository.Add(patientDetail);
@@ -120,15 +140,17 @@ namespace DentaMatch.Services.Authentication
 
                 var PatientData = new PatientResponseVM
                 {
+                    ProfileImage=user.ProfileImage,
                     Email = user.Email,
                     ExpiresOn = jwtToken.ValidTo,
                     Role = "Patient",
                     Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
                     FullName = model.FullName,
-                    Government = model.Government,
+                    City = model.City,
                     PhoneNumber = model.PhoneNumber,
                     Gender = model.Gender,
-                    Age = model.Age
+                    Age = model.Age,
+                    Address = patientModel.Address
                 };
                 var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);

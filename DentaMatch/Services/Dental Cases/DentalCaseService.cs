@@ -108,16 +108,13 @@ namespace DentaMatch.Services.Dental_Cases
                     foreach (var Mouthimage in model.MouthImages)
                     {
                         string fileName = Guid.NewGuid().ToString() + Path.GetExtension(Mouthimage.FileName);
-                        string ImagePath = @"Images\MouthImages";
+                        //string ImagePath = @"Images\DentalCase\MouthImages";
+                        string ImagePath = Path.Combine("wwwroot", "Images", "DentalCase", "MouthImages");
 
-                        //if (!string.IsNullOrEmpty(productVm.product.ImageUrl))
-                        //{
-                        //    var imagePath = Path.Combine(wwwRootPath, productVm.product.ImageUrl.TrimStart('\\'));
-                        //    if (System.IO.File.Exists(imagePath))
-                        //    {
-                        //        System.IO.File.Delete(imagePath);
-                        //    }
-                        //}
+                        if (!Directory.Exists(ImagePath))
+                        {
+                            Directory.CreateDirectory(ImagePath);
+                        }
                         using (var fileStream = new FileStream(Path.Combine(ImagePath, fileName), FileMode.Create))
                         {
                             Mouthimage.CopyTo(fileStream);
@@ -126,7 +123,7 @@ namespace DentaMatch.Services.Dental_Cases
                         {
                             Id = Guid.NewGuid().ToString(),
                             CaseId = dentalCase.Id,
-                            Image = @"\Images\MouthImages\" + fileName
+                            Image = @"\Images\DentalCase\MouthImages\" + fileName
                         };
                         _dentalCaseUnitOfWork.MouthImages.Add(mouthImage);
                         MouthImagesPaths.Add(mouthImage.Image);
@@ -138,7 +135,13 @@ namespace DentaMatch.Services.Dental_Cases
                 foreach (var xrayimage in model.XrayImages)
                 {
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(xrayimage.FileName);
-                    string ImagePath = @"Images\XRayImages";
+                    //string ImagePath = @"Images\DentalCase\XRayImages";
+                    string ImagePath = Path.Combine("wwwroot", "Images", "DentalCase", "XRayImages");
+
+                    if (!Directory.Exists(ImagePath))
+                    {
+                            Directory.CreateDirectory(ImagePath);
+                    }
                     using (var fileStream = new FileStream(Path.Combine(ImagePath, fileName), FileMode.Create))
                     {
                         xrayimage.CopyTo(fileStream);
@@ -147,7 +150,7 @@ namespace DentaMatch.Services.Dental_Cases
                     {
                         Id = Guid.NewGuid().ToString(),
                         CaseId = dentalCase.Id,
-                        Image = @"\Images\XRayImages\" + fileName
+                        Image = @"\Images\DentalCase\XRayImages\" + fileName
                     };
                     _dentalCaseUnitOfWork.XRayImages.Add(xrayImage);
                     XrayImagesPaths.Add(xrayImage.Image);
@@ -160,7 +163,13 @@ namespace DentaMatch.Services.Dental_Cases
                 foreach (var prescriptionimage in model.PrescriptionImages)
                 {
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(prescriptionimage.FileName);
-                    string ImagePath = @"Images\PrescriptionImages";      
+                    //string ImagePath = @"Images\DentalCase\PrescriptionImages";
+                    string ImagePath = Path.Combine("wwwroot", "Images", "DentalCase", "PrescriptionImages");
+
+                    if (!Directory.Exists(ImagePath))
+                    {
+                         Directory.CreateDirectory(ImagePath);
+                    }
                     using (var fileStream = new FileStream(Path.Combine(ImagePath, fileName), FileMode.Create))
                     {
                         prescriptionimage.CopyTo(fileStream);
@@ -169,7 +178,7 @@ namespace DentaMatch.Services.Dental_Cases
                     {
                         Id = Guid.NewGuid().ToString(),
                         CaseId = dentalCase.Id,
-                        Image = @"\Images\PrescriptionImages\" + fileName
+                        Image = @"\Images\DentalCase\PrescriptionImages\" + fileName
                     };
                     _dentalCaseUnitOfWork.PrescriptionImages.Add(prescriptionImage);
                     PrescriptionImagesPaths.Add(prescriptionImage.Image);
@@ -328,33 +337,17 @@ namespace DentaMatch.Services.Dental_Cases
         {
             try
             {
-                var dentalCase = _dentalCaseUnitOfWork.DentalCases.Get(u => u.Id == caseId, "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages");
+                var dentalCase = _dentalCaseUnitOfWork.DentalCases.Get(u => u.Id == caseId, "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User");
                 if (dentalCase == null)
                 {
                     return new AuthModel<DentalCaseResponseVM> { Success = false, Message = "Dental Case Not Found" };
                 }
-                var ChronicDiseases = dentalCase.CaseChronicDiseases.Select(u => u.ChronicDiseases.DiseaseName).ToList();
-                var DentalDiseases = dentalCase.CaseDentalDiseases.Select(u => u.DentalDiseases.DiseaseName).ToList();
-                var MouthImages = dentalCase.MouthImages.Select(u => u.Image).ToList();
-                var XRayImages = dentalCase.XrayImages.Select(u => u.Image).ToList();
-                var PrescriptionImages = dentalCase.PrescriptionImages.Select(u => u.Image).ToList();
-                var dentalCaseData = new DentalCaseResponseVM
-                {
-                    Id = dentalCase.Id,
-                    PatientId = dentalCase.PatientId,
-                    Description = dentalCase.Description,
-                    DentalDiseases = DentalDiseases,
-                    ChronicDiseases = ChronicDiseases,
-                    IsKnown = dentalCase.IsKnown,
-                    PrescriptionImages= PrescriptionImages,
-                    XrayImages= XRayImages,
-                    MouthImages= MouthImages,
-               };
+                var DentalCaseData = ConstructDentalCaseResponse(dentalCase);
                 return new AuthModel<DentalCaseResponseVM>
                 {
                     Success = true,
                     Message = "Dental Case retrieved successfully",
-                    Data = dentalCaseData
+                    Data = DentalCaseData
                 };
             }
             catch(Exception error)
@@ -363,70 +356,145 @@ namespace DentaMatch.Services.Dental_Cases
             }
         }
 
-        public AuthModel<IEnumerable<DentalCase>> GetPatientCases(string UserId)
+        public AuthModel<List<DentalCaseResponseVM>> GetPatientCases(string UserId)
         {
             try
             {
                 var patient = _dentalCaseUnitOfWork.Patients.Get(c => c.UserId == UserId);
                 if (patient == null)
                 {
-                    return new AuthModel<IEnumerable<DentalCase>> { Success = false, Message = "User not found." };
+                    return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = "User not found." };
                 }
-                var AllPatientCases = _dentalCaseUnitOfWork.DentalCases.GetAll((u => u.PatientId == patient.Id), "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages");
-                return new AuthModel<IEnumerable<DentalCase>>
+                var DentalCases = _dentalCaseUnitOfWork.DentalCases.GetAll((u => u.PatientId == patient.Id), "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User");
+                if(DentalCases.Count() != 0)
+                {
+                    List< DentalCaseResponseVM> PatientDentalCases = new List<DentalCaseResponseVM>();
+                    foreach (var DentalCase in DentalCases)
+                    {
+                        var PatientCase = ConstructDentalCaseResponse(DentalCase);
+                        PatientDentalCases.Add(PatientCase);
+                    }
+
+                    return new AuthModel<List<DentalCaseResponseVM>>
+                    {
+                        Success = true,
+                        Message = "Patient Dental Cases retrieved successfully",
+                        Data = PatientDentalCases
+                    };
+                }
+                return new AuthModel<List<DentalCaseResponseVM>>
                 {
                     Success = true,
-                    Message = "Dental Cases retrieved successfully",
-                    Data = AllPatientCases
+                    Message = "No Dental Cases Available",
+                    Data = []
                 };
             }
             catch(Exception error)
             {
-                return new AuthModel<IEnumerable<DentalCase>> { Success = false, Message = $"Error Retrieving dental case: {error.Message}" };
+                return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = $"Error Retrieving dental case: {error.Message}" };
             }
         }
 
-        public AuthModel<IEnumerable<DentalCase>> GetUnAssignedCases()
+        public AuthModel<List<DentalCaseResponseVM>> GetUnAssignedCases()
         {
             try
             {
-                var AllPatientCases = _dentalCaseUnitOfWork.DentalCases.GetAll((u => !u.IsAssigned), 
-                    "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages");
-                return new AuthModel<IEnumerable<DentalCase>>
+                var DentalCases = _dentalCaseUnitOfWork.DentalCases.GetAll((u => !u.IsAssigned), 
+                    "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User");
+                if (DentalCases.Count() != 0)
+                {
+                    List<DentalCaseResponseVM> UnAssignedDentalCases = new List<DentalCaseResponseVM>();
+                    foreach (var DentalCase in DentalCases)
+                    {
+                        var UnAssginedCase = ConstructDentalCaseResponse(DentalCase);
+                        UnAssignedDentalCases.Add(UnAssginedCase);
+                    }
+                    return new AuthModel<List<DentalCaseResponseVM>>
+                    {
+                        Success = true,
+                        Message = "UnAssigned Dental Cases retrieved successfully",
+                        Data = UnAssignedDentalCases
+                    };
+                }
+                return new AuthModel<List<DentalCaseResponseVM>>
                 {
                     Success = true,
-                    Message = "Dental Cases retrieved successfully",
-                    Data = AllPatientCases
+                    Message = "No Dental Cases Available",
+                    Data = []
                 };
             }
             catch (Exception error)
             {
-                return new AuthModel<IEnumerable<DentalCase>> { Success = false, Message = $"Error Retrieving dental cases: {error.Message}" };
+                return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = $"Error Retrieving dental cases: {error.Message}" };
             }
         }
 
-        public AuthModel<IEnumerable<DentalCase>> GetAssignedCases(string UserId)
+        public AuthModel<List<DentalCaseResponseVM>> GetAssignedCases(string UserId)
         {
             try
             {
                 var doctor = _dentalCaseUnitOfWork.Doctors.Get(c => c.UserId == UserId);
                 if (doctor == null)
                 {
-                    return new AuthModel<IEnumerable<DentalCase>> { Success = false, Message = "User not found" };
+                    return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = "User not found" };
                 }
-                var AllDoctorCases = _dentalCaseUnitOfWork.DentalCases.GetAll((u => u.DoctorId == doctor.Id),
-                    "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages");
-                return new AuthModel<IEnumerable<DentalCase>>
+                var DentalCases = _dentalCaseUnitOfWork.DentalCases.GetAll((u => u.DoctorId == doctor.Id),
+                    "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User");
+                if (DentalCases.Count() != 0)
+                {
+                    List<DentalCaseResponseVM> AssignedDentalCases = new List<DentalCaseResponseVM>();
+                    foreach (var DentalCase in DentalCases)
+                    {
+                        var AssginedCase = ConstructDentalCaseResponse(DentalCase);
+                        AssignedDentalCases.Add(AssginedCase);
+                    }
+                    return new AuthModel<List<DentalCaseResponseVM>>
+                    {
+                        Success = true,
+                        Message = "Doctor Assigned Dental Cases retrieved successfully",
+                        Data = AssignedDentalCases
+                    };
+                }
+                return new AuthModel<List<DentalCaseResponseVM>>
                 {
                     Success = true,
-                    Message = "Assigned Doctor Dental Cases retrieved successfully",
-                    Data = AllDoctorCases
+                    Message = "No Assigned Dental Cases Available",
+                    Data = []
                 };
             }
             catch (Exception error)
             {
-                return new AuthModel<IEnumerable<DentalCase>> { Success = false, Message = $"Error Retrieving assigned doctor dental cases: {error.Message}" };
+                return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = $"Error Retrieving assigned doctor dental cases: {error.Message}" };
             }
+        }
+        private DentalCaseResponseVM ConstructDentalCaseResponse(DentalCase Dentalcase)
+        {
+                var ChronicDiseases = Dentalcase.CaseChronicDiseases.Select(u => u.ChronicDiseases.DiseaseName).ToList();
+                var DentalDiseases = Dentalcase.CaseDentalDiseases.Select(u => u.DentalDiseases.DiseaseName).ToList();
+                var MouthImages = Dentalcase.MouthImages.Select(u => u.Image).ToList();
+                var XRayImages = Dentalcase.XrayImages.Select(u => u.Image).ToList();
+                var PrescriptionImages = Dentalcase.PrescriptionImages.Select(u => u.Image).ToList();
+                var PatientName = Dentalcase.Patient.User.FullName;
+                var PatientAge = Dentalcase.Patient.User.Age;
+                var PatientCity = Dentalcase.Patient.User.City;
+                var dentalCaseData = new DentalCaseResponseVM
+                {
+                    CaseId = Dentalcase.Id,
+                    PatientName = PatientName,
+                    PatientAge = PatientAge,
+                    PatientCity = PatientCity,
+                    Description = Dentalcase.Description,
+                    DentalDiseases = DentalDiseases,
+                    ChronicDiseases = ChronicDiseases,
+                    IsKnown = Dentalcase.IsKnown,
+                    IsAssigned = Dentalcase.IsAssigned,
+                    PrescriptionImages = PrescriptionImages,
+                    XrayImages = XRayImages,
+                    MouthImages = MouthImages,
+                };
+
+            
+            return dentalCaseData;
         }
     }
 }

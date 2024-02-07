@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace DentaMatch.Services.Authentication
 {
@@ -130,11 +131,11 @@ namespace DentaMatch.Services.Authentication
                 Success = false,
                 Message = string.Join("\n", result.Errors.Select(e => e.Description)),
             };
-
         }
-        public async Task<string> GetRoleAsync(string phoneNumber)
+        public async Task<string> GetRoleAsync(string Input)
         {
-            var user = await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+           // var user = Input.Contains("@") ? await _userManager.Users.SingleOrDefaultAsync(u => u.Email == Input) : await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == Input);
+            var user = Regex.IsMatch(Input, @"^01\d{9}$") ?   await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == Input): await _userManager.Users.SingleOrDefaultAsync(u => u.Email == Input);
             if (user == null)
                 return string.Empty;
             var userRoles = await _userManager.GetRolesAsync(user);

@@ -37,11 +37,11 @@ namespace DentaMatch.Services.Authentication
         public async Task<AuthModel<DoctorResponseVM>> SignInAsync(SignInVM model)
         {
             //var user = await _userManager.FindByEmailAsync(model.Email);
-            var user = await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone);
+            var user = model.Phone!=null? await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone): await _userManager.Users.SingleOrDefaultAsync(u => u.Email == model.Email);    
             var userRole = await _userManager.GetRolesAsync(user);
             if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                return new AuthModel<DoctorResponseVM> { Success = false, Message = "PhoneNumber or Password is incorrect" };
+                return model.Phone!=null?  new AuthModel<DoctorResponseVM> { Success = false, Message = "Phone Number or Password is incorrect" } : new AuthModel<DoctorResponseVM> { Success = false, Message = "Email or Password is incorrect" };
             }
             var userToken = await _authHelper.CreateJwtToken(user);
             //var userDetails = await _db.Doctors.FirstOrDefaultAsync(p => p.UserId == user.Id);
@@ -53,7 +53,7 @@ namespace DentaMatch.Services.Authentication
                 Role = "Doctor",
                 Token = new JwtSecurityTokenHandler().WriteToken(userToken),
                 FullName = user.FullName,
-                Government = user.Government,
+                City = user.City,
                 PhoneNumber = user.PhoneNumber,
                 Gender = user.Gender,
                 Age = user.Age,
@@ -63,7 +63,7 @@ namespace DentaMatch.Services.Authentication
             return new AuthModel<DoctorResponseVM>
             {
                 Success = true,
-                Message = "Success SignIn",
+                Message = "Success Sign In",
                 Data = DoctorData
             };
         }
@@ -85,12 +85,29 @@ namespace DentaMatch.Services.Authentication
                 return new AuthModel<DoctorResponseVM>
                 { Success = false, Message = "Phone number must be numbers only" };
             }
+            string ProfilefileName = null;
+            if (model.ProfileImage != null)
+            {
+                ProfilefileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ProfileImage.FileName);
+                //string ImagePath = @"Images\Doctor\ProfileImages";
+                string ImagePath = Path.Combine("wwwroot", "Images", "Doctor", "ProfileImages");
+
+                if (!Directory.Exists(ImagePath))
+                {
+                    Directory.CreateDirectory(ImagePath);
+                }
+                using (var fileStream = new FileStream(Path.Combine(ImagePath, ProfilefileName), FileMode.Create))
+                {
+                    model.ProfileImage.CopyTo(fileStream);
+                }
+            }
             var user = new ApplicationUser
             {
+                ProfileImage = ProfilefileName == null ? null : @"Images\Patient\ProfileImages" + ProfilefileName,
                 FullName = model.FullName,
                 UserName = model.FullName.Replace(" ", "") + _authHelper.GenerateThreeDigitsCode(),
                 Email = model.Email,
-                Government = model.Government,
+                City = model.City,
                 PhoneNumber = model.PhoneNumber,
                 Gender = model.Gender,
                 Age = model.Age,
@@ -113,14 +130,30 @@ namespace DentaMatch.Services.Authentication
 
             if (doctorModel != null)
             {
+                string cardIDImage = null;
+                if(doctorModel.CardImage != null)
+                {
+                    cardIDImage = Guid.NewGuid().ToString() + Path.GetExtension(doctorModel.CardImage.FileName);
+                    //string ImagePath = @"Images\Doctor\CardIDImages";
+                    string ImagePath = Path.Combine("wwwroot", "Images", "Doctor", "CardIDImages");
+
+                    // Ensure the directory exists
+                    if (!Directory.Exists(ImagePath))
+                    {
+                        Directory.CreateDirectory(ImagePath);
+                    }
+                    using (var fileStream = new FileStream(Path.Combine(ImagePath, cardIDImage), FileMode.Create))
+                    {
+                        doctorModel.CardImage.CopyTo(fileStream);
+                    }
+                }
                 var DoctorDetails = new Doctor
                 {
                     Id = Guid.NewGuid().ToString(),
                     UserId = user.Id,
                     University = doctorModel.University,
-                    CardImage = doctorModel.CardImage
+                    CardImage = @"Images\Doctor\CardIDImages" + cardIDImage,
                 };
-
                 _unitOfWork.UserDoctorRepository.Add(DoctorDetails);
                 _unitOfWork.Save();
 
@@ -128,18 +161,18 @@ namespace DentaMatch.Services.Authentication
 
                 var DoctortData = new DoctorResponseVM
                 {
+                    ProfileImage=user.ProfileImage,
                     Email = user.Email,
                     ExpiresOn = jwtToken.ValidTo,
                     Role = "Doctor",
                     Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
                     FullName = model.FullName,
-                    Government = model.Government,
+                    City = model.City,
                     PhoneNumber = model.PhoneNumber,
                     Gender = model.Gender,
                     Age = model.Age,
                     University = doctorModel.University,
-                    CardImage = doctorModel.CardImage
-
+                    CardImage = DoctorDetails.CardImage
                 };
                 var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);

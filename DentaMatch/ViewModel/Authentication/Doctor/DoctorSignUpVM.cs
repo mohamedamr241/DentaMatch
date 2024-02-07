@@ -5,7 +5,7 @@ namespace DentaMatch.ViewModel.Authentication
     public class DoctorSignUpVM : SignUpVM
     {
         public string University { get; set; }
-        public string CardImage { get; set; }
+        public IFormFile CardImage { get; set; }
 
     }
 }

@@ -38,7 +38,7 @@ namespace DentaMatch.Controllers.Authentication
                 if (!ModelState.IsValid)
                     return BadRequest(new { Success = false, Message = ModelState });
 
-                var role = await _authService.GetRoleAsync(model.Phone);
+                var role = model.Phone!=null? await _authService.GetRoleAsync(model.Phone): await _authService.GetRoleAsync(model.Email);
                 if (string.IsNullOrEmpty(role))
                     return BadRequest(new { Success = false, Message = "Phone number or password is not correct" });
 
@@ -64,7 +64,7 @@ namespace DentaMatch.Controllers.Authentication
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Signin Failed: {error.Message}" });
+                return BadRequest(new { Success = false, Message = $"Sign In Failed: {error.Message}" });
             }
         }
 

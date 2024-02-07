@@ -10,8 +10,8 @@ namespace DentaMatch.IServices.Dental_Cases
         AuthModel<DentalCaseResponseVM> UpdateCase(string caseId, DentalCaseRequestVm model);
         AuthModel DeleteCase(string caseId);
         AuthModel<DentalCaseResponseVM> GetCase(string caseId);
-        AuthModel<IEnumerable<DentalCase>> GetPatientCases(string UserId);
-        AuthModel<IEnumerable<DentalCase>> GetAssignedCases(string UserId);
-        AuthModel<IEnumerable<DentalCase>> GetUnAssignedCases();
+        AuthModel<List<DentalCaseResponseVM>> GetPatientCases(string UserId);
+        AuthModel<List<DentalCaseResponseVM>> GetAssignedCases(string UserId);
+        AuthModel<List<DentalCaseResponseVM>> GetUnAssignedCases();
     }
 }

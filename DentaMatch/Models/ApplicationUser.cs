@@ -17,7 +17,7 @@ namespace DentaMatch.Models
         [Required]
         public bool Gender { get; set; } //0 -> male, 1 -> female
         [Required, MaxLength(100)]
-        public string Government { get; set; }
+        public string City { get; set; }
         [MaxLength(5)]
         public string VerificationCode { get; set; }
         [DataType(DataType.DateTime)]

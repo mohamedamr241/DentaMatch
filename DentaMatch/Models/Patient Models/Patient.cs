@@ -8,7 +8,8 @@ namespace DentaMatch.Models
 
         [Key, MaxLength(450)]
         public string Id { get; set; }
-
+        [Required, MaxLength(150)]
+        public string Address { get; set; }
         [ForeignKey("User")]
         public string UserId { get; set; }
         //[ForeignKey("UserId")]

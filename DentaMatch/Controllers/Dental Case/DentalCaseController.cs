@@ -35,7 +35,6 @@ namespace DentaMatch.Controllers.Dental_Case
                     return BadRequest(result);
                 }
                 return Ok(result);
-
             }
             catch (Exception error)
             {

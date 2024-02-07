@@ -27,9 +27,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Images\MouthImages\" />
-    <Folder Include="Images\PrescriptionImages\" />
-    <Folder Include="Images\XRayImages\" />
+    <Folder Include="wwwroot\Images\DentalCase\MouthImages\" />
+    <Folder Include="wwwroot\Images\Doctor\CardIDImages\" />
+    <Folder Include="wwwroot\Images\Doctor\ProfileImages\" />
+    <Folder Include="wwwroot\Images\Doctor\" />
+    <Folder Include="wwwroot\Images\DentalCase\PrescriptionImages\" />
+    <Folder Include="wwwroot\Images\Patient\" />
+    <Folder Include="wwwroot\Images\Patient\ProfileImages\" />
+    <Folder Include="wwwroot\Images\DentalCase\XRayImages\" />
   </ItemGroup>
 
 </Project>
