@@ -15,7 +15,7 @@ namespace DentaMatch.Controllers.Authentication
         }
 
         [HttpPost("Signup")]
-        public async Task<IActionResult> SignUpAsync(PatientSignUpVM model)
+        public async Task<IActionResult> SignUpAsync( PatientSignUpVM model)
         {
             try
             {

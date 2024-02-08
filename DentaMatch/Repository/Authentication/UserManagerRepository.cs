@@ -19,5 +19,12 @@ namespace DentaMatch.Repository.Authentication
                 user.IsVerified = isVerified;
             }
         }
+        public void UpdateProfilePicture(ApplicationUser user,string ImagePath)
+        {
+            if (user != null)
+            {
+                user.ProfileImage= ImagePath;
+            }
+        }
     }
 }

@@ -5,6 +5,7 @@ using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.Services.Mail;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication;
+using DentaMatch.ViewModel.Authentication.Patient;
 using DentaMatch.ViewModel.Authentication.Request;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
@@ -85,25 +86,9 @@ namespace DentaMatch.Services.Authentication
                 return new AuthModel<DoctorResponseVM>
                 { Success = false, Message = "Phone number must be numbers only" };
             }
-            string ProfilefileName = null;
-            if (model.ProfileImage != null)
-            {
-                ProfilefileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ProfileImage.FileName);
-                //string ImagePath = @"Images\Doctor\ProfileImages";
-                string ImagePath = Path.Combine("wwwroot", "Images", "Doctor", "ProfileImages");
-
-                if (!Directory.Exists(ImagePath))
-                {
-                    Directory.CreateDirectory(ImagePath);
-                }
-                using (var fileStream = new FileStream(Path.Combine(ImagePath, ProfilefileName), FileMode.Create))
-                {
-                    model.ProfileImage.CopyTo(fileStream);
-                }
-            }
+            
             var user = new ApplicationUser
             {
-                ProfileImage = ProfilefileName == null ? null : @"Images\Patient\ProfileImages" + ProfilefileName,
                 FullName = model.FullName,
                 UserName = model.FullName.Replace(" ", "") + _authHelper.GenerateThreeDigitsCode(),
                 Email = model.Email,
@@ -194,6 +179,37 @@ namespace DentaMatch.Services.Authentication
                 Success = false,
                 Message = "Failed To Sign Up",
             };
+        }
+        public async Task<AuthModel> UploadProfilePicture(ProfileImageVM model, string UserId)
+        {
+            try
+            {
+                var user = _unitOfWork.UserManagerRepository.Get(u => u.Id == UserId);
+                if (user == null)
+                {
+                    return new AuthModel { Success = false, Message = "User Not Found" };
+                }
+
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ProfileImage.FileName);
+                string ImagePath = Path.Combine("wwwroot", "Images", "Docotr", "ProfileImages");
+
+                if (!Directory.Exists(ImagePath))
+                {
+                    Directory.CreateDirectory(ImagePath);
+                }
+                using (var fileStream = new FileStream(Path.Combine(ImagePath, fileName), FileMode.Create))
+                {
+                    model.ProfileImage.CopyTo(fileStream);
+                }
+                _unitOfWork.UserManagerRepository.UpdateProfilePicture(user, Path.Combine(ImagePath, fileName));
+                _unitOfWork.Save();
+
+                return new AuthModel { Success = true, Message = "Profile Image Added Successfully" };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel { Success = false, Message = $"{error.Message}" };
+            }
         }
     }
 }

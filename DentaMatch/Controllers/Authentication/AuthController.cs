@@ -7,6 +7,7 @@ using DentaMatch.ViewModel.Authentication.Patient;
 using DentaMatch.ViewModel.Authentication.Request;
 using DentaMatch.ViewModel.Authentication.Response;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DentaMatch.Controllers.Authentication
 {
@@ -19,15 +20,18 @@ namespace DentaMatch.Controllers.Authentication
         public AuthPatientService _patient;
         public AuthAdminService _admin;
         public AuthService _authService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
 
         public AuthController(IConfiguration configuration, AuthDoctorService doctor,
-            AuthPatientService patient, AuthAdminService admin, AuthService authService)
+            AuthPatientService patient, AuthAdminService admin, AuthService authService, IHttpContextAccessor httpContextAccessor)
         {
             _configuration = configuration;
             _doctor = doctor;
             _patient = patient;
             _admin = admin;
             _authService = authService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpPost("Signin")]
@@ -150,6 +154,50 @@ namespace DentaMatch.Controllers.Authentication
                     return BadRequest(result);
                 }
                 return Redirect($"{_configuration["AppUrl"]}/ConfirmEmail.html");
+            }
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Confirm Email Failed: {error.Message}" });
+            }
+        }
+
+        [HttpPost("profileimage")]
+        public async Task<IActionResult> AddProfileImage(ProfileImageVM model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
+                }
+                var userClaims = _httpContextAccessor.HttpContext.User.Claims;
+                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value;
+                var userRole = userClaims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+                if (userRole == "Patient")
+                {
+                    var result = await _patient.UploadProfilePicture(model, userId);
+                    if(result.Success == true)
+                    {
+                        return Ok(result);
+                    }
+                }
+                else if(userRole == "Doctor")
+                {
+                    var result = await _doctor.UploadProfilePicture(model, userId);
+                    if (result.Success == true)
+                    {
+                        Ok(result);
+                    }
+                }
+                else if(userRole == "Admin")
+                {
+                    var result = await _admin.UploadProfilePicture(model, userId);
+                    if (result.Success == true)
+                    {
+                        Ok(result);
+                    }
+                }
+                return BadRequest(new { Success = false, Message = "Failed to Add Profile Image" });
             }
             catch (Exception error)
             {

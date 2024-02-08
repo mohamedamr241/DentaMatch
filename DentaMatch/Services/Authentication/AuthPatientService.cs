@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DentaMatch.Services.Authentication
 {
@@ -84,25 +85,9 @@ namespace DentaMatch.Services.Authentication
                 return new AuthModel<PatientResponseVM>
                 { Success = false, Message = "PhoneNumber must be numbers only" };
             }
-            string fileName = null;
-            if (model.ProfileImage != null)
-            {
-                fileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ProfileImage.FileName);
-                //string ImagePath = @"Images\Patient\ProfileImages";
-                string ImagePath = Path.Combine("wwwroot", "Images", "Patient", "ProfileImages");
-
-                if (!Directory.Exists(ImagePath))
-                {
-                    Directory.CreateDirectory(ImagePath);
-                }
-                using (var fileStream = new FileStream(Path.Combine(ImagePath, fileName), FileMode.Create))
-                {
-                    model.ProfileImage.CopyTo(fileStream);
-                }
-            }
+            
             var user = new ApplicationUser
             {
-                ProfileImage = fileName ==null?null:@"Images\Patient\ProfileImages" + fileName,
                 FullName = model.FullName,
                 UserName = model.FullName.Replace(" ", "") + _authHelper.GenerateThreeDigitsCode(),
                 Email = model.Email,
@@ -173,6 +158,38 @@ namespace DentaMatch.Services.Authentication
             }
 
 
+        }
+
+        public async Task<AuthModel> UploadProfilePicture(ProfileImageVM model, string UserId)
+        {
+            try
+            {
+                var user = _unitOfWork.UserManagerRepository.Get(u => u.Id == UserId);
+                if (user == null)
+                {
+                    return new AuthModel { Success = false, Message = "User Not Found" };
+                }
+
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ProfileImage.FileName);
+                string ImagePath = Path.Combine("wwwroot", "Images", "Patient", "ProfileImages");
+
+                if (!Directory.Exists(ImagePath))
+                {
+                    Directory.CreateDirectory(ImagePath);
+                }
+                using (var fileStream = new FileStream(Path.Combine(ImagePath, fileName), FileMode.Create))
+                {
+                    model.ProfileImage.CopyTo(fileStream);
+                }
+                _unitOfWork.UserManagerRepository.UpdateProfilePicture(user, Path.Combine(ImagePath, fileName));
+                _unitOfWork.Save();
+
+                return new AuthModel { Success = true, Message = "Profile Image Added Successfully" };
+            }
+            catch(Exception error) 
+            {
+                return new AuthModel { Success = false, Message = $"{error.Message}" };
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using DentaMatch.Helpers;
 using DentaMatch.Models;
+using DentaMatch.Repository.Authentication.IRepository;
 using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Request;
@@ -14,11 +15,12 @@ namespace DentaMatch.Services.Authentication
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly AuthHelper _authHelper;
-
-        public AuthAdminService(UserManager<ApplicationUser> userManager, AuthHelper authHelper)
+        private readonly IUnitOfWork _unitOfWork;
+        public AuthAdminService(UserManager<ApplicationUser> userManager, AuthHelper authHelper,IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _authHelper = authHelper;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<AuthModel<UserResponseVM>> SignInAsync(SignInVM model)
@@ -110,6 +112,37 @@ namespace DentaMatch.Services.Authentication
                 Message = "Success Sign Up",
                 Data = adminData
             };
+        }
+        public async Task<AuthModel> UploadProfilePicture(ProfileImageVM model, string UserId)
+        {
+            try
+            {
+                var user = _unitOfWork.UserManagerRepository.Get(u => u.Id == UserId);
+                if (user == null)
+                {
+                    return new AuthModel { Success = false, Message = "User Not Found" };
+                }
+
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ProfileImage.FileName);
+                string ImagePath = Path.Combine("wwwroot", "Images", "Admin", "ProfileImages");
+
+                if (!Directory.Exists(ImagePath))
+                {
+                    Directory.CreateDirectory(ImagePath);
+                }
+                using (var fileStream = new FileStream(Path.Combine(ImagePath, fileName), FileMode.Create))
+                {
+                    model.ProfileImage.CopyTo(fileStream);
+                }
+                _unitOfWork.UserManagerRepository.UpdateProfilePicture(user, Path.Combine(ImagePath, fileName));
+                _unitOfWork.Save();
+
+                return new AuthModel { Success = true, Message = "Profile Image Added Successfully" };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel { Success = false, Message = $"{error.Message}" };
+            }
         }
     }
 }

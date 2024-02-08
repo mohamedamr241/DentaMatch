@@ -5,8 +5,7 @@ namespace DentaMatch.ViewModel.Authentication.Request
 {
     public class SignUpVM
     {
-        [ValidateNever]
-        public IFormFile? ProfileImage { get; set; }
+        
         [Required, MaxLength(80)]
         public string FullName { get; set; }
         [Required, EmailAddress]
