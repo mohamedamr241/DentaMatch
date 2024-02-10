@@ -2,12 +2,14 @@
 using DentaMatch.Models;
 using DentaMatch.Repository.Authentication.IRepository;
 using DentaMatch.Services.Authentication.IServices;
-using DentaMatch.Services.Mail;
+using DentaMatch.Services.Mail.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -15,33 +17,30 @@ namespace DentaMatch.Services.Authentication
 {
     public class AuthService : IAuthService
     {
-        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMailService _mailService;
-        private readonly AuthHelper _authHelper;
+        private readonly IConfiguration _configuration;
+        private readonly IAuthUnitOfWork _authUnitOfWork;
+        private readonly AppHelper _appHelper;
 
-        private readonly IUnitOfWork _unitOfWork;
-
-
-        public AuthService(UserManager<ApplicationUser> userManager, AuthHelper authHelper, 
-            IMailService mailService, IUnitOfWork unitOfWork)
+        public AuthService(IAuthUnitOfWork authUnitOfWork, IMailService mailService, IConfiguration configuration, AppHelper appHelper)
         {
-            _userManager = userManager;
             _mailService = mailService;
-            _authHelper = authHelper;
-            _unitOfWork = unitOfWork;
+            _authUnitOfWork = authUnitOfWork;
+            _configuration = configuration;
+            _appHelper = appHelper;
         }
 
         public async Task<AuthModel> ForgetPasswordAsync(ForgetPasswordVM model)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
                 return new AuthModel { Success = false, Message = "No User associated with email" };
             }
 
-            int randomNumber = _authHelper.GenerateCode();
-            _unitOfWork.UserManagerRepository.UpdateVerificationCode(user, randomNumber.ToString(), false);
-            _unitOfWork.Save();
+            int randomNumber = _appHelper.GenerateCode();
+            _authUnitOfWork.UserRepository.UpdateVerificationCode(user, randomNumber.ToString(), false);
+            _authUnitOfWork.Save();
 
             await _mailService.SendEmailAsync(model.Email, "Reset Password", "<h1>Follow the instructions to reset your password<h1>" +
                 $"<p>Your verification code is {randomNumber}</p>" + "<p>Don't share this code with anyone</p>");
@@ -50,7 +49,7 @@ namespace DentaMatch.Services.Authentication
 
         public async Task<AuthModel> VerifyCodeAsync(VerifyCodeVM model)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
                 return new AuthModel { Success = false, Message = "No User associated with email" };
@@ -59,9 +58,9 @@ namespace DentaMatch.Services.Authentication
             if (user.Email == model.Email && user.VerificationCode == model.VerificationCode && timeDifference.TotalMinutes <= 3)
             {
 
-                int randomNumber = _authHelper.GenerateCode();
-                _unitOfWork.UserManagerRepository.UpdateVerificationCode(user, randomNumber.ToString(), true);
-                _unitOfWork.Save();
+                int randomNumber = _appHelper.GenerateCode();
+                _authUnitOfWork.UserRepository.UpdateVerificationCode(user, randomNumber.ToString(), true);
+                _authUnitOfWork.Save();
                 return new AuthModel { Success = true, Message = "User is verified" };
             }
             else
@@ -72,7 +71,7 @@ namespace DentaMatch.Services.Authentication
 
         public async Task<AuthModel> ResetPasswordAsync(ResetPasswordVM model)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
                 return new AuthModel { Success = false, Message = "No User associated with email" };
@@ -82,11 +81,11 @@ namespace DentaMatch.Services.Authentication
 
             if (user.Email == model.Email && user.IsVerified == true && timeDifference.TotalMinutes <= 5)
             {
-                int randomNumber = _authHelper.GenerateCode();
-                _unitOfWork.UserManagerRepository.UpdateVerificationCode(user, randomNumber.ToString(),false);
-                _unitOfWork.Save();
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var result = await _userManager.ResetPasswordAsync(user, token, model.Password);
+                int randomNumber = _appHelper.GenerateCode();
+                _authUnitOfWork.UserRepository.UpdateVerificationCode(user, randomNumber.ToString(), false);
+                _authUnitOfWork.Save();
+                var token = await _authUnitOfWork.UserManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _authUnitOfWork.UserManager.ResetPasswordAsync(user, token, model.Password);
                 if (result.Succeeded)
                 {
                     return new AuthModel { Success = true, Message = "User Password changed successfully" };
@@ -98,15 +97,15 @@ namespace DentaMatch.Services.Authentication
             }
             else
             {
-                int randomNumber = _authHelper.GenerateCode();
-                _unitOfWork.UserManagerRepository.UpdateVerificationCode(user, randomNumber.ToString(),false);
-                _unitOfWork.Save();
+                int randomNumber = _appHelper.GenerateCode();
+                _authUnitOfWork.UserRepository.UpdateVerificationCode(user, randomNumber.ToString(), false);
+                _authUnitOfWork.Save();
                 return new AuthModel { Success = false, Message = "Verification Code Is Expired" };
             }
         }
         public async Task<AuthModel> ConfirmEmailAsync(string userId, string token)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _authUnitOfWork.UserManager.FindByIdAsync(userId);
             if (user == null)
                 return new AuthModel
                 {
@@ -117,7 +116,7 @@ namespace DentaMatch.Services.Authentication
             var decodedToken = WebEncoders.Base64UrlDecode(token);
             string normalToken = Encoding.UTF8.GetString(decodedToken);
 
-            var result = await _userManager.ConfirmEmailAsync(user, normalToken);
+            var result = await _authUnitOfWork.UserManager.ConfirmEmailAsync(user, normalToken);
 
             if (result.Succeeded)
                 return new AuthModel
@@ -134,12 +133,43 @@ namespace DentaMatch.Services.Authentication
         }
         public async Task<string> GetRoleAsync(string Input)
         {
-           // var user = Input.Contains("@") ? await _userManager.Users.SingleOrDefaultAsync(u => u.Email == Input) : await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == Input);
-            var user = Regex.IsMatch(Input, @"^01\d{9}$") ?   await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == Input): await _userManager.Users.SingleOrDefaultAsync(u => u.Email == Input);
+            // var user = Input.Contains("@") ? await _userManager.Users.SingleOrDefaultAsync(u => u.Email == Input) : await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == Input);
+            var user = Regex.IsMatch(Input, @"^01\d{9}$") ? await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == Input) : await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.Email == Input);
             if (user == null)
                 return string.Empty;
-            var userRoles = await _userManager.GetRolesAsync(user);
+            var userRoles = await _authUnitOfWork.UserManager.GetRolesAsync(user);
             return userRoles[0];
+        }
+
+        public async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
+        {
+            var userClaims = await _authUnitOfWork.UserManager.GetClaimsAsync(user);
+            var roles = await _authUnitOfWork.UserManager.GetRolesAsync(user);
+            var roleClaims = new List<Claim>();
+
+            foreach (var role in roles)
+                roleClaims.Add(new Claim("roles", role));
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.FullName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim("uid", user.Id)
+            }
+            .Union(userClaims)
+            .Union(roleClaims);
+            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:key"]));
+            var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+
+            var jwtSecurityToken = new JwtSecurityToken(
+                issuer: _configuration["JWT:Issuer"],
+                audience: _configuration["JWT:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddDays(double.Parse(_configuration["JWT:DurationInDays"])),
+                signingCredentials: signingCredentials);
+
+            return jwtSecurityToken;
         }
     }
 }

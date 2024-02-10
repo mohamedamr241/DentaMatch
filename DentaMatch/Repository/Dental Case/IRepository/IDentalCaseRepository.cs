@@ -1,8 +1,19 @@
 ﻿using DentaMatch.Models;
+using DentaMatch.Models.Dental_Case.Chronic_Diseases;
+using DentaMatch.Models.Dental_Case.Dental_Diseases;
+using DentaMatch.Models.Dental_Case.Images;
+using DentaMatch.Repository;
 
-namespace DentaMatch.Repository.Dental_Case
+namespace DentaMatch.Repository.Dental_Case.IRepository
 {
-    public interface IDentalCaseRepository<T> : IRepository<T> where T : class
+    public interface IDentalCaseRepository : IRepository<DentalCase>
     {
+        IRepository<DentalDisease> DentalDiseases { get; }
+        IRepository<CaseDentalDiseases> CaseDentalDiseases { get; }
+        IRepository<CaseChronicDiseases> CaseChronicDiseases { get; }
+        IRepository<ChronicDisease> ChronicDiseases { get; }
+        IRepository<MouthImages> MouthImages { get; }
+        IRepository<XrayIamges> XRayImages { get; }
+        IRepository<PrescriptionImages> PrescriptionImages { get; }
     }
 }

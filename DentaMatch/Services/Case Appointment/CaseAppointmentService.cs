@@ -1,22 +1,25 @@
-﻿using DentaMatch.Repository.Cases_Appointment.IRepository;
+﻿using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.Repository.Dental_Case.IRepository;
 using DentaMatch.Services.Cases_Appointment.IServices;
 using DentaMatch.ViewModel;
+
 namespace DentaMatch.Services.Cases_Appointment
 {
     public class CaseAppointmentService : ICaseAppointmentService
     {
-        private readonly ICaseAppointmentUnitOfWork _appointmentUnitOfWork;
-        public CaseAppointmentService(ICaseAppointmentUnitOfWork appointmentUnitOfWork)
+        private readonly IDentalUnitOfWork _dentalUnitOfWork;
+        private readonly IAuthUnitOfWork _authUnitOfWork;
+        public CaseAppointmentService(IDentalUnitOfWork dentalUnitOfWork, IAuthUnitOfWork authUnitOfWork)
         {
-            _appointmentUnitOfWork = appointmentUnitOfWork;
-
+            _dentalUnitOfWork = dentalUnitOfWork;
+            _authUnitOfWork = authUnitOfWork;
         }
 
         public AuthModel CancelCase(string caseId)
         {
             try
             {
-                var dentalCase = _appointmentUnitOfWork.DentalCases.Get(c => c.Id == caseId);
+                var dentalCase = _dentalUnitOfWork.DentalCaseRepository.Get(c => c.Id == caseId);
 
                 if (dentalCase == null)
                 {
@@ -28,8 +31,8 @@ namespace DentaMatch.Services.Cases_Appointment
                     return new AuthModel { Success = false, Message = "Dental Case is already not assigned to a doctor" };
                 }
 
-                _appointmentUnitOfWork.DentalCases.UpdateAssigningCase(dentalCase, false);
-                _appointmentUnitOfWork.Save();
+                _dentalUnitOfWork.CaseAppointmentRepository.UpdateAssigningCase(dentalCase, false);
+                _dentalUnitOfWork.Save();
 
                 return new AuthModel
                 {
@@ -50,7 +53,7 @@ namespace DentaMatch.Services.Cases_Appointment
         {
             try 
             {
-                var dentalCase = _appointmentUnitOfWork.DentalCases.Get(c => c.Id == caseId, "Patient.User");
+                var dentalCase = _dentalUnitOfWork.DentalCaseRepository.Get(c => c.Id == caseId, "Patient.User");
 
                 if (dentalCase == null)
                 {
@@ -61,10 +64,9 @@ namespace DentaMatch.Services.Cases_Appointment
                     return new AuthModel<string> { Success = false, Message = "Dental Case is already assigned to a doctor" };
                 }
 
-                var doctor = _appointmentUnitOfWork.Doctors.Get(u => u.UserId == userId);
-                _appointmentUnitOfWork.DentalCases.UpdateAssigningCase(dentalCase, true, doctor.Id);
-                _appointmentUnitOfWork.Save();
-
+                var doctor = _authUnitOfWork.DoctorRepository.Get(u => u.UserId == userId);
+                _dentalUnitOfWork.CaseAppointmentRepository.UpdateAssigningCase(dentalCase, true, doctor.Id);
+                _dentalUnitOfWork.Save();
 
                 return new AuthModel<string>
                 {

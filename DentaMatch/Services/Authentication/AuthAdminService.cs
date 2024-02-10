@@ -5,7 +5,6 @@ using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Request;
 using DentaMatch.ViewModel.Authentication.Response;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -13,25 +12,26 @@ namespace DentaMatch.Services.Authentication
 {
     public class AuthAdminService : IAuthUserService<UserResponseVM>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly AuthHelper _authHelper;
-        private readonly IUnitOfWork _unitOfWork;
-        public AuthAdminService(UserManager<ApplicationUser> userManager, AuthHelper authHelper,IUnitOfWork unitOfWork)
+        private readonly IAuthUnitOfWork _authUnitOfWork;
+        private readonly AppHelper _appHelper;
+        private readonly AuthService _authService;
+
+        public AuthAdminService(IAuthUnitOfWork authUnitOfWork, AppHelper appHelper, AuthService authService)
         {
-            _userManager = userManager;
-            _authHelper = authHelper;
-            _unitOfWork = unitOfWork;
+            _authUnitOfWork = authUnitOfWork;
+            _appHelper = appHelper;
+            _authService = authService;
         }
 
         public async Task<AuthModel<UserResponseVM>> SignInAsync(SignInVM model)
         {
-            var user = await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone);
-            var userRole = await _userManager.GetRolesAsync(user);
-            if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
+            var user = await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone);
+            var userRole = await _authUnitOfWork.UserManager.GetRolesAsync(user);
+            if (user is null || !await _authUnitOfWork.UserManager.CheckPasswordAsync(user, model.Password))
             {
                 return new AuthModel<UserResponseVM> { Success = false, Message = "PhoneNumber or Password is incorrect" };
             }
-            var userToken = await _authHelper.CreateJwtToken(user);
+            var userToken = await _authService.CreateJwtToken(user);
 
             var DoctorData = new UserResponseVM
             {
@@ -55,12 +55,14 @@ namespace DentaMatch.Services.Authentication
 
         public async Task<AuthModel<UserResponseVM>> SignUpAsync<TModel>(TModel model) where TModel : SignUpVM
         {
-            if (await _userManager.FindByEmailAsync(model.Email) is not null)
+            var email = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
+            if (email is not null)
             {
                 return new AuthModel<UserResponseVM>
                 { Success = false, Message = "Email is already exist" };
             }
-            if (await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber) is not null)
+            var phoneNumber = await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+            if (phoneNumber is not null)
             {
                 return new AuthModel<UserResponseVM>
                 { Success = false, Message = "PhoneNumber is already exist" };
@@ -73,15 +75,15 @@ namespace DentaMatch.Services.Authentication
             var user = new ApplicationUser
             {
                 FullName = model.FullName,
-                UserName = model.FullName.Replace(" ", "") + _authHelper.GenerateThreeDigitsCode(),
+                UserName = model.FullName.Replace(" ", "") + _appHelper.GenerateThreeDigitsCode(),
                 Email = model.Email,
                 City = model.City,
                 PhoneNumber = model.PhoneNumber,
                 Gender = model.Gender,
                 Age = model.Age,
-                VerificationCode = _authHelper.GenerateCode().ToString()
+                VerificationCode = _appHelper.GenerateCode().ToString()
             };
-            var result = await _userManager.CreateAsync(user, model.Password);
+            var result = await _authUnitOfWork.UserManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
             {
                 var errors = string.Empty;
@@ -91,9 +93,9 @@ namespace DentaMatch.Services.Authentication
                 }
                 return new AuthModel<UserResponseVM> { Success = false, Message = errors };
             }
-            await _userManager.AddToRoleAsync(user, model.Role);
+            await _authUnitOfWork.UserManager.AddToRoleAsync(user, model.Role);
 
-            var jwtToken = await _authHelper.CreateJwtToken(user);
+            var jwtToken = await _authService.CreateJwtToken(user);
             var adminData = new UserResponseVM
             {
                 Email = user.Email,
@@ -117,26 +119,15 @@ namespace DentaMatch.Services.Authentication
         {
             try
             {
-                var user = _unitOfWork.UserManagerRepository.Get(u => u.Id == UserId);
+                var user = _authUnitOfWork.UserRepository.Get(u => u.Id == UserId);
                 if (user == null)
                 {
                     return new AuthModel { Success = false, Message = "User Not Found" };
                 }
-
-                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ProfileImage.FileName);
                 string ImagePath = Path.Combine("wwwroot", "Images", "Admin", "ProfileImages");
-
-                if (!Directory.Exists(ImagePath))
-                {
-                    Directory.CreateDirectory(ImagePath);
-                }
-                using (var fileStream = new FileStream(Path.Combine(ImagePath, fileName), FileMode.Create))
-                {
-                    model.ProfileImage.CopyTo(fileStream);
-                }
-                _unitOfWork.UserManagerRepository.UpdateProfilePicture(user, Path.Combine(ImagePath, fileName));
-                _unitOfWork.Save();
-
+                string ProfileImageFullPath = _appHelper.SaveImage(model.ProfileImage, ImagePath);
+                _authUnitOfWork.UserRepository.UpdateProfilePicture(user, ProfileImageFullPath);
+                _authUnitOfWork.Save();
                 return new AuthModel { Success = true, Message = "Profile Image Added Successfully" };
             }
             catch (Exception error)

@@ -11,7 +11,7 @@ namespace DentaMatch.Controllers.Case_Appointment
     {
         private readonly ICaseAppointmentService _appointmentService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public CaseAppointmentController(ICaseAppointmentService appointmentService, 
+        public CaseAppointmentController(ICaseAppointmentService appointmentService,
             IHttpContextAccessor httpContextAccessor)
         {
             _appointmentService = appointmentService;
@@ -42,7 +42,7 @@ namespace DentaMatch.Controllers.Case_Appointment
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Request Case Failed: {error.Message}"});
+                return BadRequest(new { Success = false, Message = $"Request Case Failed: {error.Message}" });
             }
         }
 
@@ -54,7 +54,7 @@ namespace DentaMatch.Controllers.Case_Appointment
             {
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(new { Success = false, Message = ModelState});
+                    return BadRequest(new { Success = false, Message = ModelState });
                 }
                 var result = _appointmentService.CancelCase(caseId);
 
