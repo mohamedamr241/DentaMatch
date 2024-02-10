@@ -6,7 +6,6 @@ namespace DentaMatch.Repository
 {
     public class Repository<T> : IRepository<T> where T : class
     {
-        // T - Category
         private readonly ApplicationDbContext _db;
         private DbSet<T> dbSet;
         public Repository(ApplicationDbContext db)
@@ -49,7 +48,7 @@ namespace DentaMatch.Repository
                     query = query.Include(includeProp);
                 }
             }
-            if(filter != null)
+            if (filter != null)
             {
                 query = query.Where(filter);
             }
@@ -59,22 +58,12 @@ namespace DentaMatch.Repository
         public void Remove(T entity)
         {
             dbSet.Remove(entity);
-            //try
-            //{
-
-            //    return string.Empty;
-            //}
-            //catch (Exception e)
-            //{
-            //    return e.Message;
-            //}
         }
 
         public void RemoveRange(IEnumerable<T> entity)
         {
             dbSet.RemoveRange(entity);
         }
-
 
     }
 }

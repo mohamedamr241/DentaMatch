@@ -1,4 +1,4 @@
-﻿using DentaMatch.IServices.Dental_Cases;
+﻿using DentaMatch.Services.Dental_Case.IServices;
 using DentaMatch.ViewModel.Dental_Cases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -48,7 +48,7 @@ namespace DentaMatch.Controllers.Dental_Case.Patient
 
 
         [HttpPost("DeleteCase")]
-        public IActionResult DeleteCase(string caseId)
+        public IActionResult RemoveCase(string caseId)
         {
             try
             {
@@ -78,7 +78,7 @@ namespace DentaMatch.Controllers.Dental_Case.Patient
 
 
         [HttpPost("UpdateCase")]
-        public IActionResult UpdateCase(string caseId, DentalCaseRequestVm model)
+        public IActionResult EditCase(string caseId, DentalCaseRequestVm model)
         {
             try
             {
@@ -108,7 +108,7 @@ namespace DentaMatch.Controllers.Dental_Case.Patient
       
 
         [HttpGet("GetCases")]
-        public IActionResult GetPatientCases()
+        public IActionResult GetCases()
         {
             try
             {

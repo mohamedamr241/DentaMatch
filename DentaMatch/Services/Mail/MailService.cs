@@ -1,7 +1,6 @@
-﻿
-using SendGrid.Helpers.Mail;
+﻿using SendGrid.Helpers.Mail;
 using SendGrid;
-using System.Drawing.Text;
+using DentaMatch.Services.Mail.IServices;
 
 namespace DentaMatch.Services.Mail
 {

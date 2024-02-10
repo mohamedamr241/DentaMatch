@@ -1,4 +1,4 @@
-﻿using DentaMatch.IServices.Dental_Cases;
+﻿using DentaMatch.Services.Dental_Case.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

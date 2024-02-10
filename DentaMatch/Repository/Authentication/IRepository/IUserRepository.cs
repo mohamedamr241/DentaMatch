@@ -1,7 +1,11 @@
-﻿namespace DentaMatch.Repository.Authentication.IRepository
+﻿using DentaMatch.Models;
+
+namespace DentaMatch.Repository.Authentication.IRepository
 {
-    public interface IUserRepository<T> : IRepository<T> where T : class
+    public interface IUserRepository : IRepository<ApplicationUser>
     {
-        void Update(T entity);
+        void UpdateVerificationCode(ApplicationUser user, string verficationCode, bool isVerified = false);
+        void UpdateProfilePicture(ApplicationUser user, string ImagePath);
+
     }
 }

@@ -6,27 +6,22 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using DentaMatch.Models;
 using DentaMatch.Helpers;
-using DentaMatch.Services.Authentication;
-using DentaMatch.IServices.Dental_Cases;
-using DentaMatch.Services.Dental_Cases;
+using DentaMatch.Services.Cases_Appointment;
+using DentaMatch.Services.Mail;
 using DentaMatch.Repository.Authentication.IRepository;
 using DentaMatch.Repository.Authentication;
+using DentaMatch.Services.Mail.IServices;
 using DentaMatch.Repository.Dental_Case.IRepository;
 using DentaMatch.Repository.Dental_Case;
-using DentaMatch.Services.Mail;
-using DentaMatch.Repository.Cases_Appointment;
-using DentaMatch.Repository.Cases_Appointment.IRepository;
+using DentaMatch.Services.Dental_Case.IServices;
+using DentaMatch.Services.Authentication;
 using DentaMatch.Services.Cases_Appointment.IServices;
-using DentaMatch.Services.Cases_Appointment;
+using DentaMatch.Services.Dental_Case;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-//builder.Services.AddControllers().AddJsonOptions(options =>
-//{
-//    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
-//});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -34,20 +29,21 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
+
+
+builder.Services.AddScoped<IDentalUnitOfWork, DentalUnitOfWork>();
+builder.Services.AddScoped<IAuthUnitOfWork, AuthUnitOfWork>();
+builder.Services.AddScoped<AppHelper>();
+
+builder.Services.AddScoped<IDentalCaseService, DentalCaseService>();
 builder.Services.AddTransient<IMailService, MailService>();
 builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped< AuthPatientService>();
+builder.Services.AddScoped<AuthPatientService>();
 builder.Services.AddScoped<AuthAdminService>();
 builder.Services.AddScoped<AuthDoctorService>();
-builder.Services.AddScoped<AuthHelper>();
-builder.Services.AddScoped<DentalCaseHelper>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IDentalCaseUnitOfWork, DentalCaseUnitOfWork>();
-builder.Services.AddScoped<ICaseAppointmentUnitOfWork, CaseAppointmentUnitOfWork>();
-builder.Services.AddScoped<IDentalCaseService, DentalCaseService>();
 builder.Services.AddScoped<ICaseAppointmentService, CaseAppointmentService>();
 
-//builder.Services.AddScoped<IDentalCaseRepository<DentalCaseResponseVM>, DentalCaseRepository>();
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAuthentication(options =>

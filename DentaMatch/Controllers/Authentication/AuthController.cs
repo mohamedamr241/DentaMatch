@@ -1,5 +1,4 @@
-﻿using DentaMatch.Repository;
-using DentaMatch.Services.Authentication;
+﻿using DentaMatch.Services.Authentication;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication;
 using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
@@ -7,7 +6,6 @@ using DentaMatch.ViewModel.Authentication.Patient;
 using DentaMatch.ViewModel.Authentication.Request;
 using DentaMatch.ViewModel.Authentication.Response;
 using Microsoft.AspNetCore.Mvc;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DentaMatch.Controllers.Authentication
 {
@@ -16,22 +14,21 @@ namespace DentaMatch.Controllers.Authentication
     public class AuthController : ControllerBase
     {
         public IConfiguration _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         public AuthDoctorService _doctor;
         public AuthPatientService _patient;
         public AuthAdminService _admin;
         public AuthService _authService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-
-        public AuthController(IConfiguration configuration, AuthDoctorService doctor,
-            AuthPatientService patient, AuthAdminService admin, AuthService authService, IHttpContextAccessor httpContextAccessor)
+        public AuthController(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, AuthDoctorService doctor,
+            AuthPatientService patient, AuthAdminService admin, AuthService authService)
         {
             _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
             _doctor = doctor;
             _patient = patient;
             _admin = admin;
             _authService = authService;
-            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpPost("Signin")]
@@ -42,7 +39,7 @@ namespace DentaMatch.Controllers.Authentication
                 if (!ModelState.IsValid)
                     return BadRequest(new { Success = false, Message = ModelState });
 
-                var role = model.Phone!=null? await _authService.GetRoleAsync(model.Phone): await _authService.GetRoleAsync(model.Email);
+                var role = model.Phone != null ? await _authService.GetRoleAsync(model.Phone) : await _authService.GetRoleAsync(model.Email);
                 if (string.IsNullOrEmpty(role))
                     return BadRequest(new { Success = false, Message = "Phone number or password is not correct" });
 
@@ -176,12 +173,12 @@ namespace DentaMatch.Controllers.Authentication
                 if (userRole == "Patient")
                 {
                     var result = await _patient.UploadProfilePicture(model, userId);
-                    if(result.Success == true)
+                    if (result.Success == true)
                     {
                         return Ok(result);
                     }
                 }
-                else if(userRole == "Doctor")
+                else if (userRole == "Doctor")
                 {
                     var result = await _doctor.UploadProfilePicture(model, userId);
                     if (result.Success == true)
@@ -189,7 +186,7 @@ namespace DentaMatch.Controllers.Authentication
                         Ok(result);
                     }
                 }
-                else if(userRole == "Admin")
+                else if (userRole == "Admin")
                 {
                     var result = await _admin.UploadProfilePicture(model, userId);
                     if (result.Success == true)

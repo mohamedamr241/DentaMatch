@@ -1,12 +1,11 @@
-﻿using DentaMatch.Models;
-using DentaMatch.ViewModel;
+﻿using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Dental_Cases;
 
-namespace DentaMatch.IServices.Dental_Cases
+namespace DentaMatch.Services.Dental_Case.IServices
 {
     public interface IDentalCaseService
     {
-        AuthModel<DentalCaseResponseVM> CreateCase(string PatientId, DentalCaseRequestVm model);
+        AuthModel<DentalCaseResponseVM> CreateCase(string UserId, DentalCaseRequestVm model);
         AuthModel<DentalCaseResponseVM> UpdateCase(string caseId, DentalCaseRequestVm model);
         AuthModel DeleteCase(string caseId);
         AuthModel<DentalCaseResponseVM> GetCase(string caseId);
