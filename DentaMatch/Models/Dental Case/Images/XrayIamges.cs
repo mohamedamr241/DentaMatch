@@ -11,6 +11,7 @@ namespace DentaMatch.Models.Dental_Case.Images
         public string CaseId { get; set; }
         public virtual DentalCase Case { get; set; }
         public string Image { get; set; }
+        public string ImageLink { get; set; }
 
     }
 }

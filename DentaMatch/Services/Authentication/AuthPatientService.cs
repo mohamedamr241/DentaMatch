@@ -168,8 +168,9 @@ namespace DentaMatch.Services.Authentication
                     return new AuthModel { Success = false, Message = "User Not Found" };
                 }
                 string ImagePath = Path.Combine("wwwroot", "Images", "Patient", "ProfileImages");
-                string ProfileImageFullPath = _appHelper.SaveImage(model.ProfileImage, ImagePath);
-                _authUnitOfWork.UserRepository.UpdateProfilePicture(user, ProfileImageFullPath);
+                string ProfileImageName = _appHelper.SaveImage(model.ProfileImage, ImagePath);
+                string ProfileImageFullPath = $"{_configuration["ImgUrl"]}" + Path.Combine("Images", "Patient", "ProfileImages", ProfileImageName);
+                _authUnitOfWork.UserRepository.UpdateProfilePicture(user, ProfileImageFullPath, ImagePath+ ProfileImageName);
                 _authUnitOfWork.Save();
                 return new AuthModel { Success = true, Message = "Profile Image Added Successfully" };
             }

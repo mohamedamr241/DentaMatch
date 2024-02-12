@@ -9,6 +9,8 @@ namespace DentaMatch.Models
     {
         [ValidateNever]
         public string? ProfileImage { get; set; }
+        [ValidateNever]
+        public string? ProfileImageLink { get; set; }
 
         [Required, MaxLength(80)]
         public string FullName { get; set; }

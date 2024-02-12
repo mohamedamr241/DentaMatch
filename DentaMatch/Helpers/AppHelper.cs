@@ -16,7 +16,7 @@
                 image.CopyTo(fileStream);
             }
 
-            return fullPath;
+            return fileName;
         }
 
         public void DeleteImage(string imagePath)

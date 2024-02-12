@@ -15,12 +15,14 @@ namespace DentaMatch.Services.Dental_Case
     {
         private readonly IDentalUnitOfWork _dentalunitOfWork;
         private readonly IAuthUnitOfWork _authUnitOfWork;
+        private readonly IConfiguration _configuration;
         private readonly AppHelper _appHelper;
-        public DentalCaseService(IDentalUnitOfWork dentalunitOfWork, IAuthUnitOfWork authUnitOfWork, AppHelper appHelper)
+        public DentalCaseService(IDentalUnitOfWork dentalunitOfWork, IAuthUnitOfWork authUnitOfWork, AppHelper appHelper, IConfiguration configuration)
         {
             _dentalunitOfWork = dentalunitOfWork;
             _authUnitOfWork = authUnitOfWork;
             _appHelper = appHelper;
+            _configuration = configuration;
         }
         public AuthModel<DentalCaseResponseVM> CreateCase(string UserId, DentalCaseRequestVm model)
         {
@@ -105,14 +107,15 @@ namespace DentaMatch.Services.Dental_Case
                     string MouthImagesPath = Path.Combine("wwwroot", "Images", "DentalCase", "MouthImages");
                     foreach (var mouthImage in model.MouthImages)
                     {
-                        string fullPath = _appHelper.SaveImage(mouthImage, MouthImagesPath);
+                        string ImageName = _appHelper.SaveImage(mouthImage, MouthImagesPath);
 
                         var newMouthImage = new MouthImages
                         {
                             Id = Guid.NewGuid().ToString(),
                             CaseId = dentalCase.Id,
-                            Image = fullPath
-                        };
+                            Image = MouthImagesPath+ ImageName,
+                            ImageLink = $"{_configuration["ImgUrl"]}" + Path.Combine("Images", "DentalCase", "MouthImages", ImageName)
+                    };
                         _dentalunitOfWork.DentalCaseRepository.MouthImages.Add(newMouthImage);
                     }
                 }
@@ -128,13 +131,14 @@ namespace DentaMatch.Services.Dental_Case
                     string XrayImagesPath = Path.Combine("wwwroot", "Images", "DentalCase", "XRayImages");
                     foreach (var xrayImage in model.XrayImages)
                     {
-                        string fullPath = _appHelper.SaveImage(xrayImage, XrayImagesPath);
+                        string ImageName = _appHelper.SaveImage(xrayImage, XrayImagesPath);
 
                         var newXrayImage = new XrayIamges
                         {
                             Id = Guid.NewGuid().ToString(),
                             CaseId = dentalCase.Id,
-                            Image = fullPath
+                            Image = XrayImagesPath + ImageName,
+                            ImageLink = $"{_configuration["ImgUrl"]}" + Path.Combine("Images", "DentalCase", "XRayImages", ImageName)
                         };
                         _dentalunitOfWork.DentalCaseRepository.XRayImages.Add(newXrayImage);
                     }
@@ -151,13 +155,14 @@ namespace DentaMatch.Services.Dental_Case
                     string PrescriptionImagesPath = Path.Combine("wwwroot", "Images", "DentalCase", "PrescriptionImages");
                     foreach (var prescriptionImage in model.PrescriptionImages)
                     {
-                        string fullPath = _appHelper.SaveImage(prescriptionImage, PrescriptionImagesPath);
+                        string ImageName = _appHelper.SaveImage(prescriptionImage, PrescriptionImagesPath);
 
                         var newPrescriptionImage = new PrescriptionImages
                         {
                             Id = Guid.NewGuid().ToString(),
                             CaseId = dentalCase.Id,
-                            Image = fullPath
+                            Image = PrescriptionImagesPath + ImageName,
+                            ImageLink = $"{_configuration["ImgUrl"]}" + Path.Combine("Images", "DentalCase", "PrescriptionImages", ImageName)
                         };
                         _dentalunitOfWork.DentalCaseRepository.PrescriptionImages.Add(newPrescriptionImage);
                     }
@@ -437,17 +442,19 @@ namespace DentaMatch.Services.Dental_Case
         {
             var DentalDiseases = Dentalcase.CaseDentalDiseases.Select(u => u.DentalDiseases.DiseaseName).ToList();
             var ChronicDiseases = Dentalcase.CaseChronicDiseases.Select(u => u.ChronicDiseases.DiseaseName).ToList();
-            var MouthImages = Dentalcase.MouthImages.Select(u => u.Image).ToList();
-            var XRayImages = Dentalcase.XrayImages.Select(u => u.Image).ToList();
-            var PrescriptionImages = Dentalcase.PrescriptionImages.Select(u => u.Image).ToList();
+            var MouthImages = Dentalcase.MouthImages.Select(u => u.ImageLink).ToList();
+            var XRayImages = Dentalcase.XrayImages.Select(u => u.ImageLink).ToList();
+            var PrescriptionImages = Dentalcase.PrescriptionImages.Select(u => u.ImageLink).ToList();
             var PatientName = Dentalcase.Patient.User.FullName;
             var PatientAge = Dentalcase.Patient.User.Age;
             var PatientCity = Dentalcase.Patient.User.City;
+            var Phone = Dentalcase.Patient.User.PhoneNumber;
 
             var dentalCaseResponse = new DentalCaseResponseVM
             {
                 CaseId = Dentalcase.Id,
                 PatientName = PatientName,
+                PhoneNumber = Phone,
                 PatientAge = PatientAge,
                 PatientCity = PatientCity,
                 Description = Dentalcase.Description,

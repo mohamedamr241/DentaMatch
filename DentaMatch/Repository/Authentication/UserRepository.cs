@@ -20,11 +20,12 @@ namespace DentaMatch.Repository.Authentication
             }
         }
 
-        public void UpdateProfilePicture(ApplicationUser user, string ImagePath)
+        public void UpdateProfilePicture(ApplicationUser user, string ImagePathLink, string ImagePath)
         {
             if (user != null)
             {
                 user.ProfileImage = ImagePath;
+                user.ProfileImageLink = ImagePathLink;
             }
         }
 

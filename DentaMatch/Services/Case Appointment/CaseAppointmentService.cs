@@ -65,6 +65,10 @@ namespace DentaMatch.Services.Cases_Appointment
                 }
 
                 var doctor = _authUnitOfWork.DoctorRepository.Get(u => u.UserId == userId);
+                if(doctor == null)
+                {
+                    return new AuthModel<string> { Success = false, Message = "User Not Found" };
+                }
                 _dentalUnitOfWork.CaseAppointmentRepository.UpdateAssigningCase(dentalCase, true, doctor.Id);
                 _dentalUnitOfWork.Save();
 

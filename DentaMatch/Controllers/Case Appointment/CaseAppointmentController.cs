@@ -19,7 +19,7 @@ namespace DentaMatch.Controllers.Case_Appointment
         }
 
 
-        [HttpPost("RequestCase")]
+        [HttpGet("RequestCase")]
         public ActionResult RequestCase(string caseId)
         {
             try

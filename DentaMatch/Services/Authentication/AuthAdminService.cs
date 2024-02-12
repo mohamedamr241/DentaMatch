@@ -15,12 +15,14 @@ namespace DentaMatch.Services.Authentication
         private readonly IAuthUnitOfWork _authUnitOfWork;
         private readonly AppHelper _appHelper;
         private readonly AuthService _authService;
+        private readonly IConfiguration _configuration;
 
-        public AuthAdminService(IAuthUnitOfWork authUnitOfWork, AppHelper appHelper, AuthService authService)
+        public AuthAdminService(IAuthUnitOfWork authUnitOfWork, AppHelper appHelper, AuthService authService, IConfiguration configuration)
         {
             _authUnitOfWork = authUnitOfWork;
             _appHelper = appHelper;
             _authService = authService;
+            _configuration = configuration;
         }
 
         public async Task<AuthModel<UserResponseVM>> SignInAsync(SignInVM model)
@@ -125,8 +127,9 @@ namespace DentaMatch.Services.Authentication
                     return new AuthModel { Success = false, Message = "User Not Found" };
                 }
                 string ImagePath = Path.Combine("wwwroot", "Images", "Admin", "ProfileImages");
-                string ProfileImageFullPath = _appHelper.SaveImage(model.ProfileImage, ImagePath);
-                _authUnitOfWork.UserRepository.UpdateProfilePicture(user, ProfileImageFullPath);
+                string ProfileImageName = _appHelper.SaveImage(model.ProfileImage, ImagePath);
+                string ProfileImageFullPath = $"{_configuration["ImgUrl"]}" + Path.Combine("Images", "Patient", "ProfileImages", ProfileImageName);
+                _authUnitOfWork.UserRepository.UpdateProfilePicture(user, ProfileImageFullPath, ImagePath + ProfileImageName);
                 _authUnitOfWork.Save();
                 return new AuthModel { Success = true, Message = "Profile Image Added Successfully" };
             }
