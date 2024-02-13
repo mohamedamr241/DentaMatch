@@ -305,7 +305,7 @@ namespace DentaMatch.Services.Dental_Case
         {
             try
             {
-                var dentalCase = _dentalunitOfWork.DentalCaseRepository.Get(u => u.Id == caseId, "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User");
+                var dentalCase = _dentalunitOfWork.DentalCaseRepository.Get(u => u.Id == caseId, "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User,Doctor.User");
                 if (dentalCase == null)
                 {
                     return new AuthModel<DentalCaseResponseVM> { Success = false, Message = "Dental Case Not Found" };
@@ -333,7 +333,7 @@ namespace DentaMatch.Services.Dental_Case
                 {
                     return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = "User not found." };
                 }
-                var DentalCases = _dentalunitOfWork.DentalCaseRepository.GetAll((u => u.PatientId == patient.Id), "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User");
+                var DentalCases = _dentalunitOfWork.DentalCaseRepository.GetAll((u => u.PatientId == patient.Id), "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User,Doctor.User");
                 if (DentalCases.Count() != 0)
                 {
                     List<DentalCaseResponseVM> PatientDentalCases = new List<DentalCaseResponseVM>();
@@ -368,7 +368,7 @@ namespace DentaMatch.Services.Dental_Case
             try
             {
                 var DentalCases = _dentalunitOfWork.DentalCaseRepository.GetAll((u => !u.IsAssigned),
-                    "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User");
+                    "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User,Doctor.User");
                 if (DentalCases.Count() != 0)
                 {
                     List<DentalCaseResponseVM> UnAssignedDentalCases = new List<DentalCaseResponseVM>();
@@ -407,7 +407,7 @@ namespace DentaMatch.Services.Dental_Case
                     return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = "User not found" };
                 }
                 var DentalCases = _dentalunitOfWork.DentalCaseRepository.GetAll((u => u.DoctorId == doctor.Id),
-                    "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User");
+                    "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User,Doctor.User");
                 if (DentalCases.Count() != 0)
                 {
                     List<DentalCaseResponseVM> AssignedDentalCases = new List<DentalCaseResponseVM>();
@@ -442,21 +442,27 @@ namespace DentaMatch.Services.Dental_Case
         {
             var DentalDiseases = Dentalcase.CaseDentalDiseases.Select(u => u.DentalDiseases.DiseaseName).ToList();
             var ChronicDiseases = Dentalcase.CaseChronicDiseases.Select(u => u.ChronicDiseases.DiseaseName).ToList();
-            var MouthImages = Dentalcase.MouthImages.Select(u => u.ImageLink).ToList();
-            var XRayImages = Dentalcase.XrayImages.Select(u => u.ImageLink).ToList();
-            var PrescriptionImages = Dentalcase.PrescriptionImages.Select(u => u.ImageLink).ToList();
+            var MouthImages = Dentalcase.MouthImages.Select(u => u.Image).ToList();
+            var XRayImages = Dentalcase.XrayImages.Select(u => u.Image).ToList();
+            var PrescriptionImages = Dentalcase.PrescriptionImages.Select(u => u.Image).ToList();
             var PatientName = Dentalcase.Patient.User.FullName;
             var PatientAge = Dentalcase.Patient.User.Age;
             var PatientCity = Dentalcase.Patient.User.City;
-            var Phone = Dentalcase.Patient.User.PhoneNumber;
-
+            var DoctorName = "";
+            var DoctorUniversity = "";
+            if (Dentalcase.Doctor != null)
+            {
+                DoctorName = Dentalcase.Doctor.User.FullName;
+                DoctorUniversity = Dentalcase.Doctor.University;
+            }
             var dentalCaseResponse = new DentalCaseResponseVM
             {
                 CaseId = Dentalcase.Id,
                 PatientName = PatientName,
-                PhoneNumber = Phone,
                 PatientAge = PatientAge,
                 PatientCity = PatientCity,
+                DoctorName = DoctorName,
+                DoctorUniversity = DoctorUniversity,
                 Description = Dentalcase.Description,
                 IsKnown = Dentalcase.IsKnown,
                 IsAssigned = Dentalcase.IsAssigned,

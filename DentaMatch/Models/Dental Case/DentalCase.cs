@@ -22,8 +22,8 @@ namespace DentaMatch.Models
         public virtual Patient Patient { get; set; }
 
         [ForeignKey("Doctor")]
-        public string? DoctorId { get; set; }
-        public virtual Doctor? Doctor { get; set; }
+        public string DoctorId { get; set; }
+        public virtual Doctor Doctor { get; set; }
         public virtual ICollection<CaseChronicDiseases> CaseChronicDiseases { get; set; }
         public virtual ICollection<CaseDentalDiseases> CaseDentalDiseases { get; set; }
         public virtual ICollection<MouthImages> MouthImages { get; set; }
