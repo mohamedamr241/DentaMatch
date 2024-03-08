@@ -113,7 +113,7 @@ namespace DentaMatch.Services.Dental_Case
                         {
                             Id = Guid.NewGuid().ToString(),
                             CaseId = dentalCase.Id,
-                            Image = MouthImagesPath+ ImageName,
+                            Image = Path.Combine(MouthImagesPath,ImageName),
                             ImageLink = $"{_configuration["ImgUrl"]}" + Path.Combine("Images", "DentalCase", "MouthImages", ImageName)
                     };
                         _dentalunitOfWork.DentalCaseRepository.MouthImages.Add(newMouthImage);
@@ -137,7 +137,7 @@ namespace DentaMatch.Services.Dental_Case
                         {
                             Id = Guid.NewGuid().ToString(),
                             CaseId = dentalCase.Id,
-                            Image = XrayImagesPath + ImageName,
+                            Image = Path.Combine(XrayImagesPath, ImageName),
                             ImageLink = $"{_configuration["ImgUrl"]}" + Path.Combine("Images", "DentalCase", "XRayImages", ImageName)
                         };
                         _dentalunitOfWork.DentalCaseRepository.XRayImages.Add(newXrayImage);
@@ -161,7 +161,7 @@ namespace DentaMatch.Services.Dental_Case
                         {
                             Id = Guid.NewGuid().ToString(),
                             CaseId = dentalCase.Id,
-                            Image = PrescriptionImagesPath + ImageName,
+                            Image = Path.Combine(PrescriptionImagesPath, ImageName),
                             ImageLink = $"{_configuration["ImgUrl"]}" + Path.Combine("Images", "DentalCase", "PrescriptionImages", ImageName)
                         };
                         _dentalunitOfWork.DentalCaseRepository.PrescriptionImages.Add(newPrescriptionImage);
@@ -442,12 +442,13 @@ namespace DentaMatch.Services.Dental_Case
         {
             var DentalDiseases = Dentalcase.CaseDentalDiseases.Select(u => u.DentalDiseases.DiseaseName).ToList();
             var ChronicDiseases = Dentalcase.CaseChronicDiseases.Select(u => u.ChronicDiseases.DiseaseName).ToList();
-            var MouthImages = Dentalcase.MouthImages.Select(u => u.Image).ToList();
-            var XRayImages = Dentalcase.XrayImages.Select(u => u.Image).ToList();
-            var PrescriptionImages = Dentalcase.PrescriptionImages.Select(u => u.Image).ToList();
+            var MouthImages = Dentalcase.MouthImages.Select(u => u.ImageLink).ToList();
+            var XRayImages = Dentalcase.XrayImages.Select(u => u.ImageLink).ToList();
+            var PrescriptionImages = Dentalcase.PrescriptionImages.Select(u => u.ImageLink).ToList();
             var PatientName = Dentalcase.Patient.User.FullName;
             var PatientAge = Dentalcase.Patient.User.Age;
             var PatientCity = Dentalcase.Patient.User.City;
+            var PatientNumber = Dentalcase.Patient.User.PhoneNumber;
             var DoctorName = "";
             var DoctorUniversity = "";
             if (Dentalcase.Doctor != null)
@@ -470,7 +471,8 @@ namespace DentaMatch.Services.Dental_Case
                 ChronicDiseases = ChronicDiseases,
                 MouthImages = MouthImages,
                 XrayImages = XRayImages,
-                PrescriptionImages = PrescriptionImages
+                PrescriptionImages = PrescriptionImages,
+                PhoneNumber = PatientNumber
             };
 
             return dentalCaseResponse;
