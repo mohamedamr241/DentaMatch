@@ -1,6 +1,7 @@
 ﻿using DentaMatch.Services.Dental_Case.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace DentaMatch.Controllers.Dental_Case.Doctor
 {
@@ -57,6 +58,29 @@ namespace DentaMatch.Controllers.Dental_Case.Doctor
             catch (Exception error)
             {
                 return BadRequest(new { Success = false, Message = $"Retrieving Assigned Doctor Dental Cases Failed: {error.Message}" });
+            }
+
+        }
+        [HttpGet("filterByDisease")]
+        public IActionResult filterByDiseaseName(string diseasename)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(diseasename))
+                {
+                    return BadRequest(new { Success = false, Message = "Disease Name Is Required" });
+                }
+                var result = _dentalCaseService.SearchByDentalDisease(diseasename);
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Ok(result);
+
+            }
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Filtration By Disease Name Failed: {error.Message}" });
             }
 
         }

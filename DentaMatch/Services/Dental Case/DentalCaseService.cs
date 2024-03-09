@@ -396,7 +396,44 @@ namespace DentaMatch.Services.Dental_Case
                 return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = $"Error Retrieving dental cases: {error.Message}" };
             }
         }
+        public AuthModel<List<DentalCaseResponseVM>> SearchByDentalDisease(string diseaseName)
+        {
+            try
+            {
+                var cases = _dentalunitOfWork.DentalCaseRepository.GetAll(
+                    filter: c => c.CaseDentalDiseases.Any(cd => cd.DentalDiseases.DiseaseName == diseaseName),
+                    includeProperties: "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User,Doctor.User"
+                );
+                
+                if (cases!=null && cases.Count() != 0)
+                {
+                    List<DentalCaseResponseVM> UnAssignedDentalCases = new List<DentalCaseResponseVM>();
+                    foreach (var DentalCase in cases)
+                    {
+                        var UnAssginedCase = ConstructDentalCaseResponse(DentalCase);
+                        UnAssignedDentalCases.Add(UnAssginedCase);
+                    }
+                    return new AuthModel<List<DentalCaseResponseVM>>
+                    {
+                        Success = true,
+                        Message = "dental cases are retrieved successfully",
+                        Data = UnAssignedDentalCases
+                    };
+                }
+                return new AuthModel<List<DentalCaseResponseVM>>
+                {
+                    Success = true,
+                    Message = "No Dental Cases Available",
+                    Data = []
+                };
 
+            }
+            catch(Exception error)
+            {
+                return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = $"Error searching for dental cases: {error.Message}" };
+            }
+        }
+        
         public AuthModel<List<DentalCaseResponseVM>> GetAssignedCases(string UserId)
         {
             try

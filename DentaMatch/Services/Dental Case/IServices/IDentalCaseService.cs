@@ -12,5 +12,6 @@ namespace DentaMatch.Services.Dental_Case.IServices
         AuthModel<List<DentalCaseResponseVM>> GetPatientCases(string UserId);
         AuthModel<List<DentalCaseResponseVM>> GetAssignedCases(string UserId);
         AuthModel<List<DentalCaseResponseVM>> GetUnAssignedCases();
+        AuthModel<List<DentalCaseResponseVM>> SearchByDentalDisease(string diseaseName);
     }
 }

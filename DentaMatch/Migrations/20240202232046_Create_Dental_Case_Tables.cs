@@ -38,15 +38,15 @@ namespace DentaMatch.Migrations
                         column: x => x.PatientId,
                         principalTable: "Patients",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Cascade); // Change this line
                 });
-
+            
             migrationBuilder.CreateTable(
                 name: "DentalDiseases",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    DiseaseName = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    DiseaseName = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {

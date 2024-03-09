@@ -5,6 +5,7 @@ using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.Services.Mail.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -170,6 +171,42 @@ namespace DentaMatch.Services.Authentication
                 signingCredentials: signingCredentials);
 
             return jwtSecurityToken;
+        }
+        public async Task<AuthModel> DeleteAccount(string userId)
+        {
+            try
+            {
+                var user = await _authUnitOfWork.UserManager.FindByIdAsync(userId);
+                if(user == null)
+                {
+                    return new AuthModel
+                    {
+                        Success = false,
+                        Message = "User Not Found!",
+                    };
+                }
+                var result = await _authUnitOfWork.UserManager.DeleteAsync(user);
+                if (result.Succeeded)
+                {
+                    return new AuthModel
+                    {
+                        Success = true,
+                        Message = "user is deleted successfully",
+                    };
+                }
+                else
+                {
+                    return new AuthModel
+                    {
+                        Success = false,
+                        Message = "deletion of user failed",
+                    };
+                }
+            }
+            catch (Exception error)
+            {
+                return new AuthModel { Success = false, Message = $"{error.Message}" };
+            }
         }
     }
 }

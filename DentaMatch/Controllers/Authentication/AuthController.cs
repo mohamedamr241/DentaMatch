@@ -5,6 +5,7 @@ using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
 using DentaMatch.ViewModel.Authentication.Patient;
 using DentaMatch.ViewModel.Authentication.Request;
 using DentaMatch.ViewModel.Authentication.Response;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DentaMatch.Controllers.Authentication
@@ -134,7 +135,30 @@ namespace DentaMatch.Controllers.Authentication
                 return BadRequest(new { Success = false, Message = $"Reset Password Failed: {error.Message}" });
             }
         }
-
+        [Authorize(Roles = "Doctor, Patient")]
+        [HttpGet("DeleteAccount")]
+        public async Task<IActionResult> DeleteAccountAsync()
+        {
+            try
+            {
+                var userClaims = _httpContextAccessor.HttpContext.User.Claims;
+                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value;
+                if (userId == null)
+                {
+                    return BadRequest(new { Success = false, Message = "User not Found!" });
+                }
+                var result = await _authService.DeleteAccount(userId);
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Ok(result);
+            }
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Delete Account Failed: {error.Message}" });
+            }
+        }
         [HttpGet("ConfirmEmail")]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {

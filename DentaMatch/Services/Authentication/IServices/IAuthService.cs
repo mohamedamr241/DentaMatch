@@ -10,5 +10,7 @@ namespace DentaMatch.Services.Authentication.IServices
         Task<AuthModel> ResetPasswordAsync(ResetPasswordVM model);
         Task<AuthModel> ConfirmEmailAsync(string userId, string token);
 
+        Task<AuthModel> DeleteAccount(string userId);
+
     }
 }
