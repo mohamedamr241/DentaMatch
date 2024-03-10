@@ -5,6 +5,8 @@ using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.Services.Mail.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
+using DentaMatch.ViewModel.Authentication.Patient;
+using DentaMatch.ViewModel.Authentication.Request;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +15,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DentaMatch.Services.Authentication
 {
@@ -141,37 +144,6 @@ namespace DentaMatch.Services.Authentication
             var userRoles = await _authUnitOfWork.UserManager.GetRolesAsync(user);
             return userRoles[0];
         }
-
-        public async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
-        {
-            var userClaims = await _authUnitOfWork.UserManager.GetClaimsAsync(user);
-            var roles = await _authUnitOfWork.UserManager.GetRolesAsync(user);
-            var roleClaims = new List<Claim>();
-
-            foreach (var role in roles)
-                roleClaims.Add(new Claim("roles", role));
-
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.FullName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("uid", user.Id)
-            }
-            .Union(userClaims)
-            .Union(roleClaims);
-            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:key"]));
-            var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
-
-            var jwtSecurityToken = new JwtSecurityToken(
-                issuer: _configuration["JWT:Issuer"],
-                audience: _configuration["JWT:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddDays(double.Parse(_configuration["JWT:DurationInDays"])),
-                signingCredentials: signingCredentials);
-
-            return jwtSecurityToken;
-        }
         public async Task<AuthModel> DeleteAccount(string userId)
         {
             try
@@ -207,6 +179,151 @@ namespace DentaMatch.Services.Authentication
             {
                 return new AuthModel { Success = false, Message = $"{error.Message}" };
             }
+        }
+        public async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
+        {
+            var userClaims = await _authUnitOfWork.UserManager.GetClaimsAsync(user);
+            var roles = await _authUnitOfWork.UserManager.GetRolesAsync(user);
+            var roleClaims = new List<Claim>();
+
+            foreach (var role in roles)
+                roleClaims.Add(new Claim("roles", role));
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.FullName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim("uid", user.Id)
+            }
+            .Union(userClaims)
+            .Union(roleClaims);
+            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:key"]));
+            var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+
+            var jwtSecurityToken = new JwtSecurityToken(
+                issuer: _configuration["JWT:Issuer"],
+                audience: _configuration["JWT:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddDays(double.Parse(_configuration["JWT:DurationInDays"])),
+                signingCredentials: signingCredentials);
+
+            return jwtSecurityToken;
+        }
+        public async Task<AuthModel<ApplicationUser>> GetAccount(string userId)
+        {
+            try
+            {
+                var user = await _authUnitOfWork.UserManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return new AuthModel<ApplicationUser>
+                    {
+                        Success = false,
+                        Message = "User Not Found!",
+                    };
+                }
+                return new AuthModel<ApplicationUser>
+                {
+                    Success = true,
+                    Message = "User Retrieved Successfully",
+                    Data = user
+                };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel<ApplicationUser> { Success = false, Message = $"{error.Message}" };
+            }
+        }
+        public async Task<AuthModel> UpdateAccount(ApplicationUser userDetails, string userid)
+        {
+            try
+            {
+                var UserNameCheck = await _authUnitOfWork.UserManager.FindByNameAsync(userDetails.UserName);
+                if(UserNameCheck!= null && UserNameCheck.Id != userid)
+                {
+                    return new AuthModel { Success = false, Message = $"UserName Already Exist" };
+                }
+                var UseremailCheck = await _authUnitOfWork.UserManager.FindByEmailAsync(userDetails.Email);
+                if (UseremailCheck is not null && UseremailCheck.Id!= userid)
+                {
+                    return new AuthModel
+                    { Success = false, Message = "Email is already exist" };
+                }
+                var UserphoneNumberCheck = await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == userDetails.PhoneNumber);
+                if (UserphoneNumberCheck is not null && UserphoneNumberCheck.Id != userid)
+                {
+                    return new AuthModel<PatientResponseVM>
+                    { Success = false, Message = "Phone number is already exist" };
+                }
+
+                var user = await _authUnitOfWork.UserManager.FindByIdAsync(userid);
+                var result = _authUnitOfWork.UserRepository.UpdateUserAccount(userDetails, user);
+                if(!result)
+                {
+                    return new AuthModel { Success = false, Message = $"Update account failed" };
+                }
+                return new AuthModel { Success = true, Message = $"Update account failed" };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel { Success = false, Message = $"{error.Message}" };
+            }
+        }
+        public async Task<AuthModel<ApplicationUser>> SignUpAsync(SignUpVM model)
+        {
+            var email = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
+            if (email is not null)
+            {
+                return new AuthModel<ApplicationUser>
+                { Success = false, Message = "Email is already exist" };
+            }
+            var phoneNumber = await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+            if (phoneNumber is not null)
+            {
+                return new AuthModel<ApplicationUser>
+                { Success = false, Message = "Phone number is already exist" };
+            }
+            if (!model.PhoneNumber.All(char.IsDigit))
+            {
+                return new AuthModel<ApplicationUser>
+                { Success = false, Message = "Phone number must be numbers only" };
+            }
+
+            var user = new ApplicationUser
+            {
+                //ProfileImage = fullPath,
+                FullName = model.FullName,
+                UserName = model.FullName.Replace(" ", "") + _appHelper.GenerateThreeDigitsCode(),
+                Email = model.Email,
+                City = model.City,
+                PhoneNumber = model.PhoneNumber,
+                Gender = model.Gender,
+                Age = model.Age,
+                VerificationCode = _appHelper.GenerateCode().ToString()
+            };
+            var result = await _authUnitOfWork.UserManager.CreateAsync(user, model.Password);
+            if (!result.Succeeded)
+            {
+                var errors = string.Empty;
+                foreach (var error in result.Errors)
+                {
+                    errors += $"{error.Description}, ";
+                }
+                return new AuthModel<ApplicationUser> { Success = false, Message = errors };
+            }
+            return new AuthModel<ApplicationUser> { Success = true, Data = user };
+        }
+
+        public async Task<AuthModel<ApplicationUser>> SignInAsync(SignInVM model)
+        {
+            var user = model.Phone != null ? await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone) : await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.Email == model.Email);
+            if (user is null || !await _authUnitOfWork.UserManager.CheckPasswordAsync(user, model.Password))
+            {
+                return new AuthModel<ApplicationUser> { Success = false, Message = "Phone number or Password is incorrect" };
+            }
+            //var userRole = await _authUnitOfWork.UserManager.GetRolesAsync(user);
+            return new AuthModel<ApplicationUser> { Success = true, Data = user };
         }
     }
 }

@@ -28,6 +28,23 @@ namespace DentaMatch.Repository.Authentication
                 user.ProfileImageLink = ImagePathLink;
             }
         }
+        public bool UpdateUserAccount(ApplicationUser userDetails, ApplicationUser user)
+        {
+            if (user != null)
+            {
+                user.Age = userDetails.Age;
+                user.Email = userDetails.Email;
+                user.FullName = userDetails.FullName;
+                user.Gender = userDetails.Gender;
+                user.PhoneNumber = userDetails.PhoneNumber;
+                user.UserName = userDetails.UserName;
+                user.City = userDetails.City;
+                user.NormalizedUserName = (userDetails.UserName).ToUpper();
+                user.NormalizedEmail = (userDetails.Email).ToUpper();
+                return true;
+            }
+            return false;
+        }
 
 
     }

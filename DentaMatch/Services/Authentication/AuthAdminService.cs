@@ -2,7 +2,10 @@
 using DentaMatch.Models;
 using DentaMatch.Repository.Authentication.IRepository;
 using DentaMatch.Services.Authentication.IServices;
+using DentaMatch.Services.Mail;
+using DentaMatch.Services.Mail.IServices;
 using DentaMatch.ViewModel;
+using DentaMatch.ViewModel.Authentication.Patient;
 using DentaMatch.ViewModel.Authentication.Request;
 using DentaMatch.ViewModel.Authentication.Response;
 using Microsoft.EntityFrameworkCore;
@@ -10,111 +13,76 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace DentaMatch.Services.Authentication
 {
-    public class AuthAdminService : IAuthUserService<UserResponseVM>
+    public class AuthAdminService : AuthService, IAuthAdminService
     {
         private readonly IAuthUnitOfWork _authUnitOfWork;
         private readonly AppHelper _appHelper;
-        private readonly AuthService _authService;
         private readonly IConfiguration _configuration;
 
-        public AuthAdminService(IAuthUnitOfWork authUnitOfWork, AppHelper appHelper, AuthService authService, IConfiguration configuration)
+        public AuthAdminService(IAuthUnitOfWork authUnitOfWork, IMailService mailService, AppHelper appHelper, IConfiguration configuration) : base(authUnitOfWork, mailService, configuration, appHelper)
         {
             _authUnitOfWork = authUnitOfWork;
             _appHelper = appHelper;
-            _authService = authService;
             _configuration = configuration;
         }
 
-        public async Task<AuthModel<UserResponseVM>> SignInAsync(SignInVM model)
+        public async Task<AuthModel<UserResponseVM>> SignInAdminAsync(SignInVM model)
         {
-            var user = await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone);
-            var userRole = await _authUnitOfWork.UserManager.GetRolesAsync(user);
-            if (user is null || !await _authUnitOfWork.UserManager.CheckPasswordAsync(user, model.Password))
+            AuthModel<ApplicationUser> SignInResponse = await SignInAsync(model);
+            if (!SignInResponse.Success)
             {
-                return new AuthModel<UserResponseVM> { Success = false, Message = "PhoneNumber or Password is incorrect" };
+                return new AuthModel<UserResponseVM> { Success = false, Message = SignInResponse.Message };
             }
-            var userToken = await _authService.CreateJwtToken(user);
 
-            var DoctorData = new UserResponseVM
+            var user = SignInResponse.Data;
+            var jwtToken = await CreateJwtToken(user);
+            var AdminData = ConstructAdminResponse(user, jwtToken);
+
+            return new AuthModel<UserResponseVM> { Success = true, Message = "Success SignIn", Data = AdminData };
+        }
+        public async Task<AuthModel<UserResponseVM>> GetUserAccount(string userId)
+        {
+            try
+            {
+                return new AuthModel<UserResponseVM> { Success = true};
+            }
+            catch (Exception error)
+            {
+                return new AuthModel<UserResponseVM> { Success = false, Message = $"{error.Message}" };
+            }
+        }
+
+        public async Task<AuthModel<UserResponseVM>> SignUpAdminAsync(SignUpVM model)
+        {
+
+            AuthModel<ApplicationUser> SignUpResponse = await SignUpAsync(model);
+            if (!SignUpResponse.Success)
+            {
+                return new AuthModel<UserResponseVM> { Success = false, Message = SignUpResponse.Message };
+            }
+
+            var user = SignUpResponse.Data;
+            await _authUnitOfWork.UserManager.AddToRoleAsync(user, model.Role);
+
+            var jwtToken = await CreateJwtToken(user);
+            var AdminData = ConstructAdminResponse(user, jwtToken);
+
+            return new AuthModel<UserResponseVM> { Success = true, Message = "Success Sign Up", Data = AdminData };
+        }
+        private UserResponseVM ConstructAdminResponse(ApplicationUser user, JwtSecurityToken jwtToken)
+        {
+            return new UserResponseVM
             {
                 Email = user.Email,
-                ExpiresOn = userToken.ValidTo,
+                ExpiresOn = jwtToken.ValidTo,
                 Role = "Admin",
-                Token = new JwtSecurityTokenHandler().WriteToken(userToken),
+                Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
                 FullName = user.FullName,
                 City = user.City,
                 PhoneNumber = user.PhoneNumber,
                 Gender = user.Gender,
+                userName = user.UserName,
                 Age = user.Age
-            };
-            return new AuthModel<UserResponseVM>
-            {
-                Success = true,
-                Message = "Success SignIn",
-                Data = DoctorData
-            };
-        }
-
-        public async Task<AuthModel<UserResponseVM>> SignUpAsync<TModel>(TModel model) where TModel : SignUpVM
-        {
-            var email = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
-            if (email is not null)
-            {
-                return new AuthModel<UserResponseVM>
-                { Success = false, Message = "Email is already exist" };
-            }
-            var phoneNumber = await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
-            if (phoneNumber is not null)
-            {
-                return new AuthModel<UserResponseVM>
-                { Success = false, Message = "PhoneNumber is already exist" };
-            }
-            if (!model.PhoneNumber.All(char.IsDigit))
-            {
-                return new AuthModel<UserResponseVM>
-                { Success = false, Message = "PhoneNumber must be numbers only" };
-            }
-            var user = new ApplicationUser
-            {
-                FullName = model.FullName,
-                UserName = model.FullName.Replace(" ", "") + _appHelper.GenerateThreeDigitsCode(),
-                Email = model.Email,
-                City = model.City,
-                PhoneNumber = model.PhoneNumber,
-                Gender = model.Gender,
-                Age = model.Age,
-                VerificationCode = _appHelper.GenerateCode().ToString()
-            };
-            var result = await _authUnitOfWork.UserManager.CreateAsync(user, model.Password);
-            if (!result.Succeeded)
-            {
-                var errors = string.Empty;
-                foreach (var error in result.Errors)
-                {
-                    errors += $"{error.Description}, ";
-                }
-                return new AuthModel<UserResponseVM> { Success = false, Message = errors };
-            }
-            await _authUnitOfWork.UserManager.AddToRoleAsync(user, model.Role);
-
-            var jwtToken = await _authService.CreateJwtToken(user);
-            var adminData = new UserResponseVM
-            {
-                Email = user.Email,
-                ExpiresOn = jwtToken.ValidTo,
-                Role = model.Role,
-                Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
-                FullName = model.FullName,
-                City = model.City,
-                PhoneNumber = model.PhoneNumber,
-                Gender = model.Gender,
-                Age = model.Age
-            };
-            return new AuthModel<UserResponseVM>
-            {
-                Success = true,
-                Message = "Success Sign Up",
-                Data = adminData
             };
         }
         public async Task<AuthModel> UploadProfilePicture(ProfileImageVM model, string UserId)

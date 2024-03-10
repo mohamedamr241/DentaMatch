@@ -1,4 +1,5 @@
 ﻿using DentaMatch.Services.Authentication;
+using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.ViewModel.Authentication.Request;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,8 +9,8 @@ namespace DentaMatch.Controllers.Authentication
     [ApiController]
     public class AdminAuthController : ControllerBase
     {
-        private readonly AuthAdminService _admin;
-        public AdminAuthController(AuthAdminService admin)
+        private readonly IAuthAdminService _admin;
+        public AdminAuthController(IAuthAdminService admin)
         {
             _admin = admin;
         }
@@ -23,7 +24,7 @@ namespace DentaMatch.Controllers.Authentication
                 {
                     return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
                 }
-                var result = await _admin.SignUpAsync(model);
+                var result = await _admin.SignUpAdminAsync(model);
                 if (!result.Success)
                 {
                     return BadRequest(result);

@@ -1,4 +1,5 @@
 ﻿using DentaMatch.Services.Authentication;
+using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication;
 using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
@@ -16,13 +17,13 @@ namespace DentaMatch.Controllers.Authentication
     {
         public IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public AuthDoctorService _doctor;
-        public AuthPatientService _patient;
-        public AuthAdminService _admin;
-        public AuthService _authService;
+        public IAuthDoctorService _doctor;
+        public IAuthPatientService _patient;
+        public IAuthAdminService _admin;
+        public IAuthService _authService;
 
-        public AuthController(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, AuthDoctorService doctor,
-            AuthPatientService patient, AuthAdminService admin, AuthService authService)
+        public AuthController(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IAuthDoctorService doctor,
+            IAuthPatientService patient, IAuthAdminService admin, IAuthService authService)
         {
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
@@ -38,27 +39,33 @@ namespace DentaMatch.Controllers.Authentication
             try
             {
                 if (!ModelState.IsValid)
+                {
                     return BadRequest(new { Success = false, Message = ModelState });
+                }
 
-                var role = model.Phone != null ? await _authService.GetRoleAsync(model.Phone) : await _authService.GetRoleAsync(model.Email);
+                var role = model.Phone != null ? await _authService.GetRoleAsync(model.Phone) :
+                    await _authService.GetRoleAsync(model.Email);
+
                 if (string.IsNullOrEmpty(role))
+                {
                     return BadRequest(new { Success = false, Message = "Phone number or password is not correct" });
+                }
 
                 if (role == "Doctor")
                 {
-                    AuthModel<DoctorResponseVM> doctorResponse = await _doctor.SignInAsync(model);
+                    AuthModel<DoctorResponseVM> doctorResponse = await _doctor.SignInDoctorAsync(model);
                     return doctorResponse.Success ? Ok(doctorResponse) : BadRequest(doctorResponse);
                 }
 
                 if (role == "Patient")
                 {
-                    AuthModel<PatientResponseVM> patientResponse = await _patient.SignInAsync(model);
+                    AuthModel<PatientResponseVM> patientResponse = await _patient.SignInPatientAsync(model);
                     return patientResponse.Success ? Ok(patientResponse) : BadRequest(patientResponse);
                 }
 
                 if (role == "Admin")
                 {
-                    AuthModel<UserResponseVM> adminResponse = await _admin.SignInAsync(model);
+                    AuthModel<UserResponseVM> adminResponse = await _admin.SignInAdminAsync(model);
                     return adminResponse.Success ? Ok(adminResponse) : BadRequest(adminResponse);
                 }
 

@@ -10,10 +10,11 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DentaMatch.Services.Authentication
 {
-    public class AuthPatientService : AuthService, IAuthUserService<PatientResponseVM>
+    public class AuthPatientService : AuthService, IAuthPatientService
     {
         private readonly IConfiguration _configuration;
         private readonly IAuthUnitOfWork _authUnitOfWork;
@@ -28,134 +29,148 @@ namespace DentaMatch.Services.Authentication
             _appHelper = appHelper;
         }
 
-        public async Task<AuthModel<PatientResponseVM>> SignUpAsync<TModel>(TModel model) where TModel : SignUpVM
+        public async Task<AuthModel<PatientResponseVM>> SignUpPatientAsync(PatientSignUpVM model)
         {
-            var email = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
-            if (email is not null)
+            AuthModel<ApplicationUser> SignUpResponse = await SignUpAsync(model);
+            if (!SignUpResponse.Success)
             {
-                return new AuthModel<PatientResponseVM>
-                { Success = false, Message = "Email is already exist" };
-            }
-            var phoneNumber = await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
-            if (phoneNumber is not null)
-            {
-                return new AuthModel<PatientResponseVM>
-                { Success = false, Message = "Phone number is already exist" };
-            }
-            if (!model.PhoneNumber.All(char.IsDigit))
-            {
-                return new AuthModel<PatientResponseVM>
-                { Success = false, Message = "Phone number must be numbers only" };
+                return new AuthModel<PatientResponseVM> { Success = false, Message = SignUpResponse.Message };
             }
 
-            var user = new ApplicationUser
+            var user = SignUpResponse.Data;
+            await _authUnitOfWork.UserManager.AddToRoleAsync(user, model.Role);
+
+            var PatientDetails = new Patient
             {
-                //ProfileImage = fullPath,
-                FullName = model.FullName,
-                UserName = model.FullName.Replace(" ", "") + _appHelper.GenerateThreeDigitsCode(),
-                Email = model.Email,
-                City = model.City,
-                PhoneNumber = model.PhoneNumber,
-                Gender = model.Gender,
-                Age = model.Age,
-                VerificationCode = _appHelper.GenerateCode().ToString()
+                Id = Guid.NewGuid().ToString(),
+                Address = model.Address,
+                UserId = user.Id,
+                User = user
             };
-            var result = await _authUnitOfWork.UserManager.CreateAsync(user, model.Password);
-            if (!result.Succeeded)
-            {
-                var errors = string.Empty;
-                foreach (var error in result.Errors)
-                {
-                    errors += $"{error.Description}, ";
-                }
-                return new AuthModel<PatientResponseVM> { Success = false, Message = errors };
-            }
-            await _authUnitOfWork.UserManager.AddToRoleAsync(user, "Patient");
+            _authUnitOfWork.PatientRepository.Add(PatientDetails);
+            _authUnitOfWork.Save();
 
-            var patientModel = model as PatientSignUpVM;
-            if (patientModel != null)
-            {
-                var patientDetail = new Patient
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Address = patientModel.Address,
-                    UserId = user.Id,
-                    User = user
-                };
-                _authUnitOfWork.PatientRepository.Add(patientDetail);
-                _authUnitOfWork.Save();
+            var jwtToken = await CreateJwtToken(user);
+            var PatientData = ConstructPatientResponse(user, PatientDetails, jwtToken);
 
-                var jwtToken = await CreateJwtToken(user);
+            var confirmEmailToken = await _authUnitOfWork.UserManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
+            var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
 
-                var PatientData = new PatientResponseVM
-                {
-                    ProfileImage = user.ProfileImage,
-                    Email = user.Email,
-                    ExpiresOn = jwtToken.ValidTo,
-                    Role = "Patient",
-                    Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
-                    FullName = model.FullName,
-                    City = model.City,
-                    PhoneNumber = model.PhoneNumber,
-                    Gender = model.Gender,
-                    Age = model.Age,
-                    Address = patientModel.Address
-                };
+            string url = $"{_configuration["AppUrl"]}Auth/ConfirmEmail?userid={user.Id}&token={validEmailToken}";
 
-                var confirmEmailToken = await _authUnitOfWork.UserManager.GenerateEmailConfirmationTokenAsync(user);
-                var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
-                var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
-
-                string url = $"{_configuration["AppUrl"]}Auth/ConfirmEmail?userid={user.Id}&token={validEmailToken}";
-
-                await _mailService.SendEmailAsync(user.Email, "Confirm your email", $"<h1>Welcome to DentaMatch</h1>" +
-                    $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
-                return new AuthModel<PatientResponseVM>
-                {
-                    Success = true,
-                    Message = "Success SignUp",
-                    Data = PatientData
-                };
-            }
-            else
-            {
-                return new AuthModel<PatientResponseVM> { Success = false, Message = "Failed To Sign Up" };
-            }
-
-
+            await _mailService.SendEmailAsync(user.Email, "Confirm your email", $"<h1>Welcome to DentaMatch</h1>" +
+                $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
+            return new AuthModel<PatientResponseVM> { Success = true, Message = "Success SignUp", Data = PatientData };
         }
 
-        public async Task<AuthModel<PatientResponseVM>> SignInAsync(SignInVM model)
+        public async Task<AuthModel<PatientResponseVM>> SignInPatientAsync(SignInVM model)
         {
-            var user = model.Phone != null ? await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone) : await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.Email == model.Email);
-            if (user is null || !await _authUnitOfWork.UserManager.CheckPasswordAsync(user, model.Password))
+            AuthModel<ApplicationUser> SignInResponse = await SignInAsync(model);
+            if (!SignInResponse.Success)
             {
-                return new AuthModel<PatientResponseVM> { Success = false, Message = "Phone Number or Password is incorrect" };
+                return new AuthModel<PatientResponseVM> { Success = false, Message = SignInResponse.Message };
             }
-            var userToken = await CreateJwtToken(user);
-            var userRole = await _authUnitOfWork.UserManager.GetRolesAsync(user);
+            var user = SignInResponse.Data;
             var PatientDetails = _authUnitOfWork.PatientRepository.Get(p => p.UserId == user.Id);
+            var jwtToken = await CreateJwtToken(user);
+            var PatientData = ConstructPatientResponse(user, PatientDetails, jwtToken);
 
-            var PatientData = new PatientResponseVM
+            return new AuthModel<PatientResponseVM> { Success = true, Message = "Success Sign In", Data = PatientData };
+        }
+
+        private PatientResponseVM ConstructPatientResponse(ApplicationUser user, Patient patientDetails, JwtSecurityToken jwtToken)
+        {
+            return new PatientResponseVM
             {
                 ProfileImage = user.ProfileImage,
                 Email = user.Email,
-                ExpiresOn = userToken.ValidTo,
-                Role = userRole[0],
-                Token = new JwtSecurityTokenHandler().WriteToken(userToken),
+                ExpiresOn = jwtToken.ValidTo,
+                Role = "Patient",
+                Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
                 FullName = user.FullName,
                 City = user.City,
                 PhoneNumber = user.PhoneNumber,
                 Gender = user.Gender,
                 Age = user.Age,
-                Address = PatientDetails.Address
+                userName = user.UserName,
+                Address = patientDetails.Address
             };
-            return new AuthModel<PatientResponseVM>
+        }
+        public async Task<AuthModel<PatientResponseVM>> GetUserAccount(string userId)
+        {
+            try
             {
-                Success = true,
-                Message = "Success SignIn",
-                Data = PatientData
-            };
+                var result = await GetAccount(userId);
+                if(!result.Success)
+                {
+                    return new AuthModel<PatientResponseVM>
+                    {
+                        Success = false,
+                        Message = result.Message
+                    };
+                }
+                var userRole = await _authUnitOfWork.UserManager.GetRolesAsync(result.Data);
+                var patientDetails = _authUnitOfWork.PatientRepository.Get(u=> u.UserId == userId);
+                var PatientData = new PatientResponseVM
+                {
+                    ProfileImage = result.Data.ProfileImage,
+                    Email = result.Data.Email,
+                    userName= result.Data.UserName,
+                    Role = userRole[0],
+                    ProfileImageLink = result.Data.ProfileImageLink,
+                    FullName = result.Data.FullName,
+                    City = result.Data.City,
+                    PhoneNumber = result.Data.PhoneNumber,
+                    Gender = result.Data.Gender,
+                    Age = result.Data.Age,
+                    Address = patientDetails.Address
+                };
+                return new AuthModel<PatientResponseVM>
+                {
+                    Success = true,
+                    Message = "Account Retrieved Successfully",
+                    Data = PatientData
+                };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel<PatientResponseVM> { Success = false, Message = $"{error.Message}" };
+            }
+        }
+        public async Task<AuthModel> UpdateUser(PatientUpdateRequestVM user, string userid)
+        {
+            try
+            {
+                var appUser = new ApplicationUser
+                {
+                    FullName = user.FullName,
+                    UserName = user.userName,
+                    Email = user.Email,
+                    City = user.City,
+                    PhoneNumber = user.PhoneNumber,
+                    Gender = user.Gender,
+                    Age = user.Age,
+                };
+                var result = await UpdateAccount(appUser, userid);
+                if(!result.Success)
+                {
+                    return new AuthModel { Success = false, Message = result.Message };
+                }
+                var PatientDetails = _authUnitOfWork.PatientRepo.Get(u => u.UserId == userid);
+                var PatientUpdateResult = _authUnitOfWork.PatientRepo.UpdateDetails(user, PatientDetails);
+                if (!PatientUpdateResult)
+                {
+                    return new AuthModel { Success = false, Message = "Error while updating user account" };
+                }
+                _authUnitOfWork.Save();
+                return new AuthModel { Success = true, Message = "User Account Updated Successfully"};
+
+            }
+            catch(Exception error)
+            {
+                return new AuthModel { Success = false, Message = $"{error.Message}" };
+            }
         }
 
         public async Task<AuthModel> UploadProfilePicture(ProfileImageVM model, string UserId)
@@ -179,5 +194,7 @@ namespace DentaMatch.Services.Authentication
                 return new AuthModel { Success = false, Message = $"{error.Message}" };
             }
         }
+
+
     }
 }

@@ -17,6 +17,7 @@ using DentaMatch.Services.Dental_Case.IServices;
 using DentaMatch.Services.Authentication;
 using DentaMatch.Services.Cases_Appointment.IServices;
 using DentaMatch.Services.Dental_Case;
+using DentaMatch.Services.Authentication.IServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,10 +38,10 @@ builder.Services.AddScoped<AppHelper>();
 
 builder.Services.AddScoped<IDentalCaseService, DentalCaseService>();
 builder.Services.AddTransient<IMailService, MailService>();
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<AuthPatientService>();
-builder.Services.AddScoped<AuthAdminService>();
-builder.Services.AddScoped<AuthDoctorService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAuthPatientService, AuthPatientService>();
+builder.Services.AddScoped<IAuthAdminService, AuthAdminService>();
+builder.Services.AddScoped<IAuthDoctorService, AuthDoctorService>();
 builder.Services.AddScoped<ICaseAppointmentService, CaseAppointmentService>();
 
 

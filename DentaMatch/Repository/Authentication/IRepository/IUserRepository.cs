@@ -6,6 +6,7 @@ namespace DentaMatch.Repository.Authentication.IRepository
     {
         void UpdateVerificationCode(ApplicationUser user, string verficationCode, bool isVerified = false);
         void UpdateProfilePicture(ApplicationUser user, string ImagePathLink, string ImagePath);
+        bool UpdateUserAccount(ApplicationUser userDetails, ApplicationUser user);
 
     }
 }
