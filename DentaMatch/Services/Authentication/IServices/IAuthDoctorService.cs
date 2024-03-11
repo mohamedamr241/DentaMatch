@@ -2,6 +2,7 @@
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Patient;
 using DentaMatch.ViewModel.Authentication.Request;
+using DentaMatch.ViewModel.Authentication.Doctor;
 
 namespace DentaMatch.Services.Authentication.IServices
 {
@@ -11,7 +12,7 @@ namespace DentaMatch.Services.Authentication.IServices
         Task<AuthModel<DoctorResponseVM>> SignInDoctorAsync(SignInVM model);
         Task<AuthModel> UploadProfilePicture(ProfileImageVM model, string UserId);
         Task<AuthModel<DoctorResponseVM>> GetUserAccount(string userId);
-        //Task<AuthModel> UpdateUser(PatientUpdateRequestVM user, string userid);
+        Task<AuthModel> UpdateUser(DoctorUpdateRequestVMcs user, string userid);
 
     }
 }

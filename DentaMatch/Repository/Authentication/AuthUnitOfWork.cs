@@ -10,6 +10,7 @@ namespace DentaMatch.Repository.Authentication
         private readonly ApplicationDbContext _db;
         public UserManager<ApplicationUser> UserManager { get; private set; }
         public PatientRepository PatientRepo { get; private set; }
+        public DoctorRepository DoctorRepo { get; private set; }
         public IRepository<Patient> PatientRepository { get; private set; }
         public IRepository<Doctor> DoctorRepository { get; private set; }
         public IUserRepository UserRepository { get; private set; }
@@ -22,6 +23,7 @@ namespace DentaMatch.Repository.Authentication
             DoctorRepository = new Repository<Doctor>(_db);
             UserRepository = new UserRepository(_db);
             PatientRepo = new PatientRepository(_db);
+            DoctorRepo = new DoctorRepository(_db);
         }
 
         public void Save()

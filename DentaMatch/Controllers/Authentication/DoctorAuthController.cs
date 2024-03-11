@@ -1,6 +1,8 @@
 ﻿using DentaMatch.Services.Authentication;
 using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.ViewModel.Authentication;
+using DentaMatch.ViewModel.Authentication.Doctor;
+using DentaMatch.ViewModel.Authentication.Patient;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -61,6 +63,34 @@ namespace DentaMatch.Controllers.Authentication
             catch (Exception error)
             {
                 return BadRequest(new { Success = false, Message = $"Retrieving Account Failed: {error.Message}" });
+            }
+        }
+        [Authorize(Roles = "Doctor")]
+        [HttpPost("UpdateAccount")]
+        public async Task<IActionResult> UpdateAccountAsync(DoctorUpdateRequestVMcs user)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new { Success = false, Message = ModelState });
+                }
+                var userClaims = _httpContextAccessor.HttpContext.User.Claims;
+                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value;
+                if (userId == null)
+                {
+                    return BadRequest(new { Success = false, Message = "User not Found!" });
+                }
+                var result = await _doctorService.UpdateUser(user, userId);
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Ok(result);
+            }
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Updating Account Failed: {error.Message}" });
             }
         }
 

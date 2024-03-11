@@ -10,6 +10,7 @@ namespace DentaMatch.Repository.Authentication.IRepository
         IRepository<Doctor> DoctorRepository { get; }
         IUserRepository UserRepository { get; }
         PatientRepository PatientRepo { get; }
+        DoctorRepository DoctorRepo { get; }
         void Save();
     }
 }

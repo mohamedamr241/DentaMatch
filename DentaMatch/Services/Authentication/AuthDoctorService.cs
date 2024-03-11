@@ -5,6 +5,7 @@ using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.Services.Mail.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication;
+using DentaMatch.ViewModel.Authentication.Doctor;
 using DentaMatch.ViewModel.Authentication.Patient;
 using DentaMatch.ViewModel.Authentication.Request;
 using Microsoft.AspNetCore.WebUtilities;
@@ -176,9 +177,39 @@ namespace DentaMatch.Services.Authentication
             }
         }
 
-        public Task<AuthModel> UpdateUser(PatientUpdateRequestVM user, string userid)
+        public async Task<AuthModel> UpdateUser(DoctorUpdateRequestVMcs user, string userid)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var appUser = new ApplicationUser
+                {
+                    FullName = user.FullName,
+                    UserName = user.userName,
+                    Email = user.Email,
+                    City = user.City,
+                    PhoneNumber = user.PhoneNumber,
+                    Gender = user.Gender,
+                    Age = user.Age,
+                };
+                var result = await UpdateAccount(appUser, userid);
+                if (!result.Success)
+                {
+                    return new AuthModel { Success = false, Message = result.Message };
+                }
+                var DoctorDetails = _authUnitOfWork.DoctorRepo.Get(u => u.UserId == userid);
+                var PatientUpdateResult = _authUnitOfWork.DoctorRepo.UpdateDetails(user, DoctorDetails);
+                if (!PatientUpdateResult)
+                {
+                    return new AuthModel { Success = false, Message = "Error while updating user account" };
+                }
+                _authUnitOfWork.Save();
+                return new AuthModel { Success = true, Message = "User Account Updated Successfully" };
+
+            }
+            catch (Exception error)
+            {
+                return new AuthModel { Success = false, Message = $"{error.Message}" };
+            }
         }
     }
 }
