@@ -18,6 +18,8 @@ using DentaMatch.Services.Authentication;
 using DentaMatch.Services.Cases_Appointment.IServices;
 using DentaMatch.Services.Dental_Case;
 using DentaMatch.Services.Authentication.IServices;
+using DentaMatch.Services.Paymob.Iservice;
+using DentaMatch.Services.Paymob;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +27,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddControllers();
+builder.Services.AddHttpClient();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -39,6 +42,7 @@ builder.Services.AddScoped<AppHelper>();
 builder.Services.AddScoped<IDentalCaseService, DentalCaseService>();
 builder.Services.AddTransient<IMailService, MailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPaymobService, PaymobService>();
 builder.Services.AddScoped<IAuthPatientService, AuthPatientService>();
 builder.Services.AddScoped<IAuthAdminService, AuthAdminService>();
 builder.Services.AddScoped<IAuthDoctorService, AuthDoctorService>();
