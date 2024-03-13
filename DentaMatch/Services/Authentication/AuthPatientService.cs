@@ -36,10 +36,10 @@ namespace DentaMatch.Services.Authentication
             }
 
             var user = SignUpResponse.Data;
-            if (model.ProfileImage is not null)
-            {
-                UpsertProfilePicture(user, model.ProfileImage, "Patient");
-            }
+            //if (model.ProfileImage is not null)
+            //{
+            //    UpsertProfilePicture(user, model.ProfileImage, "Patient");
+            //}
             await _authUnitOfWork.UserManager.AddToRoleAsync(user, model.Role);
 
             var PatientDetails = new Patient
