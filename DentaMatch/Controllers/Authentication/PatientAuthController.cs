@@ -1,5 +1,4 @@
-﻿using DentaMatch.Services.Authentication;
-using DentaMatch.Services.Authentication.IServices;
+﻿using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.ViewModel.Authentication.Patient;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,12 +35,12 @@ namespace DentaMatch.Controllers.Authentication
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Signup Failed: {error.Message}" });
+                return BadRequest(new { Success = false, Message = $"Patient Signup Failed: {error.Message}" });
             }
         }
         [Authorize(Roles = "Patient")]
         [HttpGet("GetAccount")]
-        public async Task<IActionResult> GetAccountAsync()
+        public async Task<IActionResult> GetPatientAccountAsync()
         {
             try
             {
@@ -51,7 +50,7 @@ namespace DentaMatch.Controllers.Authentication
                 {
                     return BadRequest(new { Success = false, Message = "User not Found!" });
                 }
-                var result = await _patientService.GetUserAccount(userId);
+                var result = await _patientService.GetPatientAccount(userId);
                 if (!result.Success)
                 {
                     return BadRequest(result);
@@ -60,12 +59,12 @@ namespace DentaMatch.Controllers.Authentication
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Retrieving Account Failed: {error.Message}" });
+                return BadRequest(new { Success = false, Message = $"Retrieving Patient Account Failed: {error.Message}" });
             }
         }
         [Authorize(Roles = "Patient")]
         [HttpPost("UpdateAccount")]
-        public async Task<IActionResult> UpdateAccountAsync(PatientUpdateRequestVM user)
+        public async Task<IActionResult> UpdatePatientAccAsync(PatientUpdateRequestVM model)
         {
             try
             {
@@ -79,7 +78,7 @@ namespace DentaMatch.Controllers.Authentication
                 {
                     return BadRequest(new { Success = false, Message = "User not Found!" });
                 }
-                var result = await _patientService.UpdateUser(user, userId);
+                var result = await _patientService.UpdatePatientAccount(userId, model);
                 if (!result.Success)
                 {
                     return BadRequest(result);
@@ -88,7 +87,7 @@ namespace DentaMatch.Controllers.Authentication
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Updating Account Failed: {error.Message}" });
+                return BadRequest(new { Success = false, Message = $"Updating Patient Account Failed: {error.Message}" });
             }
         }
     }

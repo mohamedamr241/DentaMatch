@@ -5,9 +5,7 @@ using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.Services.Mail.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
-using DentaMatch.ViewModel.Authentication.Patient;
 using DentaMatch.ViewModel.Authentication.Request;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -34,6 +32,186 @@ namespace DentaMatch.Services.Authentication
             _appHelper = appHelper;
         }
 
+        public async Task<AuthModel<ApplicationUser>> SignUpAsync(SignUpVM model)
+        {
+            var email = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
+            if (email is not null)
+            {
+                return new AuthModel<ApplicationUser>
+                { Success = false, Message = "Email is already exist" };
+            }
+            var phoneNumber = await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+            if (phoneNumber is not null)
+            {
+                return new AuthModel<ApplicationUser>
+                { Success = false, Message = "Phone number is already exist" };
+            }
+            if (!model.PhoneNumber.All(char.IsDigit))
+            {
+                return new AuthModel<ApplicationUser>
+                { Success = false, Message = "Phone number must be numbers only" };
+            }
+
+            var user = new ApplicationUser
+            {
+                FullName = model.FullName,
+                UserName = model.FullName.Replace(" ", "") + _appHelper.GenerateThreeDigitsCode(),
+                Email = model.Email,
+                City = model.City,
+                PhoneNumber = model.PhoneNumber,
+                Gender = model.Gender,
+                Age = model.Age,
+                VerificationCode = _appHelper.GenerateCode().ToString()
+            };
+
+            var result = await _authUnitOfWork.UserManager.CreateAsync(user, model.Password);
+            if (!result.Succeeded)
+            {
+                var errors = string.Empty;
+                foreach (var error in result.Errors)
+                {
+                    errors += $"{error.Description}, ";
+                }
+                return new AuthModel<ApplicationUser> { Success = false, Message = errors };
+            }
+            return new AuthModel<ApplicationUser> { Success = true, Data = user };
+        }
+
+        public async Task<AuthModel<ApplicationUser>> SignInAsync(SignInVM model)
+        {
+            var user = model.Phone != null ? await _authUnitOfWork.UserManager.
+                Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone) :
+                await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.Email == model.Email);
+
+            var passwordIsValid = await _authUnitOfWork.UserManager.CheckPasswordAsync(user, model.Password);
+            if (user is null || !passwordIsValid)
+            {
+                return new AuthModel<ApplicationUser> { Success = false, Message = "Phone number or Password is incorrect" };
+            }
+            return new AuthModel<ApplicationUser> { Success = true, Data = user };
+        }
+
+        public async Task<AuthModel> UpdateAccount(ApplicationUser user, UserUpdateRequestVM model)
+        {
+            try
+            {
+                bool IsValidated = true;
+                string errorMessages = string.Empty;
+                var existingUserByUsername = await _authUnitOfWork.UserManager.FindByNameAsync(model.userName);
+                if (existingUserByUsername != null && existingUserByUsername.Id != user.Id)
+                {
+                    IsValidated = false;
+                    errorMessages += "Username Already Exist, ";
+                }
+
+                var existingUserByEmail = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
+                if (existingUserByEmail is not null && existingUserByEmail.Id != user.Id)
+                {
+                    IsValidated = false;
+                    errorMessages += "Email is already exist, ";
+                }
+
+                var existingUserByPhone = await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+                if (existingUserByPhone is not null && existingUserByPhone.Id != user.Id)
+                {
+                    IsValidated = false;
+                    errorMessages += "Phone number is already exist";
+                }
+                if (!IsValidated)
+                {
+                    return new AuthModel { Success = false, Message = errorMessages };
+                }
+
+                _authUnitOfWork.UserRepository.UpdateUserAccount(user, model);
+                var updateResult = await _authUnitOfWork.UserManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    string errors = string.Empty;
+                    foreach (var error in updateResult.Errors)
+                    {
+                        errors += $"{error.Description} ";
+                    }
+                    return new AuthModel { Success = false, Message = errors };
+                }
+                return new AuthModel { Success = true };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel { Success = false, Message = $"{error.Message}" };
+            }
+        }
+
+        public async Task<AuthModel> DeleteAccount(string userId)
+        {
+            try
+            {
+                var user = await _authUnitOfWork.UserManager.FindByIdAsync(userId);
+                var doctor = _authUnitOfWork.DoctorRepository.Get(u => u.UserId == userId);
+                if(user == null)
+                {
+                    return new AuthModel { Success = false, Message = "User Not Found!" };
+
+                }
+                var result = await _authUnitOfWork.UserManager.DeleteAsync(user);
+                if (!result.Succeeded)
+                {
+                    return new AuthModel { Success = false, Message = "deletion of user failed" };
+                }
+
+                if (user.ProfileImage is not null)
+                {
+                    _appHelper.DeleteImage(user.ProfileImage);
+                }
+                //delete card image if user is doctor
+                if (doctor is not null)
+                {
+                    _appHelper.DeleteImage(doctor.CardImage);
+                }
+                return new AuthModel { Success = true, Message = "user is deleted successfully" };
+
+            }
+            catch (Exception error)
+            {
+                return new AuthModel { Success = false, Message = $"{error.Message}" };
+            }
+        }
+     
+        public async Task<AuthModel> ChangePasswordAsync(string userId, ChangePasswordVm model)
+        {
+            try
+            {
+                var user = await _authUnitOfWork.UserManager.FindByIdAsync(userId);
+
+                if (user is null)
+                {
+                    return new AuthModel<ApplicationUser> { Success = false, Message = "User not found" };
+                }
+
+                var passwordIsValid = await _authUnitOfWork.UserManager.CheckPasswordAsync(user, model.currentPassword);
+                if (!passwordIsValid)
+                {
+                    return new AuthModel<ApplicationUser> { Success = false, Message = "Current password is incorrect" };
+                }
+
+                var changeResult = await _authUnitOfWork.UserManager.ChangePasswordAsync(user, model.currentPassword, model.newPassword);
+                if (!changeResult.Succeeded)
+                {
+                    var errorMessages = string.Empty;
+                    foreach (var error in changeResult.Errors)
+                    {
+                        errorMessages += $"{error.Description} ";
+                    }
+                    return new AuthModel<ApplicationUser> { Success = false, Message = errorMessages };
+                }
+                return new AuthModel<ApplicationUser> { Success = true, Message = "Password changed successfully" };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel { Success = false, Message = $"{error.Message}" };
+            }
+
+
+        }
         public async Task<AuthModel> ForgetPasswordAsync(ForgetPasswordVM model)
         {
             var user = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
@@ -49,28 +227,6 @@ namespace DentaMatch.Services.Authentication
             await _mailService.SendEmailAsync(model.Email, "Reset Password", "<h1>Follow the instructions to reset your password<h1>" +
                 $"<p>Your verification code is {randomNumber}</p>" + "<p>Don't share this code with anyone</p>");
             return new AuthModel { Success = true, Message = "Email is sent successfully" };
-        }
-
-        public async Task<AuthModel> VerifyCodeAsync(VerifyCodeVM model)
-        {
-            var user = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
-            if (user == null)
-            {
-                return new AuthModel { Success = false, Message = "No User associated with email" };
-            }
-            TimeSpan timeDifference = DateTime.UtcNow - user.VerificationCodeTimeStamp;
-            if (user.Email == model.Email && user.VerificationCode == model.VerificationCode && timeDifference.TotalMinutes <= 3)
-            {
-
-                int randomNumber = _appHelper.GenerateCode();
-                _authUnitOfWork.UserRepository.UpdateVerificationCode(user, randomNumber.ToString(), true);
-                _authUnitOfWork.Save();
-                return new AuthModel { Success = true, Message = "User is verified" };
-            }
-            else
-            {
-                return new AuthModel { Success = false, Message = "User is not verified" };
-            }
         }
 
         public async Task<AuthModel> ResetPasswordAsync(ResetPasswordVM model)
@@ -107,6 +263,30 @@ namespace DentaMatch.Services.Authentication
                 return new AuthModel { Success = false, Message = "Verification Code Is Expired" };
             }
         }
+
+        public async Task<AuthModel> VerifyCodeAsync(VerifyCodeVM model)
+        {
+            var user = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return new AuthModel { Success = false, Message = "No User associated with this email" };
+            }
+            TimeSpan timeDifference = DateTime.UtcNow - user.VerificationCodeTimeStamp;
+            if (user.Email == model.Email && user.VerificationCode == model.VerificationCode && timeDifference.TotalMinutes <= 3)
+            {
+
+                int randomNumber = _appHelper.GenerateCode();
+                _authUnitOfWork.UserRepository.UpdateVerificationCode(user, randomNumber.ToString(), true);
+                _authUnitOfWork.Save();
+                return new AuthModel { Success = true, Message = "User is verified" };
+            }
+            else
+            {
+                return new AuthModel { Success = false, Message = "User is not verified" };
+            }
+        }
+
+
         public async Task<AuthModel> ConfirmEmailAsync(string userId, string token)
         {
             var user = await _authUnitOfWork.UserManager.FindByIdAsync(userId);
@@ -137,49 +317,30 @@ namespace DentaMatch.Services.Authentication
         }
         public async Task<string> GetRoleAsync(string Input)
         {
-            // var user = Input.Contains("@") ? await _userManager.Users.SingleOrDefaultAsync(u => u.Email == Input) : await _userManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == Input);
             var user = Regex.IsMatch(Input, @"^01\d{9}$") ? await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == Input) : await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.Email == Input);
             if (user == null)
                 return string.Empty;
             var userRoles = await _authUnitOfWork.UserManager.GetRolesAsync(user);
             return userRoles[0];
         }
-        public async Task<AuthModel> DeleteAccount(string userId)
+
+        internal void UpsertProfilePicture(ApplicationUser user, IFormFile Image, string folderName)
         {
-            try
-            {
-                var user = await _authUnitOfWork.UserManager.FindByIdAsync(userId);
-                if(user == null)
+                if (user.ProfileImage is not null)
+                    _appHelper.DeleteImage(user.ProfileImage);
+
+                string? profileImageFullPath = null;
+                string? ProfileImageLink = null;
+                if (Image is not null)
                 {
-                    return new AuthModel
-                    {
-                        Success = false,
-                        Message = "User Not Found!",
-                    };
+                    string ImagePath = Path.Combine("wwwroot", "Images", folderName, "ProfileImages");
+                    string ProfileImageName = _appHelper.SaveImage(Image, ImagePath);
+                    profileImageFullPath = Path.Combine(ImagePath, ProfileImageName);
+                    ProfileImageLink = $"{_configuration["ImgUrl"]}" + Path.Combine("Images", folderName, "ProfileImages", ProfileImageName);
                 }
-                var result = await _authUnitOfWork.UserManager.DeleteAsync(user);
-                if (result.Succeeded)
-                {
-                    return new AuthModel
-                    {
-                        Success = true,
-                        Message = "user is deleted successfully",
-                    };
-                }
-                else
-                {
-                    return new AuthModel
-                    {
-                        Success = false,
-                        Message = "deletion of user failed",
-                    };
-                }
-            }
-            catch (Exception error)
-            {
-                return new AuthModel { Success = false, Message = $"{error.Message}" };
-            }
+                _authUnitOfWork.UserRepository.UpdateProfilePicture(user, profileImageFullPath, ProfileImageLink);
         }
+
         public async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
         {
             var userClaims = await _authUnitOfWork.UserManager.GetClaimsAsync(user);
@@ -210,120 +371,7 @@ namespace DentaMatch.Services.Authentication
 
             return jwtSecurityToken;
         }
-        public async Task<AuthModel<ApplicationUser>> GetAccount(string userId)
-        {
-            try
-            {
-                var user = await _authUnitOfWork.UserManager.FindByIdAsync(userId);
-                if (user == null)
-                {
-                    return new AuthModel<ApplicationUser>
-                    {
-                        Success = false,
-                        Message = "User Not Found!",
-                    };
-                }
-                return new AuthModel<ApplicationUser>
-                {
-                    Success = true,
-                    Message = "User Retrieved Successfully",
-                    Data = user
-                };
-            }
-            catch (Exception error)
-            {
-                return new AuthModel<ApplicationUser> { Success = false, Message = $"{error.Message}" };
-            }
-        }
-        public async Task<AuthModel> UpdateAccount(ApplicationUser userDetails, string userid)
-        {
-            try
-            {
-                var UserNameCheck = await _authUnitOfWork.UserManager.FindByNameAsync(userDetails.UserName);
-                if(UserNameCheck!= null && UserNameCheck.Id != userid)
-                {
-                    return new AuthModel { Success = false, Message = $"UserName Already Exist" };
-                }
-                var UseremailCheck = await _authUnitOfWork.UserManager.FindByEmailAsync(userDetails.Email);
-                if (UseremailCheck is not null && UseremailCheck.Id!= userid)
-                {
-                    return new AuthModel
-                    { Success = false, Message = "Email is already exist" };
-                }
-                var UserphoneNumberCheck = await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == userDetails.PhoneNumber);
-                if (UserphoneNumberCheck is not null && UserphoneNumberCheck.Id != userid)
-                {
-                    return new AuthModel<PatientResponseVM>
-                    { Success = false, Message = "Phone number is already exist" };
-                }
-
-                var user = await _authUnitOfWork.UserManager.FindByIdAsync(userid);
-                var result = _authUnitOfWork.UserRepository.UpdateUserAccount(userDetails, user);
-                if(!result)
-                {
-                    return new AuthModel { Success = false, Message = $"Update account failed" };
-                }
-                return new AuthModel { Success = true, Message = $"Update account failed" };
-            }
-            catch (Exception error)
-            {
-                return new AuthModel { Success = false, Message = $"{error.Message}" };
-            }
-        }
-        public async Task<AuthModel<ApplicationUser>> SignUpAsync(SignUpVM model)
-        {
-            var email = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
-            if (email is not null)
-            {
-                return new AuthModel<ApplicationUser>
-                { Success = false, Message = "Email is already exist" };
-            }
-            var phoneNumber = await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
-            if (phoneNumber is not null)
-            {
-                return new AuthModel<ApplicationUser>
-                { Success = false, Message = "Phone number is already exist" };
-            }
-            if (!model.PhoneNumber.All(char.IsDigit))
-            {
-                return new AuthModel<ApplicationUser>
-                { Success = false, Message = "Phone number must be numbers only" };
-            }
-
-            var user = new ApplicationUser
-            {
-                //ProfileImage = fullPath,
-                FullName = model.FullName,
-                UserName = model.FullName.Replace(" ", "") + _appHelper.GenerateThreeDigitsCode(),
-                Email = model.Email,
-                City = model.City,
-                PhoneNumber = model.PhoneNumber,
-                Gender = model.Gender,
-                Age = model.Age,
-                VerificationCode = _appHelper.GenerateCode().ToString()
-            };
-            var result = await _authUnitOfWork.UserManager.CreateAsync(user, model.Password);
-            if (!result.Succeeded)
-            {
-                var errors = string.Empty;
-                foreach (var error in result.Errors)
-                {
-                    errors += $"{error.Description}, ";
-                }
-                return new AuthModel<ApplicationUser> { Success = false, Message = errors };
-            }
-            return new AuthModel<ApplicationUser> { Success = true, Data = user };
-        }
-
-        public async Task<AuthModel<ApplicationUser>> SignInAsync(SignInVM model)
-        {
-            var user = model.Phone != null ? await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone) : await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.Email == model.Email);
-            if (user is null || !await _authUnitOfWork.UserManager.CheckPasswordAsync(user, model.Password))
-            {
-                return new AuthModel<ApplicationUser> { Success = false, Message = "Phone number or Password is incorrect" };
-            }
-            //var userRole = await _authUnitOfWork.UserManager.GetRolesAsync(user);
-            return new AuthModel<ApplicationUser> { Success = true, Data = user };
-        }
     }
 }
+
+

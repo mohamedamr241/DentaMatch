@@ -6,6 +6,7 @@ namespace DentaMatch.ViewModel.Authentication
     {
         public string University { get; set; }
         public string CardImage { get; set; }
+        public string CardImageLink { get; set; }
 
     }
 }

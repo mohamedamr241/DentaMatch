@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DentaMatch.Models
@@ -10,12 +11,12 @@ namespace DentaMatch.Models
 
         [Required]
         public string University { get; set; }
-        [Required, Display(Name = "Card Image")]
+        [Required]
         public string CardImage { get; set; }
+        public string CardImageLink { get; set; }
 
         [ForeignKey("User")]
         public string UserId { get; set; }
-        //[ForeignKey("UserId")]
         public virtual ApplicationUser User { get; set; }
         public virtual ICollection<DentalCase> DrAssignedCases { get; set; }
 

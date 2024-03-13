@@ -5,9 +5,7 @@ using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.Services.Mail.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Patient;
-using DentaMatch.ViewModel.Authentication.Request;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -38,6 +36,10 @@ namespace DentaMatch.Services.Authentication
             }
 
             var user = SignUpResponse.Data;
+            if (model.ProfileImage is not null)
+            {
+                UpsertProfilePicture(user, model.ProfileImage, "Patient");
+            }
             await _authUnitOfWork.UserManager.AddToRoleAsync(user, model.Role);
 
             var PatientDetails = new Patient
@@ -79,15 +81,68 @@ namespace DentaMatch.Services.Authentication
             return new AuthModel<PatientResponseVM> { Success = true, Message = "Success Sign In", Data = PatientData };
         }
 
-        private PatientResponseVM ConstructPatientResponse(ApplicationUser user, Patient patientDetails, JwtSecurityToken jwtToken)
+        public async Task<AuthModel<PatientResponseVM>> GetPatientAccount(string userId)
         {
+            try
+            {
+                var user = await _authUnitOfWork.UserManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return new AuthModel<PatientResponseVM> { Success = false, Message = "User Not Found!" };
+                }
+                var PatientDetails = _authUnitOfWork.PatientRepository.Get(u => u.UserId == userId);
+                var PatientData = ConstructPatientResponse(user, PatientDetails);
+                return new AuthModel<PatientResponseVM> { Success = true, Message = "Patient Account Retrieved Successfully", Data = PatientData };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel<PatientResponseVM> { Success = false, Message = $"{error.Message}" };
+            }
+        }
+        public async Task<AuthModel> UpdatePatientAccount(string userId, PatientUpdateRequestVM model)
+        {
+            try
+            {
+                var user = _authUnitOfWork.UserRepository.Get(u => u.Id == userId);
+                var result = await UpdateAccount(user, model);
+                if (!result.Success)
+                {
+                    return new AuthModel { Success = false, Message = result.Message };
+                }
+                UpsertProfilePicture(user, model.ProfileImage, "Patient");
+                var Patient = _authUnitOfWork.PatientRepository.Get(u => u.UserId == userId);
+                var PatientUpdateResult = _authUnitOfWork.PatientRepository.UpdatePatientAccount(Patient, model);
+                if (!PatientUpdateResult)
+                {
+                    return new AuthModel { Success = false, Message = "Error while updating patient account" };
+                }
+                _authUnitOfWork.Save();
+                return new AuthModel { Success = true, Message = "Patient Account Updated Successfully"};
+
+            }
+            catch(Exception error)
+            {
+                return new AuthModel { Success = false, Message = $"{error.Message}" };
+            }
+        }
+
+        private PatientResponseVM ConstructPatientResponse(ApplicationUser user, Patient patientDetails, JwtSecurityToken? jwtToken = null)
+        {
+            string? token = null;
+            DateTime? expiresOn = null;
+            if (jwtToken is not null)
+            {
+                token = new JwtSecurityTokenHandler().WriteToken(jwtToken);
+                expiresOn = jwtToken.ValidTo;
+            }
             return new PatientResponseVM
             {
                 ProfileImage = user.ProfileImage,
+                ProfileImageLink = user.ProfileImageLink,
                 Email = user.Email,
-                ExpiresOn = jwtToken.ValidTo,
+                ExpiresOn = expiresOn ?? DateTime.MinValue,
                 Role = "Patient",
-                Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
+                Token = token,
                 FullName = user.FullName,
                 City = user.City,
                 PhoneNumber = user.PhoneNumber,
@@ -97,104 +152,5 @@ namespace DentaMatch.Services.Authentication
                 Address = patientDetails.Address
             };
         }
-        public async Task<AuthModel<PatientResponseVM>> GetUserAccount(string userId)
-        {
-            try
-            {
-                var result = await GetAccount(userId);
-                if(!result.Success)
-                {
-                    return new AuthModel<PatientResponseVM>
-                    {
-                        Success = false,
-                        Message = result.Message
-                    };
-                }
-                var userRole = await _authUnitOfWork.UserManager.GetRolesAsync(result.Data);
-                var patientDetails = _authUnitOfWork.PatientRepository.Get(u=> u.UserId == userId);
-                var PatientData = new PatientResponseVM
-                {
-                    ProfileImage = result.Data.ProfileImage,
-                    Email = result.Data.Email,
-                    userName= result.Data.UserName,
-                    Role = userRole[0],
-                    ProfileImageLink = result.Data.ProfileImageLink,
-                    FullName = result.Data.FullName,
-                    City = result.Data.City,
-                    PhoneNumber = result.Data.PhoneNumber,
-                    Gender = result.Data.Gender,
-                    Age = result.Data.Age,
-                    Address = patientDetails.Address
-                };
-                return new AuthModel<PatientResponseVM>
-                {
-                    Success = true,
-                    Message = "Account Retrieved Successfully",
-                    Data = PatientData
-                };
-            }
-            catch (Exception error)
-            {
-                return new AuthModel<PatientResponseVM> { Success = false, Message = $"{error.Message}" };
-            }
-        }
-        public async Task<AuthModel> UpdateUser(PatientUpdateRequestVM user, string userid)
-        {
-            try
-            {
-                var appUser = new ApplicationUser
-                {
-                    FullName = user.FullName,
-                    UserName = user.userName,
-                    Email = user.Email,
-                    City = user.City,
-                    PhoneNumber = user.PhoneNumber,
-                    Gender = user.Gender,
-                    Age = user.Age,
-                };
-                var result = await UpdateAccount(appUser, userid);
-                if(!result.Success)
-                {
-                    return new AuthModel { Success = false, Message = result.Message };
-                }
-                var PatientDetails = _authUnitOfWork.PatientRepo.Get(u => u.UserId == userid);
-                var PatientUpdateResult = _authUnitOfWork.PatientRepo.UpdateDetails(user, PatientDetails);
-                if (!PatientUpdateResult)
-                {
-                    return new AuthModel { Success = false, Message = "Error while updating user account" };
-                }
-                _authUnitOfWork.Save();
-                return new AuthModel { Success = true, Message = "User Account Updated Successfully"};
-
-            }
-            catch(Exception error)
-            {
-                return new AuthModel { Success = false, Message = $"{error.Message}" };
-            }
-        }
-
-        public async Task<AuthModel> UploadProfilePicture(ProfileImageVM model, string UserId)
-        {
-            try
-            {
-                var user = _authUnitOfWork.UserRepository.Get(u => u.Id == UserId);
-                if (user == null)
-                {
-                    return new AuthModel { Success = false, Message = "User Not Found" };
-                }
-                string ImagePath = Path.Combine("wwwroot", "Images", "Patient", "ProfileImages");
-                string ProfileImageName = _appHelper.SaveImage(model.ProfileImage, ImagePath);
-                string ProfileImageFullPath = $"{_configuration["ImgUrl"]}" + Path.Combine("Images", "Patient", "ProfileImages", ProfileImageName);
-                _authUnitOfWork.UserRepository.UpdateProfilePicture(user, ProfileImageFullPath, Path.Combine(ImagePath, ProfileImageName));
-                _authUnitOfWork.Save();
-                return new AuthModel { Success = true, Message = "Profile Image Added Successfully" };
-            }
-            catch (Exception error)
-            {
-                return new AuthModel { Success = false, Message = $"{error.Message}" };
-            }
-        }
-
-
     }
 }

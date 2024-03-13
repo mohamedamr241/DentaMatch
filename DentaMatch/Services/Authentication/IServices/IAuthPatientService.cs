@@ -8,8 +8,7 @@ namespace DentaMatch.Services.Authentication.IServices
     {
         Task<AuthModel<PatientResponseVM>> SignUpPatientAsync(PatientSignUpVM model);
         Task<AuthModel<PatientResponseVM>> SignInPatientAsync(SignInVM model);
-        Task<AuthModel> UploadProfilePicture(ProfileImageVM model, string UserId);
-        Task<AuthModel<PatientResponseVM>> GetUserAccount(string userId);
-        Task<AuthModel> UpdateUser(PatientUpdateRequestVM user, string userid);
+        Task<AuthModel<PatientResponseVM>> GetPatientAccount(string userId);
+        Task<AuthModel> UpdatePatientAccount(string userId, PatientUpdateRequestVM model);
     }
 }

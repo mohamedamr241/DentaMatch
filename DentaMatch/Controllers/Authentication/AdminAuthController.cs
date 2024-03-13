@@ -1,5 +1,4 @@
-﻿using DentaMatch.Services.Authentication;
-using DentaMatch.Services.Authentication.IServices;
+﻿using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.ViewModel.Authentication.Request;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,7 +21,7 @@ namespace DentaMatch.Controllers.Authentication
             {
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
+                    return BadRequest(new { Success = false, Message = ModelState });
                 }
                 var result = await _admin.SignUpAdminAsync(model);
                 if (!result.Success)
@@ -33,7 +32,7 @@ namespace DentaMatch.Controllers.Authentication
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Signup Failed: {error.Message}" });
+                return BadRequest(new { Success = false, Message = $"Admin Signup Failed: {error.Message}" });
             }
         }
     }

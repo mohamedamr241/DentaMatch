@@ -12,7 +12,6 @@ namespace DentaMatch.Models
         public string Address { get; set; }
         [ForeignKey("User")]
         public string UserId { get; set; }
-        //[ForeignKey("UserId")]
         public virtual ApplicationUser User { get; set; }
         public virtual ICollection<DentalCase> PatientCases { get; set; }
 

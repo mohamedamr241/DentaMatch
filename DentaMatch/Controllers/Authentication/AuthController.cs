@@ -1,10 +1,8 @@
-﻿using DentaMatch.Services.Authentication;
-using DentaMatch.Services.Authentication.IServices;
+﻿using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication;
 using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
 using DentaMatch.ViewModel.Authentication.Patient;
-using DentaMatch.ViewModel.Authentication.Request;
 using DentaMatch.ViewModel.Authentication.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -77,6 +75,29 @@ namespace DentaMatch.Controllers.Authentication
             }
         }
 
+        [HttpGet("ConfirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
+                {
+                    return NotFound();
+                }
+                var result = await _authService.ConfirmEmailAsync(userId, token);
+
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Redirect($"{_configuration["AppUrl"]}/ConfirmEmail.html");
+            }
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Confirm Email Failed: {error.Message}" });
+            }
+        }
+
         [HttpPost("ForgetPassword")]
         public async Task<IActionResult> ForgetPasswordAsync(ForgetPasswordVM model)
         {
@@ -142,6 +163,35 @@ namespace DentaMatch.Controllers.Authentication
                 return BadRequest(new { Success = false, Message = $"Reset Password Failed: {error.Message}" });
             }
         }
+
+        [Authorize(Roles = "Doctor, Patient")]
+        [HttpPost("ChangePassword")]
+        public async Task<IActionResult> ChangePasswordAsync(ChangePasswordVm model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new { Success = false, Message = ModelState });
+                }
+                var userClaims = _httpContextAccessor.HttpContext.User.Claims;
+                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value;
+                if (userId == null)
+                {
+                    return BadRequest(new { Success = false, Message = "User not Found!" });
+                }
+                var result = await _authService.ChangePasswordAsync(userId, model);
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Ok(result);
+            }
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Change Password Failed: {error.Message}" });
+            }
+        }
         [Authorize(Roles = "Doctor, Patient")]
         [HttpGet("DeleteAccount")]
         public async Task<IActionResult> DeleteAccountAsync()
@@ -164,72 +214,6 @@ namespace DentaMatch.Controllers.Authentication
             catch (Exception error)
             {
                 return BadRequest(new { Success = false, Message = $"Delete Account Failed: {error.Message}" });
-            }
-        }
-        [HttpGet("ConfirmEmail")]
-        public async Task<IActionResult> ConfirmEmail(string userId, string token)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
-                {
-                    return NotFound();
-                }
-                var result = await _authService.ConfirmEmailAsync(userId, token);
-
-                if (!result.Success)
-                {
-                    return BadRequest(result);
-                }
-                return Redirect($"{_configuration["AppUrl"]}/ConfirmEmail.html");
-            }
-            catch (Exception error)
-            {
-                return BadRequest(new { Success = false, Message = $"Confirm Email Failed: {error.Message}" });
-            }
-        }
-
-        [HttpPost("profileimage")]
-        public async Task<IActionResult> AddProfileImage(ProfileImageVM model)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
-                }
-                var userClaims = _httpContextAccessor.HttpContext.User.Claims;
-                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value;
-                var userRole = userClaims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
-                if (userRole == "Patient")
-                {
-                    var result = await _patient.UploadProfilePicture(model, userId);
-                    if (result.Success == true)
-                    {
-                        return Ok(result);
-                    }
-                }
-                else if (userRole == "Doctor")
-                {
-                    var result = await _doctor.UploadProfilePicture(model, userId);
-                    if (result.Success == true)
-                    {
-                        Ok(result);
-                    }
-                }
-                else if (userRole == "Admin")
-                {
-                    var result = await _admin.UploadProfilePicture(model, userId);
-                    if (result.Success == true)
-                    {
-                        Ok(result);
-                    }
-                }
-                return BadRequest(new { Success = false, Message = "Failed to Add Profile Image" });
-            }
-            catch (Exception error)
-            {
-                return BadRequest(new { Success = false, Message = $"Confirm Email Failed: {error.Message}" });
             }
         }
     }

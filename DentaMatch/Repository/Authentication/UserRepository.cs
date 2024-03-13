@@ -1,6 +1,8 @@
 ﻿using DentaMatch.Data;
 using DentaMatch.Models;
 using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.ViewModel.Authentication.Patient;
+using DentaMatch.ViewModel.Authentication.Request;
 
 namespace DentaMatch.Repository.Authentication
 {
@@ -20,7 +22,7 @@ namespace DentaMatch.Repository.Authentication
             }
         }
 
-        public void UpdateProfilePicture(ApplicationUser user, string ImagePathLink, string ImagePath)
+        public void UpdateProfilePicture(ApplicationUser user, string? ImagePath = null, string? ImagePathLink = null)
         {
             if (user != null)
             {
@@ -28,19 +30,19 @@ namespace DentaMatch.Repository.Authentication
                 user.ProfileImageLink = ImagePathLink;
             }
         }
-        public bool UpdateUserAccount(ApplicationUser userDetails, ApplicationUser user)
+        public bool UpdateUserAccount(ApplicationUser user, UserUpdateRequestVM updatedUser)
         {
             if (user != null)
             {
-                user.Age = userDetails.Age;
-                user.Email = userDetails.Email;
-                user.FullName = userDetails.FullName;
-                user.Gender = userDetails.Gender;
-                user.PhoneNumber = userDetails.PhoneNumber;
-                user.UserName = userDetails.UserName;
-                user.City = userDetails.City;
-                user.NormalizedUserName = (userDetails.UserName).ToUpper();
-                user.NormalizedEmail = (userDetails.Email).ToUpper();
+                user.Age = updatedUser.Age;
+                user.Email = updatedUser.Email;
+                user.FullName = updatedUser.FullName;
+                user.Gender = updatedUser.Gender;
+                user.PhoneNumber = updatedUser.PhoneNumber;
+                user.UserName = updatedUser.userName;
+                user.City = updatedUser.City;
+                user.NormalizedUserName = (updatedUser.userName).ToUpper();
+                user.NormalizedEmail = (updatedUser.Email).ToUpper();
                 return true;
             }
             return false;

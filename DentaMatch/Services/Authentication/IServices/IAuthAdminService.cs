@@ -9,6 +9,5 @@ namespace DentaMatch.Services.Authentication.IServices
     {
         Task<AuthModel<UserResponseVM>> SignUpAdminAsync(SignUpVM model);
         Task<AuthModel<UserResponseVM>> SignInAdminAsync(SignInVM model);
-        Task<AuthModel> UploadProfilePicture(ProfileImageVM model, string UserId);
     }
 }

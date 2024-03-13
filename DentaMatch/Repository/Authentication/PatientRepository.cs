@@ -5,17 +5,17 @@ using DentaMatch.ViewModel.Authentication.Patient;
 
 namespace DentaMatch.Repository.Authentication
 {
-    public class PatientRepository: Repository<Patient>, IUserDetailsRepository<PatientUpdateRequestVM, Patient>
+    public class PatientRepository: Repository<Patient>, IPatientRepository
     {
         public PatientRepository(ApplicationDbContext db) : base(db)
         {
         }
 
-        public bool UpdateDetails(PatientUpdateRequestVM userDetails, Patient user)
+        public bool UpdatePatientAccount(Patient patient, PatientUpdateRequestVM model)
         {
-            if(userDetails != null)
+            if(model != null)
             {
-                user.Address = userDetails.Address;
+                patient.Address = model.Address;
                 return true;
             }
             return false;
