@@ -6,7 +6,7 @@ namespace DentaMatch.Services.Dental_Case.IServices
     public interface IDentalCaseService
     {
         AuthModel<DentalCaseResponseVM> CreateCase(string UserId, DentalCaseRequestVm model);
-        AuthModel<DentalCaseResponseVM> UpdateCase(string caseId, DentalCaseRequestVm model);
+        AuthModel<DentalCaseResponseVM> UpdateCase(string caseId, DentalCaseUpdateVM model);
         AuthModel DeleteCase(string caseId);
         AuthModel<DentalCaseResponseVM> GetCase(string caseId);
         AuthModel<List<DentalCaseResponseVM>> GetPatientCases(string UserId);

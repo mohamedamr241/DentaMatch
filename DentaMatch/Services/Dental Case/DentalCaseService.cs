@@ -185,7 +185,7 @@ namespace DentaMatch.Services.Dental_Case
             }
         }
 
-        public AuthModel<DentalCaseResponseVM> UpdateCase(string caseId, DentalCaseRequestVm model)
+        public AuthModel<DentalCaseResponseVM> UpdateCase(string caseId, DentalCaseUpdateVM model)
         {
             try
             {
@@ -209,7 +209,7 @@ namespace DentaMatch.Services.Dental_Case
 
 
                 var existingChronicDiseases = _dentalunitOfWork.DentalCaseRepository.CaseChronicDiseases.GetAll(u => u.CaseId == caseId, includeProperties: "ChronicDiseases").ToList();
-                if (model.ChronicDiseases == null)
+                if (model.ChronicDiseases == null || model.ChronicDiseases[0]=="None")
                 {
                     _dentalunitOfWork.DentalCaseRepository.CaseChronicDiseases.RemoveRange(existingChronicDiseases);
                 }
@@ -233,7 +233,7 @@ namespace DentaMatch.Services.Dental_Case
                 }
 
                 var existingDentalDiseases = _dentalunitOfWork.DentalCaseRepository.CaseDentalDiseases.GetAll(u => u.CaseId == caseId, includeProperties: "DentalDiseases").ToList();
-                if (model.DentalDiseases == null)
+                if (model.DentalDiseases == null || model.ChronicDiseases[0] == "None")
                 {
                     _dentalunitOfWork.DentalCaseRepository.CaseDentalDiseases.RemoveRange(existingDentalDiseases);
                 }

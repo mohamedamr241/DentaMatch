@@ -20,6 +20,8 @@ using DentaMatch.Services.Dental_Case;
 using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.Services.Paymob.Iservice;
 using DentaMatch.Services.Paymob;
+using DentaMatch.Services.Paypal.IServices;
+using DentaMatch.Services.Paypal;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +45,7 @@ builder.Services.AddScoped<IDentalCaseService, DentalCaseService>();
 builder.Services.AddTransient<IMailService, MailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPaymobService, PaymobService>();
+builder.Services.AddScoped<IPaypalServices, PaypalServices>();
 builder.Services.AddScoped<IAuthPatientService, AuthPatientService>();
 builder.Services.AddScoped<IAuthAdminService, AuthAdminService>();
 builder.Services.AddScoped<IAuthDoctorService, AuthDoctorService>();

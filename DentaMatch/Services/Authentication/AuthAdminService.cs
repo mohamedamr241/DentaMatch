@@ -32,10 +32,10 @@ namespace DentaMatch.Services.Authentication
             }
 
             var user = SignUpResponse.Data;
-            if (model.ProfileImage is not null)
-            {
-                UpsertProfilePicture(user, model.ProfileImage, "Admin");
-            }
+            //if (model.ProfileImage is not null)
+            //{
+            //    UpsertProfilePicture(user, model.ProfileImage, "Admin");
+            //}
             await _authUnitOfWork.UserManager.AddToRoleAsync(user, model.Role);
 
             var jwtToken = await CreateJwtToken(user);
