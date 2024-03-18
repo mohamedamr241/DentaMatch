@@ -27,7 +27,7 @@ namespace DentaMatch.Controllers.PayPal
             try
             {
                 var approvalLink = await _paypalService.CreatePayment(amount, description);
-                return Ok(approvalLink);
+                return Ok(new { url = approvalLink });
             }
             catch (Exception ex)
             {
