@@ -120,11 +120,11 @@ namespace DentaMatch.Services.Authentication
 
                 UpsertProfilePicture(user, model.ProfileImage, "Doctor");
                 var doctor = _authUnitOfWork.DoctorRepository.Get(u => u.UserId == userId);
-                var UpdateDoctorResult = _authUnitOfWork.DoctorRepository.UpdateDoctorAccount(doctor, model);
-                if (!UpdateDoctorResult)
-                {
-                    return new AuthModel { Success = false, Message = "Error while updating doctor account" };
-                }
+                _authUnitOfWork.DoctorRepository.UpdateDoctorAccount(doctor, model);
+                //if (!UpdateDoctorResult)
+                //{
+                //    return new AuthModel { Success = false, Message = "Error while updating doctor account" };
+                //}
                 _authUnitOfWork.Save();
                 return new AuthModel { Success = true, Message = "Doctor Account Updated Successfully" };
 

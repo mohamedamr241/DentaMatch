@@ -3,6 +3,7 @@ using DentaMatch.Models.Dental_Case.Chronic_Diseases;
 using DentaMatch.Models.Dental_Case.Dental_Diseases;
 using DentaMatch.Models.Dental_Case.Images;
 using DentaMatch.Repository;
+using DentaMatch.ViewModel.Dental_Cases;
 
 namespace DentaMatch.Repository.Dental_Case.IRepository
 {
@@ -15,5 +16,6 @@ namespace DentaMatch.Repository.Dental_Case.IRepository
         IRepository<MouthImages> MouthImages { get; }
         IRepository<XrayIamges> XRayImages { get; }
         IRepository<PrescriptionImages> PrescriptionImages { get; }
+        void UpdateDentalCaseProperties(DentalCase dentalCase, DentalCaseRequestVm model);
     }
 }

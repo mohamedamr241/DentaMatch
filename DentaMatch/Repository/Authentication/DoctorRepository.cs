@@ -13,14 +13,14 @@ namespace DentaMatch.Repository.Authentication
         }
         
 
-        public bool UpdateDoctorAccount(Doctor doctor, DoctorUpdateRequestVM model)
+        public void UpdateDoctorAccount(Doctor doctor, DoctorUpdateRequestVM model)
         {
             if (doctor != null)
             {
                 doctor.University = model.University;
-                return true;
+                //return true;
             }
-            return false;
+            //return false;
         }
     }
 }

@@ -78,7 +78,7 @@ namespace DentaMatch.Controllers.Dental_Case.Patient
 
 
         [HttpPost("UpdateCase")]
-        public IActionResult EditCase(string caseId, DentalCaseUpdateVM model)
+        public IActionResult EditCase(string caseId, DentalCaseRequestVm model)
         {
             try
             {

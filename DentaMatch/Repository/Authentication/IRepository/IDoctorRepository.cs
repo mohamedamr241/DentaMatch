@@ -5,6 +5,6 @@ namespace DentaMatch.Repository.Authentication.IRepository
 {
     public interface IDoctorRepository : IRepository<Doctor>
     {
-        bool UpdateDoctorAccount(Doctor doctor, DoctorUpdateRequestVM model);
+        void UpdateDoctorAccount(Doctor doctor, DoctorUpdateRequestVM model);
     }
 }

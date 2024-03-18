@@ -4,6 +4,7 @@ using DentaMatch.Models.Dental_Case.Chronic_Diseases;
 using DentaMatch.Models.Dental_Case.Dental_Diseases;
 using DentaMatch.Models.Dental_Case.Images;
 using DentaMatch.Repository.Dental_Case.IRepository;
+using DentaMatch.ViewModel.Dental_Cases;
 
 namespace DentaMatch.Repository.Dental_Case
 {
@@ -35,6 +36,13 @@ namespace DentaMatch.Repository.Dental_Case
             PrescriptionImages = new Repository<PrescriptionImages>(db);
         }
 
-
+        public void UpdateDentalCaseProperties(DentalCase dentalCase, DentalCaseRequestVm model)
+        {
+            if (dentalCase is not null)
+            {
+                dentalCase.Description = model.Description;
+                dentalCase.IsKnown = model.IsKnown;
+            }
+        }
     }
 }
