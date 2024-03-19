@@ -52,7 +52,7 @@ namespace DentaMatch.Controllers.Authentication
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Admin Signup Failed: {error.Message}" });
+                return BadRequest(new { Success = false, Message = $"Get Unverified Doctors Failed: {error.Message}" });
             }
         }
 
@@ -71,7 +71,7 @@ namespace DentaMatch.Controllers.Authentication
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Admin Signup Failed: {error.Message}" });
+                return BadRequest(new { Success = false, Message = $"Verify Doctor Identity Failed: {error.Message}" });
             }
         }
     }

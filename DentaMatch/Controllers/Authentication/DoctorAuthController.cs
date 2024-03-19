@@ -1,5 +1,4 @@
-﻿using DentaMatch.Services.Authentication;
-using DentaMatch.Services.Authentication.IServices;
+﻿using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.ViewModel.Authentication;
 using DentaMatch.ViewModel.Authentication.Doctor;
 using Microsoft.AspNetCore.Authorization;

@@ -16,6 +16,7 @@ namespace DentaMatch.Services.Authentication.IServices
         Task<AuthModel> ResetPasswordAsync(ResetPasswordVM model);
         Task<AuthModel> VerifyCodeAsync(VerifyCodeVM model);
         Task<AuthModel> ConfirmEmailAsync(string userId, string token);
+        Task SendConformationMail(ApplicationUser user, string mail);
         Task<string> GetRoleAsync(string Input);
 
     }

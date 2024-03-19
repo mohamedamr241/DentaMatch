@@ -1,6 +1,8 @@
 ﻿using SendGrid.Helpers.Mail;
 using SendGrid;
 using DentaMatch.Services.Mail.IServices;
+using Microsoft.AspNetCore.WebUtilities;
+using System.Text;
 
 namespace DentaMatch.Services.Mail
 {
@@ -11,6 +13,7 @@ namespace DentaMatch.Services.Mail
         {
             _configuration = configuration;
         }
+
         public async Task SendEmailAsync(string toEmail, string subject, string content)
         {
 
@@ -21,5 +24,6 @@ namespace DentaMatch.Services.Mail
             var msg = MailHelper.CreateSingleEmail(from, to, subject, content, content);
             var response = await client.SendEmailAsync(msg);
         }
+
     }
 }
