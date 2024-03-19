@@ -27,12 +27,12 @@ namespace DentaMatch.Services.Authentication
             _appHelper = appHelper;
         }
 
-        public async Task<AuthModel<DoctorResponseVM>> SignUpDoctorAsync(DoctorSignUpVM model)
+        public async Task<AuthModel> SignUpDoctorAsync(DoctorSignUpVM model)
         {
             AuthModel<ApplicationUser> SignUpResponse = await SignUpAsync(model);
             if (!SignUpResponse.Success)
             {
-                return new AuthModel<DoctorResponseVM> { Success = false, Message = SignUpResponse.Message };
+                return new AuthModel { Success = false, Message = SignUpResponse.Message };
             }
 
             var user = SignUpResponse.Data;
@@ -55,11 +55,9 @@ namespace DentaMatch.Services.Authentication
                 CardImage = CardImageFullPath,
                 CardImageLink = CardImageLink
             };
+
             _authUnitOfWork.DoctorRepository.Add(DoctorDetails);
             _authUnitOfWork.Save();
-
-            var jwtToken = await CreateJwtToken(user);
-            var DoctortData = ConstructDoctorResponse(user, DoctorDetails, jwtToken);
 
             var confirmEmailToken = await _authUnitOfWork.UserManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
@@ -70,7 +68,7 @@ namespace DentaMatch.Services.Authentication
             await _mailService.SendEmailAsync(user.Email, "Confirm your email", $"<h1>Welcome to DentaMatch</h1>" +
                 $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
 
-            return new AuthModel<DoctorResponseVM> { Success = true, Message = "Success Sign Up", Data = DoctortData };
+            return new AuthModel{ Success = true, Message = "Please Wait for Identity Verification" };
         }
         public async Task<AuthModel<DoctorResponseVM>> SignInDoctorAsync(SignInVM model)
         {
@@ -81,30 +79,11 @@ namespace DentaMatch.Services.Authentication
             }
             var user = SignInResponse.Data;
 
-            var DoctorDetails = _authUnitOfWork.DoctorRepository.Get(u => u.UserId == user.Id);
+            var DoctorDetails = _authUnitOfWork.DoctorRepository.Get(u => u.UserId == user.Id, "User");
             var jwtToken = await CreateJwtToken(user);
-            var DoctorData = ConstructDoctorResponse(user, DoctorDetails, jwtToken);
+            var DoctorData = ConstructDoctorResponse(DoctorDetails, jwtToken);
 
             return new AuthModel<DoctorResponseVM> { Success = true, Message = "Success Sign In", Data = DoctorData };
-        }
-
-        public async Task<AuthModel<DoctorResponseVM>> GetDoctorAccount(string userId)
-        {
-            try
-            {
-                var user = await _authUnitOfWork.UserManager.FindByIdAsync(userId);
-                if (user == null)
-                {
-                    return new AuthModel<DoctorResponseVM> { Success = false, Message = "User Not Found!" };
-                }
-                var DcotorDetails = _authUnitOfWork.DoctorRepository.Get(u => u.UserId == userId);
-                var DoctorData = ConstructDoctorResponse(user, DcotorDetails);
-                return new AuthModel<DoctorResponseVM> { Success = true, Message = "Doctor Account Retrieved Successfully", Data = DoctorData };
-            }
-            catch (Exception error)
-            {
-                return new AuthModel<DoctorResponseVM> { Success = false, Message = $"{error.Message}" };
-            }
         }
 
         public async Task<AuthModel> UpdateDoctorAccount(string userId, DoctorUpdateRequestVM model)
@@ -121,10 +100,6 @@ namespace DentaMatch.Services.Authentication
                 UpsertProfilePicture(user, model.ProfileImage, "Doctor");
                 var doctor = _authUnitOfWork.DoctorRepository.Get(u => u.UserId == userId);
                 _authUnitOfWork.DoctorRepository.UpdateDoctorAccount(doctor, model);
-                //if (!UpdateDoctorResult)
-                //{
-                //    return new AuthModel { Success = false, Message = "Error while updating doctor account" };
-                //}
                 _authUnitOfWork.Save();
                 return new AuthModel { Success = true, Message = "Doctor Account Updated Successfully" };
 
@@ -135,34 +110,86 @@ namespace DentaMatch.Services.Authentication
             }
         }
 
-        private DoctorResponseVM ConstructDoctorResponse(ApplicationUser user, Doctor doctorDetails, JwtSecurityToken? jwtToken = null)
+        public async Task<AuthModel<DoctorResponseVM>> GetDoctorAccount(string userId)
         {
-            string? token = null;
-            DateTime? expiresOn = null;
+            try
+            {
+                var user = await _authUnitOfWork.UserManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return new AuthModel<DoctorResponseVM> { Success = false, Message = "User Not Found!" };
+                }
+                var DcotorDetails = _authUnitOfWork.DoctorRepository.Get(u => u.UserId == userId, "User");
+                var DoctorData = ConstructDoctorResponse(DcotorDetails);
+                return new AuthModel<DoctorResponseVM> { Success = true, Message = "Doctor Account Retrieved Successfully", Data = DoctorData };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel<DoctorResponseVM> { Success = false, Message = $"{error.Message}" };
+            }
+        }
+
+        public async Task<AuthModel<List<DoctorResponseVM>>> GetUnverifiedDoctorsAsync()
+        {
+            try
+            {
+                var UnverifiedDoctors = _authUnitOfWork.DoctorRepository.GetAll(u => u.IsVerifiedDoctor == false, "User");
+                if (UnverifiedDoctors.Count() != 0)
+                {
+                    List<DoctorResponseVM> UnverifiedDocs = new List<DoctorResponseVM>();
+                    foreach (var UnverifiedDoctor in UnverifiedDoctors)
+                    {
+                        var DoctorData = ConstructDoctorResponse(UnverifiedDoctor);
+                        UnverifiedDocs.Add(DoctorData);
+                    }
+                    return new AuthModel<List<DoctorResponseVM>>
+                    {
+                        Success = true,
+                        Message = "Unverified Doctors retrieved successfully",
+                        Data = UnverifiedDocs
+                    };
+                }
+                return new AuthModel<List<DoctorResponseVM>>
+                {
+                    Success = true,
+                    Message = "No Unverified Doctors Available",
+                    Data = []
+                };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel<List<DoctorResponseVM>> { Success = false, Message = $"{error.Message}" };
+            }
+        }
+
+        private DoctorResponseVM ConstructDoctorResponse(Doctor doctor, JwtSecurityToken? jwtToken = null)
+        {
+
+            var response =  new DoctorResponseVM
+            {
+                doctorId = doctor.Id,
+                ProfileImage = doctor.User.ProfileImage,
+                ProfileImageLink = doctor.User.ProfileImageLink,
+                Email = doctor.User.Email,
+                Role = "Doctor",
+                FullName = doctor.User.FullName,
+                City = doctor.User.City,
+                PhoneNumber = doctor.User.PhoneNumber,
+                Gender = doctor.User.Gender,
+                Age = doctor.User.Age,
+                userName = doctor.User.UserName,
+                University = doctor.University,
+                CardImage = doctor.CardImage,
+                CardImageLink = doctor.CardImageLink
+            };
+
             if (jwtToken is not null)
             {
-                token = new JwtSecurityTokenHandler().WriteToken(jwtToken);
-                expiresOn = jwtToken.ValidTo;
+                response.Token = new JwtSecurityTokenHandler().WriteToken(jwtToken);
+                response.ExpiresOn = jwtToken.ValidTo;
             }
 
-            return new DoctorResponseVM
-            {
-                ProfileImage = user.ProfileImage,
-                ProfileImageLink = user.ProfileImageLink,
-                Email = user.Email,
-                ExpiresOn = (DateTime)expiresOn,
-                Role = "Doctor",
-                Token = token,
-                FullName = user.FullName,
-                City = user.City,
-                PhoneNumber = user.PhoneNumber,
-                Gender = user.Gender,
-                Age = user.Age,
-                userName = user.UserName,
-                University = doctorDetails.University,
-                CardImage = doctorDetails.CardImage,
-                CardImageLink = doctorDetails.CardImageLink
-            };
+            return response;
         }
     }
 }

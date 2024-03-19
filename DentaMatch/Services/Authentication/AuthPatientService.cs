@@ -53,7 +53,7 @@ namespace DentaMatch.Services.Authentication
             _authUnitOfWork.Save();
 
             var jwtToken = await CreateJwtToken(user);
-            var PatientData = ConstructPatientResponse(user, PatientDetails, jwtToken);
+            var PatientData = ConstructPatientResponse(PatientDetails, jwtToken);
 
             var confirmEmailToken = await _authUnitOfWork.UserManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
@@ -74,9 +74,9 @@ namespace DentaMatch.Services.Authentication
                 return new AuthModel<PatientResponseVM> { Success = false, Message = SignInResponse.Message };
             }
             var user = SignInResponse.Data;
-            var PatientDetails = _authUnitOfWork.PatientRepository.Get(p => p.UserId == user.Id);
+            var PatientDetails = _authUnitOfWork.PatientRepository.Get(p => p.UserId == user.Id, "User");
             var jwtToken = await CreateJwtToken(user);
-            var PatientData = ConstructPatientResponse(user, PatientDetails, jwtToken);
+            var PatientData = ConstructPatientResponse(PatientDetails, jwtToken);
 
             return new AuthModel<PatientResponseVM> { Success = true, Message = "Success Sign In", Data = PatientData };
         }
@@ -90,8 +90,8 @@ namespace DentaMatch.Services.Authentication
                 {
                     return new AuthModel<PatientResponseVM> { Success = false, Message = "User Not Found!" };
                 }
-                var PatientDetails = _authUnitOfWork.PatientRepository.Get(u => u.UserId == userId);
-                var PatientData = ConstructPatientResponse(user, PatientDetails);
+                var PatientDetails = _authUnitOfWork.PatientRepository.Get(u => u.UserId == userId, "User");
+                var PatientData = ConstructPatientResponse(PatientDetails);
                 return new AuthModel<PatientResponseVM> { Success = true, Message = "Patient Account Retrieved Successfully", Data = PatientData };
             }
             catch (Exception error)
@@ -126,31 +126,31 @@ namespace DentaMatch.Services.Authentication
             }
         }
 
-        private PatientResponseVM ConstructPatientResponse(ApplicationUser user, Patient patientDetails, JwtSecurityToken? jwtToken = null)
+        private PatientResponseVM ConstructPatientResponse(Patient patient, JwtSecurityToken? jwtToken = null)
         {
-            string? token = null;
-            DateTime? expiresOn = null;
+
+            var response = new PatientResponseVM
+            {
+                ProfileImage = patient.User.ProfileImage,
+                ProfileImageLink = patient.User.ProfileImageLink,
+                Email = patient.User.Email,
+                Role = "Patient",
+                FullName = patient.User.FullName,
+                City = patient.User.City,
+                PhoneNumber = patient.User.PhoneNumber,
+                Gender = patient.User.Gender,
+                Age = patient.User.Age,
+                userName = patient.User.UserName,
+                Address = patient.Address
+            };
+
             if (jwtToken is not null)
             {
-                token = new JwtSecurityTokenHandler().WriteToken(jwtToken);
-                expiresOn = jwtToken.ValidTo;
+                response.Token = new JwtSecurityTokenHandler().WriteToken(jwtToken);
+                response.ExpiresOn = jwtToken.ValidTo;
             }
-            return new PatientResponseVM
-            {
-                ProfileImage = user.ProfileImage,
-                ProfileImageLink = user.ProfileImageLink,
-                Email = user.Email,
-                ExpiresOn = expiresOn ?? DateTime.MinValue,
-                Role = "Patient",
-                Token = token,
-                FullName = user.FullName,
-                City = user.City,
-                PhoneNumber = user.PhoneNumber,
-                Gender = user.Gender,
-                Age = user.Age,
-                userName = user.UserName,
-                Address = patientDetails.Address
-            };
+
+            return response;
         }
     }
 }

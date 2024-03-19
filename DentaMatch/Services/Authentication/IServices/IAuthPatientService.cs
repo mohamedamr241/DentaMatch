@@ -4,7 +4,7 @@ using DentaMatch.ViewModel.Authentication.Request;
 
 namespace DentaMatch.Services.Authentication.IServices
 {
-    public interface IAuthPatientService
+    public interface IAuthPatientService : IAuthService
     {
         Task<AuthModel<PatientResponseVM>> SignUpPatientAsync(PatientSignUpVM model);
         Task<AuthModel<PatientResponseVM>> SignInPatientAsync(SignInVM model);

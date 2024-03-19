@@ -1,5 +1,6 @@
 ﻿using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.ViewModel.Authentication.Request;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DentaMatch.Controllers.Authentication
@@ -8,10 +9,10 @@ namespace DentaMatch.Controllers.Authentication
     [ApiController]
     public class AdminAuthController : ControllerBase
     {
-        private readonly IAuthAdminService _admin;
-        public AdminAuthController(IAuthAdminService admin)
+        private readonly IAuthAdminService _adminService;
+        public AdminAuthController(IAuthAdminService adminService)
         {
-            _admin = admin;
+            _adminService = adminService;
         }
 
         [HttpPost("Signup")]
@@ -23,7 +24,45 @@ namespace DentaMatch.Controllers.Authentication
                 {
                     return BadRequest(new { Success = false, Message = ModelState });
                 }
-                var result = await _admin.SignUpAdminAsync(model);
+                var result = await _adminService.SignUpAdminAsync(model);
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Ok(result);
+            }
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Admin Signup Failed: {error.Message}" });
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("UnverifiedDoctors")]
+        public async Task<IActionResult> GetUnverifiedDoctors()
+        {
+            try
+            {
+                var result = await _adminService.GetUnverifiedDoctorsAsync();
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Ok(result);
+            }
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Admin Signup Failed: {error.Message}" });
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("VerifyDoctorIdentity")]
+        public async Task<IActionResult> VerifyDoctorIdentity(string doctorId, bool isIdentityVerified)
+        {
+            try
+            {
+                var result = await _adminService.VerifyDoctorIdentity(doctorId, isIdentityVerified);
                 if (!result.Success)
                 {
                     return BadRequest(result);

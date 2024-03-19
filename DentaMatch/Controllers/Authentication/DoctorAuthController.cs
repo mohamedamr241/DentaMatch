@@ -40,30 +40,6 @@ namespace DentaMatch.Controllers.Authentication
                 return BadRequest(new { Success = false, Message = $"Doctor Signup Failed: {error.Message}" });
             }
         }
-        [Authorize(Roles = "Doctor")]
-        [HttpGet("GetAccount")]
-        public async Task<IActionResult> GetDoctorAccountAsync()
-        {
-            try
-            {
-                var userClaims = _httpContextAccessor.HttpContext.User.Claims;
-                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value;
-                if (userId == null)
-                {
-                    return BadRequest(new { Success = false, Message = "User not Found!" });
-                }
-                var result = await _doctorService.GetDoctorAccount(userId);
-                if (!result.Success)
-                {
-                    return BadRequest(result);
-                }
-                return Ok(result);
-            }
-            catch (Exception error)
-            {
-                return BadRequest(new { Success = false, Message = $"Retrieving Doctor Account Failed: {error.Message}" });
-            }
-        }
 
         [Authorize(Roles = "Doctor")]
         [HttpPost("UpdateAccount")]
@@ -91,6 +67,31 @@ namespace DentaMatch.Controllers.Authentication
             catch (Exception error)
             {
                 return BadRequest(new { Success = false, Message = $"Updating Doctor Account Failed: {error.Message}" });
+            }
+        }
+
+        [Authorize(Roles = "Doctor")]
+        [HttpGet("GetAccount")]
+        public async Task<IActionResult> GetDoctorAccountAsync()
+        {
+            try
+            {
+                var userClaims = _httpContextAccessor.HttpContext.User.Claims;
+                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value;
+                if (userId == null)
+                {
+                    return BadRequest(new { Success = false, Message = "User not Found!" });
+                }
+                var result = await _doctorService.GetDoctorAccount(userId);
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Ok(result);
+            }
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Retrieving Doctor Account Failed: {error.Message}" });
             }
         }
 

@@ -16,7 +16,7 @@ namespace DentaMatch.Services.Mail
 
             var apiKey = _configuration["SendGridApiKey"];
             var client = new SendGridClient(apiKey);
-            var from = new EmailAddress("dentamatching@gmail.com", "DentaMatching");
+            var from = new EmailAddress("dentamatching@gmail.com", "DentaMatch");
             var to = new EmailAddress(toEmail);
             var msg = MailHelper.CreateSingleEmail(from, to, subject, content, content);
             var response = await client.SendEmailAsync(msg);

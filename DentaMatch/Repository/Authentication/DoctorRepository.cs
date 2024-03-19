@@ -18,9 +18,15 @@ namespace DentaMatch.Repository.Authentication
             if (doctor != null)
             {
                 doctor.University = model.University;
-                //return true;
             }
-            //return false;
+        }
+
+        public void UpdateDoctorIdentityStatus(Doctor doctor, bool isIdentityVerified)
+        {
+            if (doctor != null)
+            {
+                doctor.IsVerifiedDoctor = isIdentityVerified;
+            }
         }
     }
 }
