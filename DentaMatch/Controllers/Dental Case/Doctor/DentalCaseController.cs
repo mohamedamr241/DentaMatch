@@ -33,11 +33,11 @@ namespace DentaMatch.Controllers.Dental_Case.Doctor
             }
             catch (Exception error)
             {
-                return BadRequest(new { Success = false, Message = $"Retrieving Dental Cases Failed: {error.Message}"});
+                return BadRequest(new { Success = false, Message = $"Retrieving Unassigned Dental Cases Failed: {error.Message}"});
             }
 
         }
-
+        
         [HttpGet("GetAssignedCases")]
         public IActionResult GetAssignedCases()
         {
@@ -81,6 +81,29 @@ namespace DentaMatch.Controllers.Dental_Case.Doctor
             catch (Exception error)
             {
                 return BadRequest(new { Success = false, Message = $"Filtration By Disease Name Failed: {error.Message}" });
+            }
+
+        }
+        [HttpGet("searchByDescription")]
+        public IActionResult SearchByDescription(string query)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(query))
+                {
+                    return BadRequest(new { Success = false, Message = "Description Is Required" });
+                }
+                var result = _dentalCaseService.SearchByDescription(query);
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Ok(result);
+
+            }
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Search By Description is Failed: {error.Message}" });
             }
 
         }

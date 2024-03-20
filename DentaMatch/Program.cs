@@ -47,6 +47,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPaymobService, PaymobService>();
 builder.Services.AddScoped<IPaypalServices, PaypalServices>();
 builder.Services.AddScoped<IAuthPatientService, AuthPatientService>();
+builder.Services.AddScoped<IAuthAdminDoctorService, AuthAdminDoctorService>();
 builder.Services.AddScoped<IAuthAdminService, AuthAdminService>();
 builder.Services.AddScoped<IAuthDoctorService, AuthDoctorService>();
 builder.Services.AddScoped<ICaseAppointmentService, CaseAppointmentService>();

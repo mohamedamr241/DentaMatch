@@ -5,6 +5,8 @@ using DentaMatch.Models.Dental_Case.Dental_Diseases;
 using DentaMatch.Models.Dental_Case.Images;
 using DentaMatch.Repository.Dental_Case.IRepository;
 using DentaMatch.ViewModel.Dental_Cases;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace DentaMatch.Repository.Dental_Case
 {
@@ -24,6 +26,7 @@ namespace DentaMatch.Repository.Dental_Case
         public IRepository<XrayIamges> XRayImages { get; private set; }
 
         public IRepository<PrescriptionImages> PrescriptionImages { get; private set; }
+        private readonly ApplicationDbContext _db;
 
         public DentalCaseRepository(ApplicationDbContext db) : base(db)
         {
@@ -34,15 +37,36 @@ namespace DentaMatch.Repository.Dental_Case
             MouthImages = new Repository<MouthImages>(db);
             XRayImages = new Repository<XrayIamges>(db);
             PrescriptionImages = new Repository<PrescriptionImages>(db);
+            _db = db;
         }
 
-        public void UpdateDentalCaseProperties(DentalCase dentalCase, DentalCaseRequestVm model)
+        public void UpdateDentalCaseProperties(DentalCase dentalCase, bool isKnown, string? description = null)
         {
             if (dentalCase is not null)
             {
-                dentalCase.Description = model.Description;
-                dentalCase.IsKnown = model.IsKnown;
+                if(description != null)
+                    dentalCase.Description = description;
+                dentalCase.IsKnown = isKnown;
             }
+        }
+        public IEnumerable<DentalCase> FullTextSearch(Expression<Func<DentalCase, bool>> filter, string searchText, string? includeProperties = null)
+        {
+            DbSet<DentalCase> dbSet = _db.Set<DentalCase>();
+            IQueryable<DentalCase> query = dbSet;
+            if (!string.IsNullOrEmpty(includeProperties))
+            {
+                foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProp);
+                }
+            }
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+            query = query.Where(entity => EF.Functions.FreeText(entity.Description, searchText));
+
+            return query.ToList();
         }
     }
 }

@@ -25,6 +25,11 @@ namespace DentaMatch.Migrations
                 columns: new[] { "Id", "Name", "NormalizedName", "ConcurrencyStamp" },
                 values: new object[] { Guid.NewGuid().ToString(), "Admin", "Admin".ToUpper(), Guid.NewGuid().ToString() }
             );
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "Name", "NormalizedName", "ConcurrencyStamp" },
+                values: new object[] { Guid.NewGuid().ToString(), "AdminDoctor", "AdminDoctor".ToUpper(), Guid.NewGuid().ToString() }
+            );
         }
 
         /// <inheritdoc />

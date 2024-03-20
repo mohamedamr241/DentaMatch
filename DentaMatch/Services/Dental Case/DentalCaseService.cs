@@ -9,6 +9,7 @@ using DentaMatch.Services.Dental_Case.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Dental_Cases;
 using Microsoft.IdentityModel.Tokens;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DentaMatch.Services.Dental_Case
 {
@@ -94,7 +95,7 @@ namespace DentaMatch.Services.Dental_Case
                     return new AuthModel<DentalCaseResponseVM> { Success = false, Message = "Dental Case Not Found" };
                 }
 
-                _dentalunitOfWork.DentalCaseRepository.UpdateDentalCaseProperties(dentalCase, model);
+                _dentalunitOfWork.DentalCaseRepository.UpdateDentalCaseProperties(dentalCase, model.IsKnown, model.Description);
                 UpsertChronicDiseases(dentalCase, model.ChronicDiseases);
                 UpsertDentalDiseases(dentalCase, model.DentalDiseases);
                 UpsertMouthImages(dentalCase, model.MouthImages);
@@ -246,7 +247,7 @@ namespace DentaMatch.Services.Dental_Case
             {
                 var DentalCases = _dentalunitOfWork.DentalCaseRepository.GetAll((u => !u.IsAssigned),
                     "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User,Doctor.User");
-                if (DentalCases.Count() != 0)
+                if (DentalCases!=null && DentalCases.Count() != 0)
                 {
                     List<DentalCaseResponseVM> UnAssignedDentalCases = new List<DentalCaseResponseVM>();
                     foreach (var DentalCase in DentalCases)
@@ -271,6 +272,39 @@ namespace DentaMatch.Services.Dental_Case
             catch (Exception error)
             {
                 return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = $"Error Retrieving dental cases: {error.Message}" };
+            }
+        }
+        public AuthModel<List<DentalCaseResponseVM>> GetUnkownCases()
+        {
+            try
+            {
+                var DentalCases = _dentalunitOfWork.DentalCaseRepository.GetAll((u => !u.IsKnown),
+                    "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User,Doctor.User");
+                if (DentalCases!= null && DentalCases.Count() != 0)
+                {
+                    List<DentalCaseResponseVM> UnAssignedDentalCases = new List<DentalCaseResponseVM>();
+                    foreach (var DentalCase in DentalCases)
+                    {
+                        var UnAssginedCase = ConstructDentalCaseResponse(DentalCase);
+                        UnAssignedDentalCases.Add(UnAssginedCase);
+                    }
+                    return new AuthModel<List<DentalCaseResponseVM>>
+                    {
+                        Success = true,
+                        Message = "Unknown Dental Cases retrieved successfully",
+                        Data = UnAssignedDentalCases
+                    };
+                }
+                return new AuthModel<List<DentalCaseResponseVM>>
+                {
+                    Success = true,
+                    Message = "No Dental Cases Available",
+                    Data = []
+                };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = $"Error Retrieving Unkown dental cases: {error.Message}" };
             }
         }
 
@@ -311,7 +345,62 @@ namespace DentaMatch.Services.Dental_Case
                 return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = $"Error searching for dental cases: {error.Message}" };
             }
         }
+        public AuthModel<List<DentalCaseResponseVM>> SearchByDescription(string query)
+        {
+            try
+            {
+                var cases = _dentalunitOfWork.DentalCaseRepository.FullTextSearch(
+                    null,
+                    searchText: query,
+                    includeProperties: "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User,Doctor.User"
+                );
+                if (cases != null && cases.Count() != 0)
+                {
+                    List<DentalCaseResponseVM> UnAssignedDentalCases = new List<DentalCaseResponseVM>();
+                    foreach (var DentalCase in cases)
+                    {
+                        var UnAssginedCase = ConstructDentalCaseResponse(DentalCase);
+                        UnAssignedDentalCases.Add(UnAssginedCase);
+                    }
+                    return new AuthModel<List<DentalCaseResponseVM>>
+                    {
+                        Success = true,
+                        Message = "dental cases are retrieved successfully",
+                        Data = UnAssignedDentalCases
+                    };
+                }
+                return new AuthModel<List<DentalCaseResponseVM>>
+                {
+                    Success = true,
+                    Message = "No Dental Cases Available",
+                    Data = []
+                };
+            }
+            catch(Exception error)
+            {
+                return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = $"Error searching for dental cases: {error.Message}" };
 
+            }
+        }
+        public AuthModel ClassifyCase(DentalCaseClassificationVM model)
+        {
+            try
+            {
+                var PatientCase = _dentalunitOfWork.DentalCaseRepository.Get(u => u.Id == model.CaseId);
+                if(PatientCase == null)
+                {
+                    return new AuthModel { Success = false, Message = "Dental case is not found!" };
+                }
+                UpsertDentalDiseases(PatientCase, model.DentalDiseases);
+                _dentalunitOfWork.DentalCaseRepository.UpdateDentalCaseProperties(PatientCase, true);
+                _dentalunitOfWork.Save();
+                return new AuthModel { Success = true, Message = "Dental Case is Classified Successfully" };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel { Success = false, Message = $"Error classifying dental case: {error.Message}" };
+            }
+        }
         private void UpsertMouthImages(DentalCase dentalCase, List<IFormFile> mouthImages)
         {
             if (dentalCase.MouthImages != null)
@@ -505,7 +594,7 @@ namespace DentaMatch.Services.Dental_Case
 
             return new AuthModel<DentalCaseResponseVM> { Success = true };
         }
-
+        
         private DentalCaseResponseVM ConstructDentalCaseResponse(DentalCase dentalCase)
         {
             var DentalDiseases = dentalCase.CaseDentalDiseases.Select(u => u.DentalDiseases.DiseaseName).ToList();

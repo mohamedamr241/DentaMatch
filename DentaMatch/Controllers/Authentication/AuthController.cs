@@ -13,15 +13,16 @@ namespace DentaMatch.Controllers.Authentication
     [ApiController]
     public class AuthController : ControllerBase
     {
-        public IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public IAuthDoctorService _doctor;
-        public IAuthPatientService _patient;
-        public IAuthAdminService _admin;
-        public IAuthService _authService;
+        private readonly IAuthDoctorService _doctor;
+        private readonly IAuthPatientService _patient;
+        private readonly IAuthAdminService _admin;
+        private readonly IAuthService _authService;
+        private readonly IAuthAdminDoctorService _doctoradminService;
 
         public AuthController(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IAuthDoctorService doctor,
-            IAuthPatientService patient, IAuthAdminService admin, IAuthService authService)
+            IAuthPatientService patient, IAuthAdminService admin, IAuthService authService, IAuthAdminDoctorService doctoradminService)
         {
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
@@ -29,6 +30,7 @@ namespace DentaMatch.Controllers.Authentication
             _patient = patient;
             _admin = admin;
             _authService = authService;
+            _doctoradminService = doctoradminService;
         }
 
         [HttpPost("Signin")]
@@ -64,6 +66,11 @@ namespace DentaMatch.Controllers.Authentication
                 if (role == "Admin")
                 {
                     AuthModel<UserResponseVM> adminResponse = await _admin.SignInAdminAsync(model);
+                    return adminResponse.Success ? Ok(adminResponse) : BadRequest(adminResponse);
+                }
+                if (role == "AdminDoctor")
+                {
+                    AuthModel<UserResponseVM> adminResponse = await _doctoradminService.SignInDoctorAdminAsync(model);
                     return adminResponse.Success ? Ok(adminResponse) : BadRequest(adminResponse);
                 }
 
