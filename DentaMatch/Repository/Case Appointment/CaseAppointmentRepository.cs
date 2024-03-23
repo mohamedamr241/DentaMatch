@@ -14,6 +14,8 @@ namespace DentaMatch.Repository.Case_Appointment
 
                 if (appointmentDateTime.HasValue)
                     dentalCase.AppointmentDateTime = appointmentDateTime.Value;
+                else
+                    dentalCase.AppointmentDateTime = new DateTime(1, 1, 1, 0, 0, 0, 0);
 
                 dentalCase.GoogleMapLink = googleMapLink;
             }

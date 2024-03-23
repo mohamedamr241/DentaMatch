@@ -278,7 +278,7 @@ namespace DentaMatch.Services.Dental_Case
         {
             try
             {
-                var DentalCases = _dentalunitOfWork.DentalCaseRepository.GetAll((u => !u.IsKnown),
+                var DentalCases = _dentalunitOfWork.DentalCaseRepository.GetAll((u => !u.IsKnown && !u.IsAssigned),
                     "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User,Doctor.User");
                 if (DentalCases!= null && DentalCases.Count() != 0)
                 {
@@ -313,7 +313,7 @@ namespace DentaMatch.Services.Dental_Case
             try
             {
                 var cases = _dentalunitOfWork.DentalCaseRepository.GetAll(
-                    filter: c => c.CaseDentalDiseases.Any(cd => cd.DentalDiseases.DiseaseName == diseaseName),
+                    filter: c => !c.IsAssigned && c.CaseDentalDiseases.Any(cd => cd.DentalDiseases.DiseaseName == diseaseName),
                     includeProperties: "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User,Doctor.User"
                 );
 
@@ -403,17 +403,17 @@ namespace DentaMatch.Services.Dental_Case
         }
         private void UpsertMouthImages(DentalCase dentalCase, List<IFormFile> mouthImages)
         {
-            if (dentalCase.MouthImages != null)
-            {
-                foreach (var existingImage in dentalCase.MouthImages.ToList())
-                {
-                    _appHelper.DeleteImage(existingImage.Image);
-                    _dentalunitOfWork.DentalCaseRepository.MouthImages.Remove(existingImage);
-                }
-            }
 
             if (mouthImages is not null)
             {
+                if (dentalCase.MouthImages != null)
+                {
+                    foreach (var existingImage in dentalCase.MouthImages.ToList())
+                    {
+                        _appHelper.DeleteImage(existingImage.Image);
+                        _dentalunitOfWork.DentalCaseRepository.MouthImages.Remove(existingImage);
+                    }
+                }
                 string MouthImagesPath = Path.Combine("wwwroot", "Images", "DentalCase", "MouthImages");
                 foreach (var mouthImage in mouthImages)
                 {
@@ -434,17 +434,17 @@ namespace DentaMatch.Services.Dental_Case
 
         private void UpsertXRayImages(DentalCase dentalCase, List<IFormFile> xrayImages)
         {
-            if (dentalCase.XrayImages is not null)
-            {
-                foreach (var existingImage in dentalCase.XrayImages.ToList())
-                {
-                    _appHelper.DeleteImage(existingImage.Image);
-                    _dentalunitOfWork.DentalCaseRepository.XRayImages.Remove(existingImage);
-                }
-            }
 
             if (xrayImages is not null)
             {
+                if (dentalCase.XrayImages is not null)
+                {
+                    foreach (var existingImage in dentalCase.XrayImages.ToList())
+                    {
+                        _appHelper.DeleteImage(existingImage.Image);
+                        _dentalunitOfWork.DentalCaseRepository.XRayImages.Remove(existingImage);
+                    }
+                }
                 string XrayImagesPath = Path.Combine("wwwroot", "Images", "DentalCase", "XRayImages");
                 foreach (var xrayImage in xrayImages)
                 {
@@ -465,17 +465,17 @@ namespace DentaMatch.Services.Dental_Case
 
         private void UpsertPrescriptionImages(DentalCase dentalCase, List<IFormFile> prescriptionImages)
         {
-            if (dentalCase.PrescriptionImages != null)
-            {
-                foreach (var existingImage in dentalCase.PrescriptionImages.ToList())
-                {
-                    _appHelper.DeleteImage(existingImage.Image);
-                    _dentalunitOfWork.DentalCaseRepository.PrescriptionImages.Remove(existingImage);
-                }
-            }
 
             if (prescriptionImages is not null)
             {
+                if (dentalCase.PrescriptionImages != null)
+                {
+                    foreach (var existingImage in dentalCase.PrescriptionImages.ToList())
+                    {
+                        _appHelper.DeleteImage(existingImage.Image);
+                        _dentalunitOfWork.DentalCaseRepository.PrescriptionImages.Remove(existingImage);
+                    }
+                }
                 string PrescriptionImagesPath = Path.Combine("wwwroot", "Images", "DentalCase", "PrescriptionImages");
                 foreach (var prescriptionImage in prescriptionImages)
                 {

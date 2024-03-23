@@ -75,10 +75,10 @@ namespace DentaMatch.Services.Authentication
                     return new AuthModel<DoctorResponseVM> { Success = false, Message = SignInResponse.Message };
                 }
                 var user = SignInResponse.Data;
-                if (!user.EmailConfirmed)
-                {
-                    return new AuthModel<DoctorResponseVM> { Success = false, Message = "Your email must be confirmed" };
-                }
+                //if (!user.EmailConfirmed)
+                //{
+                //    return new AuthModel<DoctorResponseVM> { Success = false, Message = "Your email must be confirmed" };
+                //}
 
                 var DoctorDetails = _authUnitOfWork.DoctorRepository.Get(u => u.UserId == user.Id, "User");
                 if (!DoctorDetails.IsVerifiedDoctor)
