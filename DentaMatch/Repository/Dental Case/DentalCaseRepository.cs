@@ -40,15 +40,22 @@ namespace DentaMatch.Repository.Dental_Case
             _db = db;
         }
 
-        public void UpdateDentalCaseProperties(DentalCase dentalCase, bool isKnown, string? description = null)
+        public void UpdateDentalCaseProperties(DentalCase dentalCase, bool isKnown, string? description = null, DateTime? appointmentDateTime = null, string? googleMapLink = null)
         {
             if (dentalCase is not null)
             {
-                if(description != null)
+                if (description != null)
                     dentalCase.Description = description;
+
                 dentalCase.IsKnown = isKnown;
+
+                if (appointmentDateTime.HasValue)
+                    dentalCase.AppointmentDateTime = appointmentDateTime.Value;
+
+                dentalCase.GoogleMapLink = googleMapLink;
             }
         }
+
         public IEnumerable<DentalCase> FullTextSearch(Expression<Func<DentalCase, bool>> filter, string searchText, string? includeProperties = null)
         {
             DbSet<DentalCase> dbSet = _db.Set<DentalCase>();

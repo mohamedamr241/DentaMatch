@@ -17,6 +17,11 @@ namespace DentaMatch.Models
         [Required]
         public bool IsAssigned { get; set; } = false;
 
+        [Required]
+        public DateTime AppointmentDateTime { get; set; } = new DateTime(9999, 1, 1); 
+
+        public string? GoogleMapLink { get; set; }
+
         [ForeignKey("Patient")]
         public string PatientId { get; set; }
         public virtual Patient Patient { get; set; }

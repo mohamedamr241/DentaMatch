@@ -20,7 +20,7 @@ namespace DentaMatch.Controllers.Case_Appointment
 
 
         [HttpGet("RequestCase")]
-        public ActionResult RequestCase(string caseId)
+        public ActionResult RequestCase(string caseId, DateTime appointmentDateTime, string googleMapLink)
         {
             try
             {
@@ -28,10 +28,14 @@ namespace DentaMatch.Controllers.Case_Appointment
                 {
                     return BadRequest(new { Success = false, Message = ModelState, Data = new { } });
                 }
+                if (string.IsNullOrEmpty(caseId) || appointmentDateTime == DateTime.MinValue || string.IsNullOrEmpty(googleMapLink))
+                {
+                    return BadRequest(new { Success = false, Message = "Missing required parameters: caseId, appointmentDateTime, googleMapLink" });
+                }
                 var userClaims = _httpContextAccessor.HttpContext.User.Claims;
                 var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value;
 
-                var result = _appointmentService.RequestCase(caseId, userId.ToString());
+                var result = _appointmentService.RequestCase(caseId, userId.ToString(), appointmentDateTime, googleMapLink);
 
                 if (!result.Success)
                 {

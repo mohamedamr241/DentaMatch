@@ -49,7 +49,7 @@ namespace DentaMatch.Services.Cases_Appointment
 
         }
 
-        public AuthModel<string> RequestCase(string caseId, string userId)
+        public AuthModel<string> RequestCase(string caseId, string userId, DateTime appointmentDateTime, string googleMapLink)
         {
             try 
             {
@@ -69,7 +69,9 @@ namespace DentaMatch.Services.Cases_Appointment
                 {
                     return new AuthModel<string> { Success = false, Message = "User Not Found" };
                 }
-                _dentalUnitOfWork.CaseAppointmentRepository.UpdateAssigningCase(dentalCase, true, doctor.Id);
+
+
+                _dentalUnitOfWork.CaseAppointmentRepository.UpdateAssigningCase(dentalCase, true, doctor.Id, appointmentDateTime, googleMapLink);
                 _dentalUnitOfWork.Save();
 
                 return new AuthModel<string>
