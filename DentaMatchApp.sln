@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34302.71
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DentaMatch", "DentaMatch\DentaMatch.csproj", "{091968F6-EB7C-4036-BFE1-746BEACB0657}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DentaMatch", "DentaMatch\DentaMatch.csproj", "{091968F6-EB7C-4036-BFE1-746BEACB0657}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DentaMatchAdmin", "DentaMatchAdmin\DentaMatchAdmin.csproj", "{1420E1FB-B016-4C88-87BB-1BFB20707387}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{091968F6-EB7C-4036-BFE1-746BEACB0657}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{091968F6-EB7C-4036-BFE1-746BEACB0657}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{091968F6-EB7C-4036-BFE1-746BEACB0657}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1420E1FB-B016-4C88-87BB-1BFB20707387}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1420E1FB-B016-4C88-87BB-1BFB20707387}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1420E1FB-B016-4C88-87BB-1BFB20707387}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1420E1FB-B016-4C88-87BB-1BFB20707387}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
