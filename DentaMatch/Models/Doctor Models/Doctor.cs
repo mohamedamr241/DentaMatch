@@ -20,5 +20,6 @@ namespace DentaMatch.Models
         public virtual ApplicationUser User { get; set; }
         public virtual ICollection<DentalCase> DrAssignedCases { get; set; }
         public bool IsVerifiedDoctor { get; set; }
+        public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
     }
 }

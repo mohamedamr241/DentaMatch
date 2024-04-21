@@ -34,5 +34,6 @@ namespace DentaMatch.Models
         public virtual ICollection<MouthImages> MouthImages { get; set; }
         public virtual ICollection<XrayIamges> XrayImages { get; set; }
         public virtual ICollection<PrescriptionImages> PrescriptionImages { get; set; }
+        public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
     }
 }

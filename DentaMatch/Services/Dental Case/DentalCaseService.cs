@@ -274,6 +274,39 @@ namespace DentaMatch.Services.Dental_Case
                 return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = $"Error Retrieving dental cases: {error.Message}" };
             }
         }
+        public AuthModel<List<DentalCaseResponseVM>> GetFirstThreeUnAssignedCases()
+        {
+            try
+            {
+                var DentalCases = _dentalunitOfWork.DentalCaseRepository.GetFirstThreeCases((u => !u.IsAssigned),
+                    "CaseChronicDiseases.ChronicDiseases,CaseDentalDiseases.DentalDiseases,MouthImages,XrayImages,PrescriptionImages,Patient.User,Doctor.User");
+                if (DentalCases != null && DentalCases.Count() != 0)
+                {
+                    List<DentalCaseResponseVM> UnAssignedDentalCases = new List<DentalCaseResponseVM>();
+                    foreach (var DentalCase in DentalCases)
+                    {
+                        var UnAssginedCase = ConstructDentalCaseResponse(DentalCase);
+                        UnAssignedDentalCases.Add(UnAssginedCase);
+                    }
+                    return new AuthModel<List<DentalCaseResponseVM>>
+                    {
+                        Success = true,
+                        Message = "UnAssigned Dental Cases retrieved successfully",
+                        Data = UnAssignedDentalCases
+                    };
+                }
+                return new AuthModel<List<DentalCaseResponseVM>>
+                {
+                    Success = true,
+                    Message = "No Dental Cases Available",
+                    Data = []
+                };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = $"Error Retrieving dental cases: {error.Message}" };
+            }
+        }
         public AuthModel<List<DentalCaseResponseVM>> GetUnkownCases()
         {
             try
@@ -608,6 +641,8 @@ namespace DentaMatch.Services.Dental_Case
             var PatientNumber = dentalCase.Patient.User.PhoneNumber;
             var doctorName = dentalCase.Doctor != null ? dentalCase.Doctor.User.FullName : null;
             var doctorUniversity = dentalCase.Doctor != null ? dentalCase.Doctor.University : null;
+            var appointment = dentalCase.AppointmentDateTime;
+            var googleMapLink = dentalCase.GoogleMapLink;
             var dentalCaseResponse = new DentalCaseResponseVM
             {
                 CaseId = dentalCase.Id,
@@ -624,7 +659,9 @@ namespace DentaMatch.Services.Dental_Case
                 MouthImages = MouthImages,
                 XrayImages = XRayImages,
                 PrescriptionImages = PrescriptionImages,
-                PhoneNumber = PatientNumber
+                PhoneNumber = PatientNumber,
+                AppointmentDateTime = appointment,
+                GoogleMapLink= googleMapLink
             };
 
             return dentalCaseResponse;

@@ -65,5 +65,15 @@ namespace DentaMatch.Repository
             dbSet.RemoveRange(entity);
         }
 
+        public int Count(Expression<Func<T, bool>> filter = null)
+        {
+            IQueryable<T> query = dbSet;
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+            return query.Count();
+        }
+
     }
 }

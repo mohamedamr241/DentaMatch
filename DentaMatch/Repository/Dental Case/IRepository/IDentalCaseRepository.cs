@@ -19,5 +19,6 @@ namespace DentaMatch.Repository.Dental_Case.IRepository
         IRepository<PrescriptionImages> PrescriptionImages { get; }
         void UpdateDentalCaseProperties(DentalCase dentalCase, bool isKnown, string? description = null, DateTime? appointmentDateTime = null, string? googleMapLink = null);
         IEnumerable<DentalCase> FullTextSearch(Expression<Func<DentalCase, bool>> filter, string searchText, string? includeProperties = null);
+        IEnumerable<DentalCase> GetFirstThreeCases(Expression<Func<DentalCase, bool>> filter = null, string? includeProperties = null);
     }
 }

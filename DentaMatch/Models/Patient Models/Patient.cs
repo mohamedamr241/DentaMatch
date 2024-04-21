@@ -14,6 +14,7 @@ namespace DentaMatch.Models
         public string UserId { get; set; }
         public virtual ApplicationUser User { get; set; }
         public virtual ICollection<DentalCase> PatientCases { get; set; }
+        public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
 
 
     }

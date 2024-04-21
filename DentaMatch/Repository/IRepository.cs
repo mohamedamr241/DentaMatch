@@ -10,5 +10,6 @@ namespace DentaMatch.Repository
         void Remove(T entity);
         void RemoveRange(IEnumerable<T> entity);
         void Update(T entity);
+        int Count(Expression<Func<T, bool>> filter = null);
     }
 }

@@ -75,5 +75,21 @@ namespace DentaMatch.Repository.Dental_Case
 
             return query.ToList();
         }
+        public IEnumerable<DentalCase> GetFirstThreeCases(Expression<Func<DentalCase, bool>> filter = null, string? includeProperties = null)
+        {
+            IQueryable<DentalCase> query = _db.Set<DentalCase>();
+            if (!string.IsNullOrEmpty(includeProperties))
+            {
+                foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProp);
+                }
+            }
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+            return query.Take(3).ToList();
+        }
     }
 }

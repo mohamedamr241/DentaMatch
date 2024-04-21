@@ -14,6 +14,8 @@ namespace DentaMatch.ViewModel.Dental_Cases
         public string Description { get; set; }
         public bool IsKnown { get; set; }
         public bool IsAssigned { get; set; }
+        public DateTime AppointmentDateTime { get; set; }
+        public string GoogleMapLink { get; set; }
         public List<string> ChronicDiseases { get; set; }
         public List<string> DentalDiseases { get; set; }
         public List<string> MouthImages { get; set; }

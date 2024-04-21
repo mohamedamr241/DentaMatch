@@ -37,7 +37,26 @@ namespace DentaMatch.Controllers.Dental_Case.Doctor
             }
 
         }
-        
+        [HttpGet("GetFirstThreeUnassignedCases")]
+        public IActionResult GetFirstThreePatientCases()
+        {
+            try
+            {
+                var result = _dentalCaseService.GetFirstThreeUnAssignedCases();
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Ok(result);
+
+            }
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Retrieving Unassigned Dental Cases Failed: {error.Message}" });
+            }
+
+        }
+
         [HttpGet("GetAssignedCases")]
         public IActionResult GetAssignedCases()
         {

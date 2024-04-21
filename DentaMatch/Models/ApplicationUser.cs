@@ -26,5 +26,6 @@ namespace DentaMatch.Models
         public DateTime VerificationCodeTimeStamp { get; set; }
 
         public Boolean IsVerified { get; set; } = false;
+        public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
     }
 }
