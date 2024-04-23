@@ -1,0 +1,102 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Login";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en" class="light-theme">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- loader-->
+    <link href="~/assets/css/pace.min.css" rel="stylesheet" />
+    <script src="~/assets/js/pace.min.js"></script>
+
+    <!-- Logo -->
+    <link rel="icon"
+          href="~/assets/images/denta.png"
+          type="image/x-icon"
+          sizes="128x128" />
+
+    <!--plugins-->
+    <link href="~/assets/plugins/perfect-scrollbar/css/perfect-scrollbar.css"
+          rel="stylesheet" />
+
+    <!-- CSS Files -->
+    <link href="~/assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/assets/css/bootstrap-extended.css" rel="stylesheet" />
+    <link href="~/assets/css/style.css" rel="stylesheet" />
+    <link href="~/assets/css/icons.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap"
+          rel="stylesheet" />
+
+    <!-- Toaster Notificationss -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" />
+
+    <title>@ViewData["Title"] - DentaMatch</title>
+</head>
+
+<body class="bg-white">
+    <!--start wrapper-->
+    <partial name="_Notifications" />
+    <div class="wrapper">
+        <div class="">
+            <div class="row g-0 m-0">
+                <div class="col-xl-6 col-lg-12">
+                    <div class="login-cover-wrapper">
+                        <div class="card shadow-none">
+                            <div class="card-body">
+                                <div class="text-center">
+                                    <h4>Sign In</h4>
+                                    <p>Sign In to your account</p>
+                                </div>
+                                <form id="account" method="post" class="form-body row g-3">
+
+                                    <div class="col-12">
+                                        <label asp-for="Input.Email" for="inputEmail" class="form-label">Email</label>
+                                        <input asp-for="Input.Email" type="email"
+                                               class="form-control"
+                                               id="inputEmail" required />
+                                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-12">
+                                        <label asp-for="Input.Password" for="inputPassword" class="form-label">Password</label>
+                                        <input asp-for="Input.Password" type="password"
+                                               class="form-control"
+                                               id="inputPassword" required />
+                                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-12 col-lg-12">
+                                        <div class="d-grid">
+                                            <button style=" background-color: #1883e0; border-color: #1883e0;"
+                                                    type="submit"
+                                                    class="btn btn-primary">
+                                                Sign In
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-6 col-lg-12">
+                    <div class="position-fixed top-0 h-100 d-xl-block d-none login-cover-img"></div>
+                </div>
+            </div>
+            <!--end row-->
+        </div>
+    </div>
+    <!--end wrapper-->
+</body>
+</html>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

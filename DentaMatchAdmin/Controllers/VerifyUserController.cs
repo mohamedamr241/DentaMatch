@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DentaMatchAdmin.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public class VerifyUserController : Controller
     {
         private readonly IDoctorVerificationService _adminService;

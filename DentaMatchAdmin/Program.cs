@@ -26,9 +26,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
-builder.Services.AddMemoryCache();
 
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+
+
+builder.Services.AddMemoryCache();
+builder.Services.AddRazorPages();
 builder.Services.AddScoped<AppHelper>();
 builder.Services.AddScoped<CacheItem>();
 builder.Services.AddScoped<IAuthUnitOfWork, AuthUnitOfWork>();
@@ -50,24 +53,6 @@ builder.Services.ConfigureApplicationCookie(options =>
     //tions.AccessDeniedPath = $"/Identity/Account/AccessDenied";
 });
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-    .AddJwtBearer(o =>
-    {
-        o.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidIssuer = builder.Configuration["JWT:Issuer"],
-            ValidAudience = builder.Configuration["JWT:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:key"]))
-        };
-    });
 
 var app = builder.Build();
 
@@ -85,12 +70,13 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseSession();
 
-app.UseMiddleware<TokenMiddleWare>();
-
+//app.UseMiddleware<TokenMiddleWare>();
+app.UseAuthentication();
 app.UseAuthorization();
+app.MapRazorPages();
 
 app.MapControllerRoute(
-    name: "default",
+    name: "NoArea",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
