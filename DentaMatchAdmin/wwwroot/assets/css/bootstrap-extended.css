@@ -863,10 +863,9 @@
 /*Forms */
 
 .form-control:focus {
-    background-color: #fff;
-    border-color: #c27be4;
-    box-shadow: 0 0 0 .25rem rgba(146, 62, 185, 0.3)
-    
+	background-color: #fff;
+	border-color: #1883e0;
+	box-shadow: 0 0 0 .25rem rgba(62, 89, 185, 0.3);
 }
 
 

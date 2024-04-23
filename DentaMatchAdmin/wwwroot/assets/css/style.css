@@ -393,9 +393,8 @@ ion-icon {
 
 .top-header .navbar .searchbar .form-control:focus {
     background-color: #fff;
-    border-color: #c27be4;
-    box-shadow: 0 0 0 .25rem rgba(146, 62, 185, 0.3)
-    
+    border-color: #1883e0;
+    box-shadow: 0 0 0 .25rem rgba(62, 89, 185, 0.3)
 }
 
 .top-header .navbar .top-navbar-right .nav-item {
@@ -1535,8 +1534,9 @@ ul.categories-list li {
 .enlarge-image {
     transition: transform 0.3s ease;
 }
+
 .enlarge-image:hover {
-        transform: scale(10); /* Enlarge the image */
-        z-index: 9999; /* Ensure it's on top of other content */
-        position: absolute;
+    transform: translate(0%,0%) scale(10);
+    z-index: 9999;
+    position: absolute;
 }

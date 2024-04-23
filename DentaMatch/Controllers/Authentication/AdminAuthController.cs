@@ -37,7 +37,7 @@ namespace DentaMatch.Controllers.Authentication
             }
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpGet("UnverifiedDoctors")]
         public async Task<IActionResult> GetUnverifiedDoctors()
         {
@@ -56,7 +56,7 @@ namespace DentaMatch.Controllers.Authentication
             }
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost("VerifyDoctorIdentity")]
         public async Task<IActionResult> VerifyDoctorIdentity(string doctorId, bool isIdentityVerified)
         {

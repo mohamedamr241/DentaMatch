@@ -9,6 +9,13 @@ using DentaMatchAdmin.Services.Calculations;
 using DentaMatch.Models;
 using Microsoft.AspNetCore.Identity;
 using DentaMatchAdmin.Cache;
+using DentaMatchAdmin.Services.DoctorVerification.IServices;
+using DentaMatchAdmin.Services.DoctorVerification;
+using DentaMatch.Services.Authentication.IServices;
+using DentaMatch.Services.Authentication;
+using DentaMatch.Services.Mail.IServices;
+using DentaMatch.Services.Mail;
+using DentaMatch.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,11 +25,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 builder.Services.AddMemoryCache();
 
+builder.Services.AddScoped<AppHelper>();
 builder.Services.AddScoped<CacheItem>();
 builder.Services.AddScoped<IAuthUnitOfWork, AuthUnitOfWork>();
 builder.Services.AddScoped<IDentalUnitOfWork, DentalUnitOfWork>();
 
 builder.Services.AddScoped<IHomePageService, HomePageService>();
+builder.Services.AddScoped<IDoctorVerificationService, DoctorVerificationService>();
+builder.Services.AddScoped<IAuthDoctorService, AuthDoctorService>();
+builder.Services.AddTransient<IMailService, MailService>();
 
 var app = builder.Build();
 

@@ -79,6 +79,7 @@ namespace DentaMatchAdmin.Services.Calculations
 
             int newUsers = NumOfNewCustomerPerWeek();
             int CurrentUsers =  NumOfCurrentCustomerPerWeek();
+            double weekStatus = (CurrentUsers + newUsers)==0? 0:(newUsers / (CurrentUsers + newUsers)) * 100;
 
             HomePageVM Response = new HomePageVM()
             {
@@ -91,7 +92,7 @@ namespace DentaMatchAdmin.Services.Calculations
                 CurrentUserPerWeek = CurrentUsers,
                 NewUserPerWeek = newUsers,
                 TotalUserPerWeek = CurrentUsers + newUsers,
-                WeeklyStatusOfUsers = (newUsers/(CurrentUsers + newUsers))*100,
+                WeeklyStatusOfUsers = weekStatus,
                 TotalAccounts = NumOfDoc + NumOfPatient,
                 AccountsGrossLastYear = AccountsGrossLastYear(),
                 January = AccountsLastYearMonthes(1),

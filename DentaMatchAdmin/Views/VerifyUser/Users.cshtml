@@ -1,4 +1,5 @@
-﻿@{
+﻿@model List<DoctorResponseVM>
+@{
     ViewData["Title"] = "Users";
 }
 
@@ -37,173 +38,93 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="product-box border">
-                                    <img src="https://dentamatch.azurewebsites.net/Images/GetImage?ImagePath=Images\Doctor\CardIDImages\b75c4881-f044-44cb-82ed-0cec9e731653.jpg"
-                                         alt="" />
+                    @foreach(var obj in Model)
+                    {
+                        
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    @if(obj.ProfileImageLink == null)
+                                    {
+                                        @if(@obj.Gender == false)
+                                        {
+                                            <div class="product-box border">
+                                                <img src="~/assets/images/MaleDoc.png"
+                                                     alt="ProfileImg" />
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="product-box border">
+                                                <img src="~/assets/images/femaleDoc.png"
+                                                     alt="ProfileImg" />
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="product-box border">
+                                            <img src="@obj.ProfileImageLink"
+                                                 alt="ProfileImg" />
+                                        </div>  
+                                    }
+                                    <div class="product-info">
+                                        <h6 class="product-name mb-1">@obj.FullName</h6>
+                                    </div>
                                 </div>
-                                <div class="product-info">
-                                    <h6 class="product-name mb-1">Mariam Hassan</h6>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="product-box border">
+                                        <img src="@obj.CardImageLink"
+                                             alt=""
+                                             class="enlarge-image" />
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="product-box border">
-                                    <img src="https://dentamatch.azurewebsites.net/Images/GetImage?ImagePath=Images\Doctor\CardIDImages\2c3e34d9-7527-4b2e-b01f-d3f8eba92cf6.png"
-                                         alt=""
-                                         class="enlarge-image" />
+                            </td>
+                            <td>@obj.University</td>
+                            <td><span class="badge bg-warning">pending</span></td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3 fs-6">
+                                    <a href="javascript:;"
+                                       class="text-primary"
+                                       data-bs-toggle="tooltip"
+                                       data-bs-placement="bottom"
+                                       title=""
+                                       data-bs-original-title="View detail"
+                                       aria-label="Views">
+                                        <ion-icon name="eye-outline"></ion-icon>
+                                    </a>
+
+                                    <a value="@obj.doctorId" id="VerifyUser"
+                                           class="text-primary"
+                                           data-bs-toggle="tooltip"
+                                           data-bs-placement="bottom"
+                                           title=""
+                                           data-bs-original-title="View detail"
+                                           aria-label="Views">
+                                            <ion-icon name="checkmark-outline"></ion-icon>
+                                    </a>
+
+                                    <a value="@obj.doctorId" id="RejectUser"
+                                           class="text-danger"
+                                           data-bs-toggle="tooltip"
+                                           data-bs-placement="bottom"
+                                           title=""
+                                           data-bs-original-title="Delete"
+                                           aria-label="Delete">
+                                            <ion-icon name="close-outline"></ion-icon>
+                                     </a>
+
                                 </div>
-                            </div>
-                        </td>
-                        <td>Future University</td>
-                        <td><span class="badge bg-warning">pending</span></td>
-                        <td>
-                            <div class="d-flex align-items-center gap-3 fs-6">
-                                <a href="javascript:;"
-                                   class="text-primary"
-                                   data-bs-toggle="tooltip"
-                                   data-bs-placement="bottom"
-                                   title=""
-                                   data-bs-original-title="View detail"
-                                   aria-label="Views">
-                                    <ion-icon name="eye-outline"></ion-icon>
-                                </a>
-                                <a href="javascript:;"
-                                   class="text-primary"
-                                   data-bs-toggle="tooltip"
-                                   data-bs-placement="bottom"
-                                   title=""
-                                   data-bs-original-title="View detail"
-                                   aria-label="Views">
-                                    <ion-icon name="checkmark-outline"></ion-icon>
-                                </a>
-                                <a href="javascript:;"
-                                   class="text-danger"
-                                   data-bs-toggle="tooltip"
-                                   data-bs-placement="bottom"
-                                   title=""
-                                   data-bs-original-title="Delete"
-                                   aria-label="Delete">
-                                    <ion-icon name="close-outline"></ion-icon>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="product-box border">
-                                    <img src="https://dentamatch.azurewebsites.net/Images/GetImage?ImagePath=Images\Doctor\CardIDImages\b75c4881-f044-44cb-82ed-0cec9e731653.jpg"
-                                         alt="" />
-                                </div>
-                                <div class="product-info">
-                                    <h6 class="product-name mb-1">Mariam Hassan</h6>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="product-box border">
-                                    <img src="https://dentamatch.azurewebsites.net/Images/GetImage?ImagePath=Images\Doctor\CardIDImages\2c3e34d9-7527-4b2e-b01f-d3f8eba92cf6.png"
-                                         alt=""
-                                         class="enlarge-image" />
-                                </div>
-                            </div>
-                        </td>
-                        <td>Future University</td>
-                        <td><span class="badge bg-warning">pending</span></td>
-                        <td>
-                            <div class="d-flex align-items-center gap-3 fs-6">
-                                <a href="javascript:;"
-                                   class="text-primary"
-                                   data-bs-toggle="tooltip"
-                                   data-bs-placement="bottom"
-                                   title=""
-                                   data-bs-original-title="View detail"
-                                   aria-label="Views">
-                                    <ion-icon name="eye-outline"></ion-icon>
-                                </a>
-                                <a href="javascript:;"
-                                   class="text-primary"
-                                   data-bs-toggle="tooltip"
-                                   data-bs-placement="bottom"
-                                   title=""
-                                   data-bs-original-title="View detail"
-                                   aria-label="Views">
-                                    <ion-icon name="checkmark-outline"></ion-icon>
-                                </a>
-                                <a href="javascript:;"
-                                   class="text-danger"
-                                   data-bs-toggle="tooltip"
-                                   data-bs-placement="bottom"
-                                   title=""
-                                   data-bs-original-title="Delete"
-                                   aria-label="Delete">
-                                    <ion-icon name="close-outline"></ion-icon>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="product-box border">
-                                    <img src="https://dentamatch.azurewebsites.net/Images/GetImage?ImagePath=Images\Doctor\CardIDImages\b75c4881-f044-44cb-82ed-0cec9e731653.jpg"
-                                         alt="" />
-                                </div>
-                                <div class="product-info">
-                                    <h6 class="product-name mb-1">Mariam Hassan</h6>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="product-box border">
-                                    <img src="https://dentamatch.azurewebsites.net/Images/GetImage?ImagePath=Images\Doctor\CardIDImages\2c3e34d9-7527-4b2e-b01f-d3f8eba92cf6.png"
-                                         alt=""
-                                         class="enlarge-image" />
-                                </div>
-                            </div>
-                        </td>
-                        <td>Future University</td>
-                        <td><span class="badge bg-warning">pending</span></td>
-                        <td>
-                            <div class="d-flex align-items-center gap-3 fs-6">
-                                <a href="javascript:;"
-                                   class="text-primary"
-                                   data-bs-toggle="tooltip"
-                                   data-bs-placement="bottom"
-                                   title=""
-                                   data-bs-original-title="View detail"
-                                   aria-label="Views">
-                                    <ion-icon name="eye-outline"></ion-icon>
-                                </a>
-                                <a href="javascript:;"
-                                   class="text-primary"
-                                   data-bs-toggle="tooltip"
-                                   data-bs-placement="bottom"
-                                   title=""
-                                   data-bs-original-title="View detail"
-                                   aria-label="Views">
-                                    <ion-icon name="checkmark-outline"></ion-icon>
-                                </a>
-                                <a href="javascript:;"
-                                   class="text-danger"
-                                   data-bs-toggle="tooltip"
-                                   data-bs-placement="bottom"
-                                   title=""
-                                   data-bs-original-title="Delete"
-                                   aria-label="Delete">
-                                    <ion-icon name="close-outline"></ion-icon>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
+                    }
+                    
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+<script src="~/assets/js/VerifyingDoctor.js"></script>
