@@ -1,11 +1,13 @@
 using DentaMatchAdmin.Models;
 using DentaMatchAdmin.Services.Calculations.IServices;
 using DentaMatchAdmin.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace DentaMatchAdmin.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

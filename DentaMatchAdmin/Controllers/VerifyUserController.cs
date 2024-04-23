@@ -1,10 +1,11 @@
 ﻿using DentaMatch.Models;
 using DentaMatchAdmin.Services.DoctorVerification.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DentaMatchAdmin.Controllers
 {
-    
+    [Authorize(Roles = "Admin")]
     public class VerifyUserController : Controller
     {
         private readonly IDoctorVerificationService _adminService;
