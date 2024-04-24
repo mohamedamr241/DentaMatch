@@ -1,4 +1,4 @@
-﻿@model List<DoctorResponseVM>
+﻿@model VerifyUserVM
 @{
     ViewData["Title"] = "Users";
 }
@@ -38,7 +38,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach(var obj in Model)
+                    @foreach(var obj in Model.Doctors)
                     {
                         
                         <tr>
@@ -86,7 +86,7 @@
                             <td><span class="badge bg-warning">pending</span></td>
                             <td>
                                 <div class="d-flex align-items-center gap-3 fs-6">
-                                    <a href="javascript:;"
+                                    @* <a href="javascript:;"
                                        class="text-primary"
                                        data-bs-toggle="tooltip"
                                        data-bs-placement="bottom"
@@ -94,7 +94,7 @@
                                        data-bs-original-title="View detail"
                                        aria-label="Views">
                                         <ion-icon name="eye-outline"></ion-icon>
-                                    </a>
+                                    </a> *@
 
                                     <a value="@obj.doctorId" id="VerifyUser"
                                            class="text-primary"

@@ -19,5 +19,9 @@ namespace DentaMatchAdmin.Cache
         {
             return _cache.Get(key);
         }
+        public void Remove(string key)
+        {
+            _cache.Remove(key);
+        }
     }
 }

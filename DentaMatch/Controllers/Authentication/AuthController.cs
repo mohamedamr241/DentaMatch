@@ -1,11 +1,14 @@
-﻿using DentaMatch.Services.Authentication.IServices;
+﻿using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication;
 using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
 using DentaMatch.ViewModel.Authentication.Patient;
+using DentaMatch.ViewModel.Authentication.Request;
 using DentaMatch.ViewModel.Authentication.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DentaMatch.Controllers.Authentication
 {
@@ -20,9 +23,10 @@ namespace DentaMatch.Controllers.Authentication
         private readonly IAuthAdminService _admin;
         private readonly IAuthService _authService;
         private readonly IAuthAdminDoctorService _doctoradminService;
+        private readonly IAuthUnitOfWork _authUnitOfWork;
 
         public AuthController(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IAuthDoctorService doctor,
-            IAuthPatientService patient, IAuthAdminService admin, IAuthService authService, IAuthAdminDoctorService doctoradminService)
+            IAuthPatientService patient, IAuthAdminService admin, IAuthService authService, IAuthAdminDoctorService doctoradminService, IAuthUnitOfWork authUnitOfWork)
         {
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
@@ -31,6 +35,7 @@ namespace DentaMatch.Controllers.Authentication
             _admin = admin;
             _authService = authService;
             _doctoradminService = doctoradminService;
+            _authUnitOfWork = authUnitOfWork;
         }
 
         [HttpPost("Signin")]
@@ -81,7 +86,32 @@ namespace DentaMatch.Controllers.Authentication
                 return BadRequest(new { Success = false, Message = $"Sign In Failed: {error.Message}" });
             }
         }
+        [HttpPost("profileimage")]
+        public async Task<IActionResult> ProfileImage(ProfileImageVM image)
+        {
+            try
+            {
+                var userClaims = _httpContextAccessor.HttpContext.User.Claims;
+                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value;
 
+                if(userId == null)
+                {
+                    return BadRequest(new { Success = false, Message = "Profile Image Insert Failed" });
+                }
+                var user = await _authUnitOfWork.UserManager.FindByIdAsync(userId);
+                if(user == null)
+                {
+                    return BadRequest(new { Success = false, Message = "Profile Image Insert Failed" });
+                }
+                string role = await _authService.GetRoleAsync(user.Email);
+                _authService.UpsertProfilePicture(user, image.ProfileImage, role);
+                return Ok(new { Success = true, Message = "Profile Image Upserted Successfully" });
+            }
+            catch(Exception err)
+            {
+                return BadRequest(new { Success = false, Message = $"Profile Image Insert Failed: {err.Message}" });
+            }
+        }
         [HttpGet("ConfirmEmail")]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {

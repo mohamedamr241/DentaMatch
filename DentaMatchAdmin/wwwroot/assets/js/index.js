@@ -520,3 +520,12 @@ var options = {
   
     
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    var submitButton = document.getElementById("submitButton");
+    var form = document.getElementById("myForm");
+
+    submitButton.addEventListener("click", function () {
+        form.submit();
+    });
+});

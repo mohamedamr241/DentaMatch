@@ -18,6 +18,6 @@ namespace DentaMatch.Services.Authentication.IServices
         Task<AuthModel> ConfirmEmailAsync(string userId, string token);
         Task SendConformationMail(ApplicationUser user, string mail);
         Task<string> GetRoleAsync(string Input);
-
+        void UpsertProfilePicture(ApplicationUser user, IFormFile Image, string folderName);
     }
 }

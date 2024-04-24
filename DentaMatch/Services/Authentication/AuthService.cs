@@ -381,7 +381,7 @@ namespace DentaMatch.Services.Authentication
             return userRoles[0];
         }
 
-        internal void UpsertProfilePicture(ApplicationUser user, IFormFile Image, string folderName)
+        public void UpsertProfilePicture(ApplicationUser user, IFormFile Image, string folderName)
         {
                 if (user.ProfileImage is not null)
                     _appHelper.DeleteImage(user.ProfileImage);
@@ -396,6 +396,7 @@ namespace DentaMatch.Services.Authentication
                     ProfileImageLink = $"{_configuration["ImgUrl"]}" + Path.Combine("Images", folderName, "ProfileImages", ProfileImageName);
                 }
                 _authUnitOfWork.UserRepository.UpdateProfilePicture(user, profileImageFullPath, ProfileImageLink);
+                _authUnitOfWork.Save();
         }
 
         public async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)

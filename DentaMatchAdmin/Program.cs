@@ -16,7 +16,6 @@ using DentaMatch.Services.Authentication;
 using DentaMatch.Services.Mail.IServices;
 using DentaMatch.Services.Mail;
 using DentaMatch.Helpers;
-using DentaMatchAdmin.MiddleWares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -49,9 +48,9 @@ builder.Services.AddSession(options =>
 });
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = $"/Auth/SignIn";
-    //tions.LogoutPath = $"/Identity/Account/Logout";
-    //tions.AccessDeniedPath = $"/Identity/Account/AccessDenied";
+    options.LoginPath = $"/Identity/Account/Login";
+    options.LogoutPath = $"/Identity/Account/Logout";
+    options.AccessDeniedPath = $"/Error/PageError401";
 });
 
 

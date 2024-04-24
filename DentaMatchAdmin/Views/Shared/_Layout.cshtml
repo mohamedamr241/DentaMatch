@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@model BaseVM
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <!-- Required meta tags -->
@@ -332,7 +333,7 @@
                                href="javascript:;"
                                data-bs-toggle="dropdown">
                                 <div class="user-setting">
-                                    <img src="~/assets/images/avatars/06.png"
+                                    <img src="@Model.User.ProfileImageLink"
                                          class="user-img"
                                          alt="" />
                                 </div>
@@ -341,14 +342,14 @@
                                 <li>
                                     <a class="dropdown-item" href="javascript:;">
                                         <div class="d-flex flex-row align-items-center gap-2">
-                                            <img src="assets/images/avatars/06.png"
+                                            <img src="@Model.User.ProfileImageLink"
                                                  alt=""
                                                  class="rounded-circle"
                                                  width="54"
                                                  height="54" />
                                             <div class="">
-                                                <h6 class="mb-0 dropdown-user-name">Jhon Deo</h6>
-                                                <small class="mb-0 dropdown-user-designation text-secondary">UI Developer</small>
+                                                <h6 class="mb-0 dropdown-user-name">@Model.User.FullName</h6>
+                                                <small class="mb-0 dropdown-user-designation text-secondary">@Model.User.UserName</small>
                                             </div>
                                         </div>
                                     </a>
@@ -356,7 +357,7 @@
                                 <li>
                                     <hr class="dropdown-divider" />
                                 </li>
-                                <li>
+                                @* <li>
                                     <a class="dropdown-item" href="javascript:;">
                                         <div class="d-flex align-items-center">
                                             <div class="">
@@ -365,7 +366,7 @@
                                             <div class="ms-3"><span>Profile</span></div>
                                         </div>
                                     </a>
-                                </li>
+                                </li> *@
                                 <li>
                                     <a class="dropdown-item" asp-controller="Home" asp-action="Index">
                                         <div class="d-flex align-items-center">
@@ -381,14 +382,14 @@
                                     <hr class="dropdown-divider" />
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="javascript:;">
+                                    <form id="myForm" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Account/Login", new { area = "Identity" })" method="post" class="dropdown-item">
                                         <div class="d-flex align-items-center">
                                             <div class="">
                                                 <ion-icon name="log-out-outline"></ion-icon>
                                             </div>
-                                            <div class="ms-3"><span>Logout</span></div>
+                                            <div style="cursor: pointer;" id="submitButton" class="ms-3"><span>Logout</span></div>
                                         </div>
-                                    </a>
+                                    </form>
                                 </li>
                             </ul>
                         </li>

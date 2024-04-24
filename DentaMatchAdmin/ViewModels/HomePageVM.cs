@@ -1,6 +1,8 @@
-﻿namespace DentaMatchAdmin.ViewModels
+﻿using DentaMatch.Models;
+
+namespace DentaMatchAdmin.ViewModels
 {
-    public class HomePageVM
+    public class HomePageVM : BaseVM
     {
         public int TotalDoctors { get; set; } = 0;
         public double DoctorGrossPercentPerWeek { get; set; } = 0;
@@ -29,6 +31,8 @@
         public int October { get; set; } = 0;
         public int November { get; set; } = 0;
         public int December { get; set; } = 0;
+
+        
 
     }
 }

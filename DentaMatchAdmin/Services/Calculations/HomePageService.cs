@@ -81,7 +81,7 @@ namespace DentaMatchAdmin.Services.Calculations
             int CurrentUsers =  NumOfCurrentCustomerPerWeek();
             double weekStatus = (CurrentUsers + newUsers)==0? 0:(newUsers / (CurrentUsers + newUsers)) * 100;
 
-            HomePageVM Response = new HomePageVM()
+            var Response = new HomePageVM()
             {
                 TotalDoctors = NumOfDoc,
                 TotalPatients = NumOfPatient,
