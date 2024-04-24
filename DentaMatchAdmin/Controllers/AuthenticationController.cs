@@ -7,7 +7,7 @@ using static System.Net.WebRequestMethods;
 
 namespace DentaMatchAdmin.Controllers
 {
-    //[Route("Auth/[action]")]
+    [Route("Auth/[action]")]
     public class AuthenticationController : Controller
     {
         private IConfiguration _configuration;

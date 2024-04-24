@@ -20,6 +20,7 @@ using DentaMatchAdmin.MiddleWares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,10 +74,12 @@ app.UseSession();
 //app.UseMiddleware<TokenMiddleWare>();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapRazorPages();
 
+
+app.MapRazorPages();
 app.MapControllerRoute(
     name: "NoArea",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 
 app.Run();
