@@ -5,6 +5,7 @@ using DentaMatch.Repository.Dental_Case.IRepository;
 using DentaMatch.Services.Dental_Case.Comments.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Dental_Cases;
+using Microsoft.AspNetCore.Identity;
 using static DentaMatch.Services.Dental_Case.Comments.CaseCommentsService;
 
 namespace DentaMatch.Services.Dental_Case.Comments
@@ -18,7 +19,7 @@ namespace DentaMatch.Services.Dental_Case.Comments
             _dentalunitOfWork = dentalunitOfWork;
             _cache = cache;
         }
-        public AuthModel createComment(string caseId, string comment, string commentorID)
+        public async Task<AuthModel> createComment(string caseId, string comment, string commentorID, string Role)
         {
             try
             {
@@ -27,10 +28,10 @@ namespace DentaMatch.Services.Dental_Case.Comments
                 {
                         return new AuthModel { Success = false, Message = $"Dental case is not found!" };
                 }
-                var User = _dentalunitOfWork.UserManager.FindByIdAsync(commentorID);
+                var User = await _dentalunitOfWork.UserManager.FindByIdAsync(commentorID);
                 if (User == null)
                 {
-                    return new AuthModel { Success = false, Message = $"Dental case is not found!" };
+                    return new AuthModel { Success = false, Message = $"User is not found!" };
                 }
                 var CaseComment = new DentalCaseComments()
                 {
@@ -48,7 +49,8 @@ namespace DentaMatch.Services.Dental_Case.Comments
                     {
                         id = CaseComment.Id,
                         Comment = comment,
-                        fullName = User.Result.FullName,
+                        fullName = User.FullName,
+                        Role= Role,
                         TimeStamp = CaseComment.TimeStamp
                     });
                     _cache.Remove(caseId);
@@ -60,14 +62,15 @@ namespace DentaMatch.Services.Dental_Case.Comments
                     List<DentalCaseCommentVM> CaseComments = new List<DentalCaseCommentVM>();
                     if (result != null && result.Count()>0)
                     {
-                         CaseComments = ConstructCommentsVM((List<DentalCaseComments>)result);
+                         CaseComments = await ConstructCommentsVM((List<DentalCaseComments>)result);
 
                     }
                     CaseComments.Add(new DentalCaseCommentVM()
                     {
                         id = CaseComment.Id,
                         Comment = comment,
-                        fullName = User.Result.FullName,
+                        fullName = User.FullName,
+                        Role = Role,
                         TimeStamp = CaseComment.TimeStamp
                     });
                     _cache.storeArrayInDays(caseId, CaseComments, 30);
@@ -81,7 +84,7 @@ namespace DentaMatch.Services.Dental_Case.Comments
                 return new AuthModel { Success = false, Message = $"Error creating dental case comment: {ex.Message}" };
             }
         }
-        public AuthModel<List<DentalCaseCommentVM>> GetCaseComments(string caseId)
+        public async Task<AuthModel<List<DentalCaseCommentVM>>> GetCaseComments(string caseId)
         {
             try
             {
@@ -95,7 +98,7 @@ namespace DentaMatch.Services.Dental_Case.Comments
                     var result = _dentalunitOfWork.CaseCommentRepository.GetAll(u => u.CaseId == caseId, "User", orderBy: q => q.OrderBy(x => x.TimeStamp));
                     if(result!=null && result.Count()>0)
                     {
-                        List<DentalCaseCommentVM> CaseComments = ConstructCommentsVM((List<DentalCaseComments>)result);
+                        List<DentalCaseCommentVM> CaseComments = await ConstructCommentsVM((List<DentalCaseComments>)result);
                         return new AuthModel<List<DentalCaseCommentVM>> { Success = true, Message = $"Getting comments Successfully", Data= CaseComments };
                     }
                 }
@@ -114,16 +117,19 @@ namespace DentaMatch.Services.Dental_Case.Comments
                 return new AuthModel<List<DentalCaseCommentVM>> { Success = false, Message = $"Error getting dentalCase Comments: {ex.Message}" };
             }
         }
-        private List<DentalCaseCommentVM> ConstructCommentsVM(List<DentalCaseComments> res)
+        private async Task<List<DentalCaseCommentVM>> ConstructCommentsVM(List<DentalCaseComments> res)
         {
             List<DentalCaseCommentVM> CaseComments = new List<DentalCaseCommentVM>();
             foreach (var comment in res)
             {
+                ApplicationUser userr = await _dentalunitOfWork.UserManager.FindByIdAsync(comment.UserId);
+                string role = (await _dentalunitOfWork.UserManager.GetRolesAsync(userr))[0];
                 var comm = new DentalCaseCommentVM()
                 {
                     id = comment.Id,
                     fullName = comment.User.FullName,
                     Comment = comment.Comment,
+                    Role = role,
                     TimeStamp = comment.TimeStamp,
                 };
                 CaseComments.Add(comm);

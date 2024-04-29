@@ -48,13 +48,13 @@ namespace DentaMatch.Controllers.Dental_Case
 
         }
         [HttpPost("addcomment")]
-        public IActionResult AddComment(string caseId, string comment)
+        public async  Task<IActionResult> AddComment(string caseId, string comment)
         {
             try
             {
                 var userClaims = _httpContextAccessor.HttpContext.User.Claims;
                 var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value;
-
+                var Role = userClaims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
                 if (string.IsNullOrEmpty(caseId))
                 {
                     return BadRequest(new { Success = false, Message = "Case Id is required" });
@@ -64,7 +64,7 @@ namespace DentaMatch.Controllers.Dental_Case
                     return BadRequest(new { Success = false, Message = ModelState });
                 }
 
-                var result =  _commentService.createComment(caseId, comment, userId);
+                var result =  await _commentService.createComment(caseId, comment, userId, Role);
                 if (!result.Success)
                 {
                     return BadRequest(result);
@@ -78,7 +78,7 @@ namespace DentaMatch.Controllers.Dental_Case
 
         }
         [HttpGet("getcomment")]
-        public IActionResult GetComment(string caseId)
+        public async Task<IActionResult> GetComment(string caseId)
         {
             try
             {
@@ -91,7 +91,7 @@ namespace DentaMatch.Controllers.Dental_Case
                     return BadRequest(new { Success = false, Message = ModelState });
                 }
 
-                var result = _commentService.GetCaseComments(caseId);
+                var result = await _commentService.GetCaseComments(caseId);
                 if (!result.Success)
                 {
                     return BadRequest(result);

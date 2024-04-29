@@ -5,7 +5,7 @@ namespace DentaMatch.Services.Dental_Case.Comments.IServices
 {
     public interface ICaseCommentsService
     {
-        AuthModel createComment(string caseId, string comment, string commentorID);
-        AuthModel<List<DentalCaseCommentVM>> GetCaseComments(string caseId);
+        Task<AuthModel> createComment(string caseId, string comment, string commentorID, string Role);
+        Task<AuthModel<List<DentalCaseCommentVM>>> GetCaseComments(string caseId);
     }
 }

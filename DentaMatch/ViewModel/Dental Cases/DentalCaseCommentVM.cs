@@ -12,5 +12,7 @@ namespace DentaMatch.ViewModel.Dental_Cases
         public string Comment { get; set; }
         [Required]
         public DateTime TimeStamp { get; set; }
+        [Required]
+        public string Role { get; set; }
     }
 }
