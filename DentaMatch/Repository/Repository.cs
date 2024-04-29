@@ -38,7 +38,7 @@ namespace DentaMatch.Repository
             return query.FirstOrDefault();
         }
 
-        public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, string? includeProperties = null)
+        public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, string? includeProperties = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null)
         {
             IQueryable<T> query = dbSet;
             if (!string.IsNullOrEmpty(includeProperties))
@@ -51,6 +51,10 @@ namespace DentaMatch.Repository
             if (filter != null)
             {
                 query = query.Where(filter);
+            }
+            if (orderBy != null)
+            {
+                query = orderBy(query);
             }
             return query.ToList();
         }

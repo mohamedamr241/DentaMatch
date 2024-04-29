@@ -1,5 +1,6 @@
 ﻿using DentaMatch.Models;
 using DentaMatch.Models.Dental_Case.Chronic_Diseases;
+using DentaMatch.Models.Dental_Case.Comments;
 using DentaMatch.Models.Dental_Case.Dental_Diseases;
 using DentaMatch.Models.Dental_Case.Images;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -23,6 +24,8 @@ namespace DentaMatch.Data
         public DbSet<MouthImages> MouthImages { get; set; }
         public DbSet<PrescriptionImages> PrescriptionImages { get; set; }
         public DbSet<XrayIamges> XrayIamges { get; set; }
+
+        public DbSet<DentalCaseComments> Comment { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

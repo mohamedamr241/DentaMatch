@@ -22,6 +22,9 @@ using DentaMatch.Services.Paymob.Iservice;
 using DentaMatch.Services.Paymob;
 using DentaMatch.Services.Paypal.IServices;
 using DentaMatch.Services.Paypal;
+using DentaMatch.Services.Dental_Case.Comments.IServices;
+using DentaMatch.Services.Dental_Case.Comments;
+using DentaMatch.Cache;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +32,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddControllers();
+builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -37,11 +41,14 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFramework
 
 
 
-builder.Services.AddScoped<IDentalUnitOfWork, DentalUnitOfWork>();
-builder.Services.AddScoped<IAuthUnitOfWork, AuthUnitOfWork>();
+builder.Services.AddTransient<IDentalUnitOfWork, DentalUnitOfWork>();
+builder.Services.AddTransient<IAuthUnitOfWork, AuthUnitOfWork>();
 builder.Services.AddScoped<AppHelper>();
+builder.Services.AddScoped<CacheItem>();
+
 
 builder.Services.AddScoped<IDentalCaseService, DentalCaseService>();
+builder.Services.AddTransient<IDentalCaseCommentRepository, DentalCaseCommentRepository>();
 builder.Services.AddTransient<IMailService, MailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPaymobService, PaymobService>();
@@ -51,7 +58,7 @@ builder.Services.AddScoped<IAuthAdminDoctorService, AuthAdminDoctorService>();
 builder.Services.AddScoped<IAuthAdminService, AuthAdminService>();
 builder.Services.AddScoped<IAuthDoctorService, AuthDoctorService>();
 builder.Services.AddScoped<ICaseAppointmentService, CaseAppointmentService>();
-
+builder.Services.AddScoped<ICaseCommentsService, CaseCommentsService>();
 
 builder.Services.AddHttpContextAccessor();
 
