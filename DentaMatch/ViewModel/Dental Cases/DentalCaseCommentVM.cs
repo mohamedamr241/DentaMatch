@@ -7,7 +7,7 @@ namespace DentaMatch.ViewModel.Dental_Cases
         [Required]
         public string id { get; set; }
         [Required]
-        public string UserName { get; set; }
+        public string fullName { get; set; }
         [Required]
         public string Comment { get; set; }
         [Required]

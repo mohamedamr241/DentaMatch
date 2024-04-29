@@ -48,7 +48,7 @@ namespace DentaMatch.Services.Dental_Case.Comments
                     {
                         id = CaseComment.Id,
                         Comment = comment,
-                        UserName = User.Result.UserName,
+                        fullName = User.Result.FullName,
                         TimeStamp = CaseComment.TimeStamp
                     });
                     _cache.Remove(caseId);
@@ -67,7 +67,7 @@ namespace DentaMatch.Services.Dental_Case.Comments
                     {
                         id = CaseComment.Id,
                         Comment = comment,
-                        UserName = User.Result.UserName,
+                        fullName = User.Result.FullName,
                         TimeStamp = CaseComment.TimeStamp
                     });
                     _cache.storeArrayInDays(caseId, CaseComments, 30);
@@ -122,7 +122,7 @@ namespace DentaMatch.Services.Dental_Case.Comments
                 var comm = new DentalCaseCommentVM()
                 {
                     id = comment.Id,
-                    UserName = comment.User.UserName,
+                    fullName = comment.User.FullName,
                     Comment = comment.Comment,
                     TimeStamp = comment.TimeStamp,
                 };
