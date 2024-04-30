@@ -164,6 +164,24 @@ namespace DentaMatch.Services.Authentication
             }
         }
 
+        public async Task<AuthModel> BlockAccount(ApplicationUser user)
+        {
+            try
+            {
+                if (user == null)
+                {
+                    return new AuthModel { Success = false, Message = "User not found" };
+                }
+                _authUnitOfWork.UserRepository.SetAccountBlockStatus(user, true);
+                _authUnitOfWork.Save();
+                return new AuthModel { Success = true, Message = "User account has been blocked" };
+            }
+            catch (Exception ex)
+            {
+                return new AuthModel { Success = false, Message = $"Error blocking account: {ex.Message}" };
+            }
+        }
+
         public async Task<AuthModel> DeleteAccount(string userId)
         {
             try

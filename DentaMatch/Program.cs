@@ -25,6 +25,8 @@ using DentaMatch.Services.Paypal;
 using DentaMatch.Services.Dental_Case.Comments.IServices;
 using DentaMatch.Services.Dental_Case.Comments;
 using DentaMatch.Cache;
+using DentaMatch.Services.Dental_Case.Reports.IService;
+using DentaMatch.Services.Dental_Case.Reports;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +61,7 @@ builder.Services.AddScoped<IAuthAdminService, AuthAdminService>();
 builder.Services.AddScoped<IAuthDoctorService, AuthDoctorService>();
 builder.Services.AddScoped<ICaseAppointmentService, CaseAppointmentService>();
 builder.Services.AddScoped<ICaseCommentsService, CaseCommentsService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
 builder.Services.AddHttpContextAccessor();
 

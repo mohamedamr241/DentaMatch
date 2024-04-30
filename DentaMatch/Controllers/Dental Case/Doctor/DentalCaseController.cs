@@ -1,7 +1,9 @@
 ﻿using DentaMatch.Services.Dental_Case.IServices;
+using DentaMatch.Services.Dental_Case.Reports.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.Operations;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace DentaMatch.Controllers.Dental_Case.Doctor
 {
@@ -11,10 +13,12 @@ namespace DentaMatch.Controllers.Dental_Case.Doctor
     public class DentalCaseController : ControllerBase
     {
         private readonly IDentalCaseService _dentalCaseService;
+        private readonly IReportService _reportService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public DentalCaseController(IDentalCaseService dentalCaseService, IHttpContextAccessor httpContextAccessor)
+        public DentalCaseController(IDentalCaseService dentalCaseService, IReportService reportService, IHttpContextAccessor httpContextAccessor)
         {
             _dentalCaseService = dentalCaseService;
+            _reportService = reportService;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -125,6 +129,25 @@ namespace DentaMatch.Controllers.Dental_Case.Doctor
                 return BadRequest(new { Success = false, Message = $"Search By Description is Failed: {error.Message}" });
             }
 
+        }
+
+        [HttpGet("report")]
+        public async Task<IActionResult> ReportCase(string caseId, string doctorId)
+        {
+            try
+            {
+                var result = await _reportService.Report(caseId, doctorId);
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+                return Ok(result);
+
+            }
+            catch (Exception error)
+            {
+                return BadRequest(new { Success = false, Message = $"Report Failed: {error.Message}" });
+            }
         }
 
     }

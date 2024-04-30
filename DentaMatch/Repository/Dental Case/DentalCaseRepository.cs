@@ -3,6 +3,7 @@ using DentaMatch.Models;
 using DentaMatch.Models.Dental_Case.Chronic_Diseases;
 using DentaMatch.Models.Dental_Case.Dental_Diseases;
 using DentaMatch.Models.Dental_Case.Images;
+using DentaMatch.Models.Dental_Case.Reports;
 using DentaMatch.Repository.Dental_Case.IRepository;
 using DentaMatch.ViewModel.Dental_Cases;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,7 @@ namespace DentaMatch.Repository.Dental_Case
         public IRepository<XrayIamges> XRayImages { get; private set; }
 
         public IRepository<PrescriptionImages> PrescriptionImages { get; private set; }
+        public IRepository<Report> Report { get; private set; }
         private readonly ApplicationDbContext _db;
 
         public DentalCaseRepository(ApplicationDbContext db) : base(db)
@@ -37,6 +39,7 @@ namespace DentaMatch.Repository.Dental_Case
             MouthImages = new Repository<MouthImages>(db);
             XRayImages = new Repository<XrayIamges>(db);
             PrescriptionImages = new Repository<PrescriptionImages>(db);
+            Report = new Repository<Report>(db);
             _db = db;
         }
 

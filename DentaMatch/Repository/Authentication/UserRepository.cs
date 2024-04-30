@@ -47,5 +47,13 @@ namespace DentaMatch.Repository.Authentication
                 user.City = updatedUser.City;
             }
         }
+
+        public void SetAccountBlockStatus(ApplicationUser user, bool blockStatus)
+        {
+            if (user != null) 
+            {
+                user.IsBlocked = blockStatus;
+            }
+        }
     }
 }

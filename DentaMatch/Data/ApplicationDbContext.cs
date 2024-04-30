@@ -3,6 +3,7 @@ using DentaMatch.Models.Dental_Case.Chronic_Diseases;
 using DentaMatch.Models.Dental_Case.Comments;
 using DentaMatch.Models.Dental_Case.Dental_Diseases;
 using DentaMatch.Models.Dental_Case.Images;
+using DentaMatch.Models.Dental_Case.Reports;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,8 +25,8 @@ namespace DentaMatch.Data
         public DbSet<MouthImages> MouthImages { get; set; }
         public DbSet<PrescriptionImages> PrescriptionImages { get; set; }
         public DbSet<XrayIamges> XrayIamges { get; set; }
-
         public DbSet<DentalCaseComments> Comment { get; set; }
+        public DbSet<Report> Report { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -61,7 +62,26 @@ namespace DentaMatch.Data
                 .HasForeignKey(d => d.PatientId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
+            modelBuilder.Entity<Report>()
+            .HasKey(r => new { r.CaseId, r.PatientId, r.DoctorId });
 
+            modelBuilder.Entity<Report>()
+                .HasOne(r => r.DentalCase)
+                .WithMany()
+                .HasForeignKey(r => r.CaseId)
+                .OnDelete(DeleteBehavior.ClientSetNull); // Remove cascade delete behavior
+
+            modelBuilder.Entity<Report>()
+                .HasOne(r => r.Patient)
+                .WithMany()
+                .HasForeignKey(r => r.PatientId)
+                .OnDelete(DeleteBehavior.ClientSetNull); // Remove cascade delete behavior
+
+            modelBuilder.Entity<Report>()
+                .HasOne(r => r.Doctor)
+                .WithMany()
+                .HasForeignKey(r => r.DoctorId)
+                .OnDelete(DeleteBehavior.ClientSetNull); // Remove cascade delete behavior
         }
     }
 }

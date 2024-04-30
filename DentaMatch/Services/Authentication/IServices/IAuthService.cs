@@ -10,6 +10,7 @@ namespace DentaMatch.Services.Authentication.IServices
         Task<AuthModel<ApplicationUser>> SignUpAsync(SignUpVM model);
         Task<AuthModel<ApplicationUser>> SignInAsync(SignInVM model);
         Task<AuthModel> UpdateAccount(ApplicationUser user, UserUpdateRequestVM model);
+        Task<AuthModel> BlockAccount(ApplicationUser user);
         Task<AuthModel> DeleteAccount(string userId);
         Task<AuthModel> ChangePasswordAsync(string userId, ChangePasswordVm model);
         Task<AuthModel> ForgetPasswordAsync(ForgetPasswordVM model);

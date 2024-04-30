@@ -140,6 +140,7 @@ namespace DentaMatch.Services.Dental_Case
                 return new AuthModel<DentalCaseResponseVM> { Success = false, Message = $"Error Deleting dental case: {error.Message}" };
             }
         }
+
         public AuthModel<DentalCaseResponseVM> GetCase(string caseId)
         {
             try
