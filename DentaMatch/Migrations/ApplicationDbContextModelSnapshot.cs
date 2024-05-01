@@ -164,7 +164,7 @@ namespace DentaMatch.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("DentalCases");
+                    b.ToTable("DentalCases", (string)null);
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Chronic_Diseases.CaseChronicDiseases", b =>
@@ -179,7 +179,7 @@ namespace DentaMatch.Migrations
 
                     b.HasIndex("DiseaseId");
 
-                    b.ToTable("CaseChronicDiseases");
+                    b.ToTable("CaseChronicDiseases", (string)null);
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Chronic_Diseases.ChronicDisease", b =>
@@ -193,7 +193,7 @@ namespace DentaMatch.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ChronicDiseases");
+                    b.ToTable("ChronicDiseases", (string)null);
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Comments.DentalCaseComments", b =>
@@ -222,7 +222,7 @@ namespace DentaMatch.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comment");
+                    b.ToTable("Comment", (string)null);
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Dental_Diseases.CaseDentalDiseases", b =>
@@ -237,7 +237,7 @@ namespace DentaMatch.Migrations
 
                     b.HasIndex("DiseaseId");
 
-                    b.ToTable("CaseDentalDiseases");
+                    b.ToTable("CaseDentalDiseases", (string)null);
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Dental_Diseases.DentalDisease", b =>
@@ -251,7 +251,7 @@ namespace DentaMatch.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DentalDiseases");
+                    b.ToTable("DentalDiseases", (string)null);
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Images.MouthImages", b =>
@@ -275,7 +275,7 @@ namespace DentaMatch.Migrations
 
                     b.HasIndex("CaseId");
 
-                    b.ToTable("MouthImages");
+                    b.ToTable("MouthImages", (string)null);
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Images.PrescriptionImages", b =>
@@ -299,7 +299,7 @@ namespace DentaMatch.Migrations
 
                     b.HasIndex("CaseId");
 
-                    b.ToTable("PrescriptionImages");
+                    b.ToTable("PrescriptionImages", (string)null);
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Images.XrayIamges", b =>
@@ -323,7 +323,7 @@ namespace DentaMatch.Migrations
 
                     b.HasIndex("CaseId");
 
-                    b.ToTable("XrayIamges");
+                    b.ToTable("XrayIamges", (string)null);
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Reports.Report", b =>
@@ -346,7 +346,7 @@ namespace DentaMatch.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("Report");
+                    b.ToTable("Report", (string)null);
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Doctor", b =>
@@ -381,7 +381,7 @@ namespace DentaMatch.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Doctors");
+                    b.ToTable("Doctors", (string)null);
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Patient", b =>
@@ -407,7 +407,7 @@ namespace DentaMatch.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Patients");
+                    b.ToTable("Patients", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -652,8 +652,9 @@ namespace DentaMatch.Migrations
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Reports.Report", b =>
                 {
                     b.HasOne("DentaMatch.Models.DentalCase", "DentalCase")
-                        .WithMany()
+                        .WithMany("Reports")
                         .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DentaMatch.Models.Doctor", "Doctor")
@@ -755,6 +756,8 @@ namespace DentaMatch.Migrations
                     b.Navigation("MouthImages");
 
                     b.Navigation("PrescriptionImages");
+
+                    b.Navigation("Reports");
 
                     b.Navigation("XrayImages");
                 });

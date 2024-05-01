@@ -8,7 +8,6 @@ using DentaMatch.ViewModel.Authentication.Request;
 using DentaMatch.ViewModel.Authentication.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DentaMatch.Controllers.Authentication
 {
@@ -253,5 +252,24 @@ namespace DentaMatch.Controllers.Authentication
                 return BadRequest(new { Success = false, Message = $"Delete Account Failed: {error.Message}" });
             }
         }
+
+        //[Authorize(Roles = "Doctor, Patient")]
+        //[HttpGet("Signout")]
+        //public async Task<IActionResult> Logout()
+        //{
+        //    try
+        //    {
+        //        var result = await _authService.SignOutAsync();
+        //        if (!result.Success)
+        //        {
+        //            return BadRequest(result);
+        //        }
+        //        return Ok(result);
+        //    }
+        //    catch (Exception error)
+        //    {
+        //        return BadRequest(new { Success = false, Message = $"Delete Account Failed: {error.Message}" });
+        //    }
+        //}
     }
 }

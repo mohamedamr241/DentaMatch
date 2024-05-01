@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DentaMatch.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240430004800_Add_Column_IsBlocked_To_ApplicationUser_update")]
-    partial class Add_Column_IsBlocked_To_ApplicationUser_update
+    [Migration("20240430154930_Create_Report_Table")]
+    partial class Create_Report_Table
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -655,8 +655,9 @@ namespace DentaMatch.Migrations
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Reports.Report", b =>
                 {
                     b.HasOne("DentaMatch.Models.DentalCase", "DentalCase")
-                        .WithMany()
+                        .WithMany("Reports")
                         .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DentaMatch.Models.Doctor", "Doctor")
@@ -667,6 +668,7 @@ namespace DentaMatch.Migrations
                     b.HasOne("DentaMatch.Models.Patient", "Patient")
                         .WithMany()
                         .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("DentalCase");
@@ -758,6 +760,8 @@ namespace DentaMatch.Migrations
                     b.Navigation("MouthImages");
 
                     b.Navigation("PrescriptionImages");
+
+                    b.Navigation("Reports");
 
                     b.Navigation("XrayImages");
                 });

@@ -67,21 +67,21 @@ namespace DentaMatch.Data
 
             modelBuilder.Entity<Report>()
                 .HasOne(r => r.DentalCase)
-                .WithMany()
+                .WithMany(r => r.Reports)
                 .HasForeignKey(r => r.CaseId)
-                .OnDelete(DeleteBehavior.ClientSetNull); // Remove cascade delete behavior
+                .OnDelete(DeleteBehavior.Cascade); 
 
             modelBuilder.Entity<Report>()
                 .HasOne(r => r.Patient)
                 .WithMany()
                 .HasForeignKey(r => r.PatientId)
-                .OnDelete(DeleteBehavior.ClientSetNull); // Remove cascade delete behavior
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             modelBuilder.Entity<Report>()
-                .HasOne(r => r.Doctor)
-                .WithMany()
-                .HasForeignKey(r => r.DoctorId)
-                .OnDelete(DeleteBehavior.ClientSetNull); // Remove cascade delete behavior
+                    .HasOne(r => r.Doctor)
+                    .WithMany()
+                    .HasForeignKey(r => r.DoctorId)
+                    .OnDelete(DeleteBehavior.ClientSetNull);
         }
     }
 }

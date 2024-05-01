@@ -22,11 +22,12 @@ using DentaMatch.Services.Paymob.Iservice;
 using DentaMatch.Services.Paymob;
 using DentaMatch.Services.Paypal.IServices;
 using DentaMatch.Services.Paypal;
-using DentaMatch.Services.Dental_Case.Comments.IServices;
-using DentaMatch.Services.Dental_Case.Comments;
 using DentaMatch.Cache;
-using DentaMatch.Services.Dental_Case.Reports.IService;
-using DentaMatch.Services.Dental_Case.Reports;
+using DentaMatch.Services.Reports;
+using DentaMatch.Services.Reports.IService;
+using DentaMatch.Services.Comments;
+using DentaMatch.Services.Comments.IServices;
+using DentaMatch.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,16 +42,14 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
+builder.Services.AddScoped<IDentalUnitOfWork, DentalUnitOfWork>();
+builder.Services.AddScoped<IAuthUnitOfWork, AuthUnitOfWork>();
 
-
-builder.Services.AddTransient<IDentalUnitOfWork, DentalUnitOfWork>();
-builder.Services.AddTransient<IAuthUnitOfWork, AuthUnitOfWork>();
 builder.Services.AddScoped<AppHelper>();
 builder.Services.AddScoped<CacheItem>();
 
-
 builder.Services.AddScoped<IDentalCaseService, DentalCaseService>();
-builder.Services.AddTransient<IDentalCaseCommentRepository, DentalCaseCommentRepository>();
+builder.Services.AddScoped<IDentalCaseCommentRepository, DentalCaseCommentRepository>();
 builder.Services.AddTransient<IMailService, MailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPaymobService, PaymobService>();
@@ -97,6 +96,22 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
+
+
+app.MapWhen(context => context.Request.Path.StartsWithSegments("/PatientAuth"), appBuilder =>
+{
+    appBuilder.UseMiddleware<BlockCheckMiddleware>();
+});
+
+app.MapWhen(context => context.Request.Path.StartsWithSegments("/Patient/DentalCase"), appBuilder =>
+{
+    appBuilder.UseMiddleware<BlockCheckMiddleware>();
+});
+
+app.MapWhen(context => context.Request.Path.StartsWithSegments("/Patient/CaseAppointment"), appBuilder =>
+{
+    appBuilder.UseMiddleware<BlockCheckMiddleware>();
+});
 
 app.MapControllers();
 

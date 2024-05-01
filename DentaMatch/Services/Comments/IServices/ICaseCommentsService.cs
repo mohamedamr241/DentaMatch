@@ -1,7 +1,7 @@
 ﻿using DentaMatch.ViewModel.Dental_Cases;
 using DentaMatch.ViewModel;
 
-namespace DentaMatch.Services.Dental_Case.Comments.IServices
+namespace DentaMatch.Services.Comments.IServices
 {
     public interface ICaseCommentsService
     {

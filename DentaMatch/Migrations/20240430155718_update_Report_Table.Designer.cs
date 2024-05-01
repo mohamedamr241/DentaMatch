@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DentaMatch.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240429203326_Create_Report_Table")]
-    partial class Create_Report_Table
+    [Migration("20240430155718_update_Report_Table")]
+    partial class update_Report_Table
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "8.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -58,6 +58,9 @@ namespace DentaMatch.Migrations
                         .HasColumnType("nvarchar(80)");
 
                     b.Property<bool>("Gender")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsBlocked")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsVerified")
@@ -652,21 +655,19 @@ namespace DentaMatch.Migrations
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Reports.Report", b =>
                 {
                     b.HasOne("DentaMatch.Models.DentalCase", "DentalCase")
-                        .WithMany()
+                        .WithMany("Reports")
                         .HasForeignKey("CaseId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DentaMatch.Models.Doctor", "Doctor")
                         .WithMany()
                         .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("DentaMatch.Models.Patient", "Patient")
                         .WithMany()
                         .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("DentalCase");
@@ -758,6 +759,8 @@ namespace DentaMatch.Migrations
                     b.Navigation("MouthImages");
 
                     b.Navigation("PrescriptionImages");
+
+                    b.Navigation("Reports");
 
                     b.Navigation("XrayImages");
                 });

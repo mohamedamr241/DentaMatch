@@ -8,8 +8,6 @@ using DentaMatch.Repository.Dental_Case.IRepository;
 using DentaMatch.Services.Dental_Case.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Dental_Cases;
-using Microsoft.IdentityModel.Tokens;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DentaMatch.Services.Dental_Case
 {

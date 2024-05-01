@@ -9,7 +9,6 @@ namespace DentaMatch.Repository.Authentication
     {
         private readonly ApplicationDbContext _db;
         public UserManager<ApplicationUser> UserManager { get; private set; }
-        //public SignInManager<ApplicationUser> signInManager { get; private set; }
         public PatientRepository PatientRepository { get; private set; }
         public DoctorRepository DoctorRepository { get; private set; }
         public IUserRepository UserRepository { get; private set; }

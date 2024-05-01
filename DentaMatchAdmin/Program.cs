@@ -16,10 +16,6 @@ using DentaMatch.Services.Authentication;
 using DentaMatch.Services.Mail.IServices;
 using DentaMatch.Services.Mail;
 using DentaMatch.Helpers;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 

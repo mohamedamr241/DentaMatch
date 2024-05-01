@@ -1,6 +1,7 @@
 ﻿using DentaMatch.Models.Dental_Case.Chronic_Diseases;
 using DentaMatch.Models.Dental_Case.Dental_Diseases;
 using DentaMatch.Models.Dental_Case.Images;
+using DentaMatch.Models.Dental_Case.Reports;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -29,11 +30,12 @@ namespace DentaMatch.Models
         [ForeignKey("Doctor")]
         public string? DoctorId { get; set; }
         public virtual Doctor? Doctor { get; set; }
+        public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
         public virtual ICollection<CaseChronicDiseases> CaseChronicDiseases { get; set; }
         public virtual ICollection<CaseDentalDiseases> CaseDentalDiseases { get; set; }
         public virtual ICollection<MouthImages> MouthImages { get; set; }
         public virtual ICollection<XrayIamges> XrayImages { get; set; }
         public virtual ICollection<PrescriptionImages> PrescriptionImages { get; set; }
-        public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
+        public virtual ICollection<Report> Reports { get; set; }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using DentaMatch.Services.Dental_Case.IServices;
-using DentaMatch.Services.Dental_Case.Reports.IService;
+using DentaMatch.Services.Reports.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.Operations;
@@ -132,11 +132,17 @@ namespace DentaMatch.Controllers.Dental_Case.Doctor
         }
 
         [HttpGet("report")]
-        public async Task<IActionResult> ReportCase(string caseId, string doctorId)
+        public async Task<IActionResult> ReportCase(string caseId)
         {
             try
             {
-                var result = await _reportService.Report(caseId, doctorId);
+                var userClaims = _httpContextAccessor.HttpContext.User.Claims;
+                var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value;
+                if (userId == null)
+                {
+                    return BadRequest(new { Success = false, Message = "User not Found!" });
+                }
+                var result = await _reportService.Report(userId, caseId);
                 if (!result.Success)
                 {
                     return BadRequest(result);

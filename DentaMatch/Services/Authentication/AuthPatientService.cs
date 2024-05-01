@@ -1,6 +1,8 @@
 ﻿using DentaMatch.Helpers;
 using DentaMatch.Models;
 using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.Repository.Dental_Case;
+using DentaMatch.Repository.Dental_Case.IRepository;
 using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.Services.Mail.IServices;
 using DentaMatch.ViewModel;
@@ -12,10 +14,12 @@ namespace DentaMatch.Services.Authentication
     public class AuthPatientService : AuthService, IAuthPatientService
     {
         private readonly IAuthUnitOfWork _authUnitOfWork;
+        private readonly IDentalUnitOfWork _dentalunitOfWork;
 
-        public AuthPatientService(IAuthUnitOfWork authUnitOfWork, IMailService mailService, IConfiguration configuration, AppHelper appHelper) : base(authUnitOfWork, mailService, configuration, appHelper)
+        public AuthPatientService(IAuthUnitOfWork authUnitOfWork, IDentalUnitOfWork dentalUnitOfWork, IMailService mailService, IConfiguration configuration, AppHelper appHelper) : base(authUnitOfWork, mailService, configuration, appHelper)
         {
             _authUnitOfWork = authUnitOfWork;
+            _dentalunitOfWork = dentalUnitOfWork;
         }
 
         public async Task<AuthModel<PatientResponseVM>> SignUpPatientAsync(PatientSignUpVM model)
@@ -127,7 +131,7 @@ namespace DentaMatch.Services.Authentication
 
         private PatientResponseVM ConstructPatientResponse(Patient patient, JwtSecurityToken? jwtToken = null)
         {
-
+            int NumOfReports = _dentalunitOfWork.DentalCaseRepository.Report.Count(r => r.PatientId == patient.Id);
             var response = new PatientResponseVM
             {
                 ProfileImage = patient.User.ProfileImage,
@@ -140,7 +144,8 @@ namespace DentaMatch.Services.Authentication
                 Gender = patient.User.Gender,
                 Age = patient.User.Age,
                 userName = patient.User.UserName,
-                Address = patient.Address
+                Address = patient.Address,
+                NumOfReports = NumOfReports
             };
 
             if (jwtToken is not null)

@@ -1,14 +1,6 @@
-﻿using Azure;
-using DentaMatch.Services.Authentication.IServices;
-using DentaMatch.Services.Paymob.Iservice;
-using DentaMatch.ViewModel;
+﻿using DentaMatch.Services.Paymob.Iservice;
 using DentaMatch.ViewModel.Paymob;
-using EllipticCurve.Utils;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using NuGet.Common;
-using System.Net.Http.Json;
-using System.Text;
 
 namespace DentaMatch.Controllers.Paymob
 {

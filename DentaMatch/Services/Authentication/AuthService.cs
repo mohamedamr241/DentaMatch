@@ -7,6 +7,7 @@ using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication.Forget_Reset_Password;
 using DentaMatch.ViewModel.Authentication.Request;
 using DentaMatch.ViewModel.Authentication.Response;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -38,9 +39,13 @@ namespace DentaMatch.Services.Authentication
             {
                 var errorMessages = new List<string>();
 
-                var existingEmail = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
-                if (existingEmail != null)
+                var existinguser = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
+                if (existinguser != null)
                 {
+                    if (existinguser.IsBlocked)
+                    {
+                        return new AuthModel<ApplicationUser> { Success = false, Message = "This account is blocked" };
+                    }
                     errorMessages.Add("Email is already exist");
                 }
 
@@ -97,6 +102,11 @@ namespace DentaMatch.Services.Authentication
                 var user = model.Phone != null ? await _authUnitOfWork.UserManager.
                     Users.SingleOrDefaultAsync(u => u.PhoneNumber == model.Phone) :
                     await _authUnitOfWork.UserManager.Users.SingleOrDefaultAsync(u => u.Email == model.Email);
+
+                if (user is not null && user.IsBlocked)
+                {
+                    return new AuthModel<ApplicationUser> { Success = false, Message = "This account is blocked" };
+                }
 
                 var passwordIsValid = await _authUnitOfWork.UserManager.CheckPasswordAsync(user, model.Password);
                 if (user is null || !passwordIsValid)
@@ -174,6 +184,40 @@ namespace DentaMatch.Services.Authentication
                 }
                 _authUnitOfWork.UserRepository.SetAccountBlockStatus(user, true);
                 _authUnitOfWork.Save();
+
+                if (user.EmailConfirmed)
+                {
+                    var userRole = await GetRoleAsync(user.Email);
+                    if(userRole.Equals("Patient")) 
+                    {
+                            await _mailService.SendEmailAsync(
+                                user.Email,
+                                "Account Blocked",
+                                $"<h2>Account Blocked</h2>" +
+                                $"<p>Hello {user.FullName.Split(' ')[0]},</p>" +
+                                $"<p>We regret to inform you that your DentaMatch account has been blocked due to excessive reports received from doctors regarding your cases.</p>" +
+                                $"<p>If you believe that this action was taken in error or if you have any questions, please feel free to reply to this email.</p>" +
+                                $"<p>Thank you for your understanding.</p>" +
+                                $"<p>Best regards,</p>" +
+                                $"<p>DentaMatch Team</p>"
+                            );
+                    }
+                    else if (userRole.Equals("Doctor"))
+                    {
+                        await _mailService.SendEmailAsync(
+                            user.Email,
+                            "Account Blocked",
+                            $"<h2>Account Blocked</h2>" +
+                            $"<p>Hello Dr/{user.FullName.Split(' ')[0]},</p>" +
+                            $"<p>We regret to inform you that your DentaMatch account has been blocked by the admin.</p>" +
+                            $"<p>If you believe that this action was taken in error or if you have any questions, please feel free to reply to this email.</p>" +
+                            $"<p>Thank you for your understanding.</p>" +
+                            $"<p>Best regards,</p>" +
+                            $"<p>DentaMatch Team</p>"
+                        );
+                    }
+
+                }
                 return new AuthModel { Success = true, Message = "User account has been blocked" };
             }
             catch (Exception ex)

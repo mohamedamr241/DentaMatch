@@ -2,13 +2,11 @@
 using DentaMatch.Models;
 using DentaMatch.Models.Dental_Case.Comments;
 using DentaMatch.Repository.Dental_Case.IRepository;
-using DentaMatch.Services.Dental_Case.Comments.IServices;
+using DentaMatch.Services.Comments.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Dental_Cases;
-using Microsoft.AspNetCore.Identity;
-using static DentaMatch.Services.Dental_Case.Comments.CaseCommentsService;
 
-namespace DentaMatch.Services.Dental_Case.Comments
+namespace DentaMatch.Services.Comments
 {
     public class CaseCommentsService : ICaseCommentsService
     {
@@ -23,10 +21,10 @@ namespace DentaMatch.Services.Dental_Case.Comments
         {
             try
             {
-                var Case =  _dentalunitOfWork.DentalCaseRepository.Get(u => u.Id == caseId);
+                var Case = _dentalunitOfWork.DentalCaseRepository.Get(u => u.Id == caseId);
                 if (Case == null)
                 {
-                        return new AuthModel { Success = false, Message = $"Dental case is not found!" };
+                    return new AuthModel { Success = false, Message = $"Dental case is not found!" };
                 }
                 var User = await _dentalunitOfWork.UserManager.FindByIdAsync(commentorID);
                 if (User == null)
@@ -41,16 +39,16 @@ namespace DentaMatch.Services.Dental_Case.Comments
                     UserId = commentorID,
                     TimeStamp = DateTime.UtcNow
                 };
-                if(_cache.Retrieve(caseId) != null)
+                if (_cache.Retrieve(caseId) != null)
                 {
                     List<DentalCaseCommentVM> cachedComments = (List<DentalCaseCommentVM>)_cache.Retrieve(caseId);
-                    
+
                     cachedComments.Add(new DentalCaseCommentVM()
                     {
                         id = CaseComment.Id,
                         Comment = comment,
                         fullName = User.FullName,
-                        Role= Role,
+                        Role = Role,
                         TimeStamp = CaseComment.TimeStamp
                     });
                     _cache.Remove(caseId);
@@ -60,9 +58,9 @@ namespace DentaMatch.Services.Dental_Case.Comments
                 {
                     var result = _dentalunitOfWork.CaseCommentRepository.GetAll(u => u.CaseId == caseId, "User", orderBy: q => q.OrderBy(x => x.TimeStamp));
                     List<DentalCaseCommentVM> CaseComments = new List<DentalCaseCommentVM>();
-                    if (result != null && result.Count()>0)
+                    if (result != null && result.Count() > 0)
                     {
-                         CaseComments = await ConstructCommentsVM((List<DentalCaseComments>)result);
+                        CaseComments = await ConstructCommentsVM((List<DentalCaseComments>)result);
 
                     }
                     CaseComments.Add(new DentalCaseCommentVM()
@@ -96,23 +94,23 @@ namespace DentaMatch.Services.Dental_Case.Comments
                 if (_cache.Retrieve(caseId) == null)
                 {
                     var result = _dentalunitOfWork.CaseCommentRepository.GetAll(u => u.CaseId == caseId, "User", orderBy: q => q.OrderBy(x => x.TimeStamp));
-                    if(result!=null && result.Count()>0)
+                    if (result != null && result.Count() > 0)
                     {
                         List<DentalCaseCommentVM> CaseComments = await ConstructCommentsVM((List<DentalCaseComments>)result);
-                        return new AuthModel<List<DentalCaseCommentVM>> { Success = true, Message = $"Getting comments Successfully", Data= CaseComments };
+                        return new AuthModel<List<DentalCaseCommentVM>> { Success = true, Message = $"Getting comments Successfully", Data = CaseComments };
                     }
                 }
                 else
                 {
                     List<DentalCaseCommentVM> cachedComments = (List<DentalCaseCommentVM>)_cache.Retrieve(caseId);
-                    if (cachedComments!=null && cachedComments.Count()>0)
+                    if (cachedComments != null && cachedComments.Count() > 0)
                     {
                         return new AuthModel<List<DentalCaseCommentVM>> { Success = true, Message = $"Getting comments Successfully", Data = cachedComments };
                     }
                 }
-                return new AuthModel<List<DentalCaseCommentVM>> { Success = true, Message = $"No Comments"};
+                return new AuthModel<List<DentalCaseCommentVM>> { Success = true, Message = $"No Comments" };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new AuthModel<List<DentalCaseCommentVM>> { Success = false, Message = $"Error getting dentalCase Comments: {ex.Message}" };
             }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+﻿using DentaMatch.Models.Dental_Case.Reports;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -18,8 +19,9 @@ namespace DentaMatch.Models
         [ForeignKey("User")]
         public string UserId { get; set; }
         public virtual ApplicationUser User { get; set; }
-        public virtual ICollection<DentalCase> DrAssignedCases { get; set; }
         public bool IsVerifiedDoctor { get; set; }
         public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
+        public virtual ICollection<DentalCase> DrAssignedCases { get; set; }
+        //public virtual ICollection<Report> Reports { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using DentaMatch.Models.Dental_Case.Reports;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DentaMatch.Models
@@ -13,9 +14,9 @@ namespace DentaMatch.Models
         [ForeignKey("User")]
         public string UserId { get; set; }
         public virtual ApplicationUser User { get; set; }
-        public virtual ICollection<DentalCase> PatientCases { get; set; }
         public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
-
+        public virtual ICollection<DentalCase> PatientCases { get; set; }
+        //public virtual ICollection<Report> PatientReports { get; set; }
 
     }
 }
