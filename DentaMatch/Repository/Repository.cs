@@ -26,7 +26,7 @@ namespace DentaMatch.Repository
 
         public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null)
         {
-            IQueryable<T> query = dbSet;
+            IQueryable<T> query = dbSet.AsSplitQuery();
             if (!string.IsNullOrEmpty(includeProperties))
             {
                 foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
@@ -40,7 +40,7 @@ namespace DentaMatch.Repository
 
         public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, string? includeProperties = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null)
         {
-            IQueryable<T> query = dbSet;
+            IQueryable<T> query = dbSet.AsSplitQuery();
             if (!string.IsNullOrEmpty(includeProperties))
             {
                 foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))

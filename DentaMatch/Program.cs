@@ -91,28 +91,29 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.MapControllers();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
 
-app.MapWhen(context => context.Request.Path.StartsWithSegments("/PatientAuth"), appBuilder =>
+app.UseWhen(context => context.Request.Path.StartsWithSegments("/Patient/DentalCase"), appBuilder =>
 {
     appBuilder.UseMiddleware<BlockCheckMiddleware>();
 });
 
-app.MapWhen(context => context.Request.Path.StartsWithSegments("/Patient/DentalCase"), appBuilder =>
+app.UseWhen(context => (context.Request.Path.StartsWithSegments("/PatientAuth/GetAccount") || context.Request.Path.StartsWithSegments("/PatientAuth/UpdateAccount") || context.Request.Path.StartsWithSegments("/Patient/DentalCase")), appBuilder =>
 {
     appBuilder.UseMiddleware<BlockCheckMiddleware>();
 });
 
-app.MapWhen(context => context.Request.Path.StartsWithSegments("/Patient/CaseAppointment"), appBuilder =>
+
+
+app.UseWhen(context => context.Request.Path.StartsWithSegments("/Patient/CaseAppointment"), appBuilder =>
 {
     appBuilder.UseMiddleware<BlockCheckMiddleware>();
 });
 
-app.MapControllers();
 
 app.Run();
