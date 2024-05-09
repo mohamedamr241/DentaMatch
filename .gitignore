@@ -361,7 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-DentaMatch/appsettings.json
-DentaMatchAdmin/appsettings.json
-DentaMatchAdmin/appsettings.json
-DentaMatch/appsettings.json
+./DentaMatch/appsettings.json
+./DentaMatchAdmin/appsettings.json
