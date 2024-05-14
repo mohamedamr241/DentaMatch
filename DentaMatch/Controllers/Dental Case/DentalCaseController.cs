@@ -1,4 +1,5 @@
-﻿using DentaMatch.Services.Comments.IServices;
+﻿using DentaMatch.Services.CaseProgress.IServices;
+using DentaMatch.Services.Comments.IServices;
 using DentaMatch.Services.Dental_Case.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -104,5 +105,7 @@ namespace DentaMatch.Controllers.Dental_Case
             }
 
         }
+        
+
     }
 }

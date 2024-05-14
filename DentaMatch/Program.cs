@@ -28,6 +28,8 @@ using DentaMatch.Services.Reports.IService;
 using DentaMatch.Services.Comments;
 using DentaMatch.Services.Comments.IServices;
 using DentaMatch.Middlewares;
+using DentaMatch.Services.CaseProgress.IServices;
+using DentaMatch.Services.CaseProgress;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,6 +63,8 @@ builder.Services.AddScoped<IAuthDoctorService, AuthDoctorService>();
 builder.Services.AddScoped<ICaseAppointmentService, CaseAppointmentService>();
 builder.Services.AddScoped<ICaseCommentsService, CaseCommentsService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<ICaseProgressService, CaseProgressService>();
+
 
 builder.Services.AddHttpContextAccessor();
 

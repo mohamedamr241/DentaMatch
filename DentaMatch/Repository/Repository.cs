@@ -1,32 +1,36 @@
 ﻿using DentaMatch.Data;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace DentaMatch.Repository
 {
     public class Repository<T> : IRepository<T> where T : class
     {
-        private readonly ApplicationDbContext _db;
-        private DbSet<T> dbSet;
+        protected readonly ApplicationDbContext _db;
+        protected DbSet<T> _dbSet;
+
         public Repository(ApplicationDbContext db)
         {
             _db = db;
-            dbSet = _db.Set<T>();
+            _dbSet = _db.Set<T>();
         }
 
         public void Update(T entity)
         {
-            dbSet.Update(entity);
+            _dbSet.Update(entity);
         }
 
         public void Add(T entity)
         {
-            dbSet.Add(entity);
+            _dbSet.Add(entity);
         }
 
-        public T Get(Expression<Func<T, bool>> filter, string? includeProperties = null)
+        public T Get(Expression<Func<T, bool>> filter, string includeProperties = null)
         {
-            IQueryable<T> query = dbSet.AsSplitQuery();
+            IQueryable<T> query = _dbSet;
             if (!string.IsNullOrEmpty(includeProperties))
             {
                 foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
@@ -38,9 +42,9 @@ namespace DentaMatch.Repository
             return query.FirstOrDefault();
         }
 
-        public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, string? includeProperties = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null)
+        public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, string includeProperties = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null)
         {
-            IQueryable<T> query = dbSet.AsSplitQuery();
+            IQueryable<T> query = _dbSet;
             if (!string.IsNullOrEmpty(includeProperties))
             {
                 foreach (var includeProp in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
@@ -61,23 +65,22 @@ namespace DentaMatch.Repository
 
         public void Remove(T entity)
         {
-            dbSet.Remove(entity);
+            _dbSet.Remove(entity);
         }
 
-        public void RemoveRange(IEnumerable<T> entity)
+        public void RemoveRange(IEnumerable<T> entities)
         {
-            dbSet.RemoveRange(entity);
+            _dbSet.RemoveRange(entities);
         }
 
         public int Count(Expression<Func<T, bool>> filter = null)
         {
-            IQueryable<T> query = dbSet;
+            IQueryable<T> query = _dbSet;
             if (filter != null)
             {
                 query = query.Where(filter);
             }
             return query.Count();
         }
-
     }
 }

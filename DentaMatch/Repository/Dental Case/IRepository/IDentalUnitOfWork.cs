@@ -9,6 +9,8 @@ namespace DentaMatch.Repository.Dental_Case.IRepository
         IDentalCaseRepository DentalCaseRepository { get; }
         ICaseAppointmentRepository CaseAppointmentRepository { get; }
         IDentalCaseCommentRepository CaseCommentRepository { get; }
+        IDentalCaseProgressRepository CaseProgressRepository { get; } 
+
         UserManager<ApplicationUser> UserManager { get; }
         void Save();
     }
