@@ -77,6 +77,9 @@ namespace DentaMatch.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<int>("NumOfReport")
+                        .HasColumnType("int");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
@@ -164,7 +167,30 @@ namespace DentaMatch.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("DentalCases", (string)null);
+                    b.ToTable("DentalCases");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Dental_Case.CaseProgress.DentalCaseProgress", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CaseId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("ProgressDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProgressMessage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CaseId");
+
+                    b.ToTable("DentalCaseProgress");
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Chronic_Diseases.CaseChronicDiseases", b =>
@@ -179,7 +205,7 @@ namespace DentaMatch.Migrations
 
                     b.HasIndex("DiseaseId");
 
-                    b.ToTable("CaseChronicDiseases", (string)null);
+                    b.ToTable("CaseChronicDiseases");
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Chronic_Diseases.ChronicDisease", b =>
@@ -193,7 +219,7 @@ namespace DentaMatch.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ChronicDiseases", (string)null);
+                    b.ToTable("ChronicDiseases");
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Comments.DentalCaseComments", b =>
@@ -222,7 +248,7 @@ namespace DentaMatch.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comment", (string)null);
+                    b.ToTable("Comment");
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Dental_Diseases.CaseDentalDiseases", b =>
@@ -237,7 +263,7 @@ namespace DentaMatch.Migrations
 
                     b.HasIndex("DiseaseId");
 
-                    b.ToTable("CaseDentalDiseases", (string)null);
+                    b.ToTable("CaseDentalDiseases");
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Dental_Diseases.DentalDisease", b =>
@@ -251,7 +277,7 @@ namespace DentaMatch.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DentalDiseases", (string)null);
+                    b.ToTable("DentalDiseases");
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Images.MouthImages", b =>
@@ -275,7 +301,7 @@ namespace DentaMatch.Migrations
 
                     b.HasIndex("CaseId");
 
-                    b.ToTable("MouthImages", (string)null);
+                    b.ToTable("MouthImages");
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Images.PrescriptionImages", b =>
@@ -299,7 +325,7 @@ namespace DentaMatch.Migrations
 
                     b.HasIndex("CaseId");
 
-                    b.ToTable("PrescriptionImages", (string)null);
+                    b.ToTable("PrescriptionImages");
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Images.XrayIamges", b =>
@@ -323,15 +349,12 @@ namespace DentaMatch.Migrations
 
                     b.HasIndex("CaseId");
 
-                    b.ToTable("XrayIamges", (string)null);
+                    b.ToTable("XrayIamges");
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Reports.Report", b =>
                 {
                     b.Property<string>("CaseId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("PatientId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("DoctorId")
@@ -340,13 +363,11 @@ namespace DentaMatch.Migrations
                     b.Property<DateTime>("ReportTimestamp")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("CaseId", "PatientId", "DoctorId");
+                    b.HasKey("CaseId", "DoctorId");
 
                     b.HasIndex("DoctorId");
 
-                    b.HasIndex("PatientId");
-
-                    b.ToTable("Report", (string)null);
+                    b.ToTable("Report");
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Doctor", b =>
@@ -365,6 +386,10 @@ namespace DentaMatch.Migrations
                     b.Property<bool>("IsVerifiedDoctor")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Specialization")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("TimeStamp")
                         .HasColumnType("datetime2");
 
@@ -381,7 +406,62 @@ namespace DentaMatch.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Doctors", (string)null);
+                    b.ToTable("Doctors");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Doctor_Models.DoctorSpecializationRequests", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("DoctorId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageLink")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Specialization")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DoctorId");
+
+                    b.ToTable("DoctorSpecialization");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Notifications.UserNotifications", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("NotificationDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserNotifications");
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Patient", b =>
@@ -407,7 +487,7 @@ namespace DentaMatch.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Patients", (string)null);
+                    b.ToTable("Patients");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -559,6 +639,17 @@ namespace DentaMatch.Migrations
                     b.Navigation("Patient");
                 });
 
+            modelBuilder.Entity("DentaMatch.Models.Dental_Case.CaseProgress.DentalCaseProgress", b =>
+                {
+                    b.HasOne("DentaMatch.Models.DentalCase", "DentalCases")
+                        .WithMany()
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DentalCases");
+                });
+
             modelBuilder.Entity("DentaMatch.Models.Dental_Case.Chronic_Diseases.CaseChronicDiseases", b =>
                 {
                     b.HasOne("DentaMatch.Models.DentalCase", "DentalCases")
@@ -662,16 +753,9 @@ namespace DentaMatch.Migrations
                         .HasForeignKey("DoctorId")
                         .IsRequired();
 
-                    b.HasOne("DentaMatch.Models.Patient", "Patient")
-                        .WithMany()
-                        .HasForeignKey("PatientId")
-                        .IsRequired();
-
                     b.Navigation("DentalCase");
 
                     b.Navigation("Doctor");
-
-                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Doctor", b =>
@@ -683,6 +767,15 @@ namespace DentaMatch.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DentaMatch.Models.Doctor_Models.DoctorSpecializationRequests", b =>
+                {
+                    b.HasOne("DentaMatch.Models.Doctor", "Doctor")
+                        .WithMany("doctorSpecializationRequests")
+                        .HasForeignKey("DoctorId");
+
+                    b.Navigation("Doctor");
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Patient", b =>
@@ -765,6 +858,8 @@ namespace DentaMatch.Migrations
             modelBuilder.Entity("DentaMatch.Models.Doctor", b =>
                 {
                     b.Navigation("DrAssignedCases");
+
+                    b.Navigation("doctorSpecializationRequests");
                 });
 
             modelBuilder.Entity("DentaMatch.Models.Patient", b =>

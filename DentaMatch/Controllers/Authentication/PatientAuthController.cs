@@ -29,6 +29,10 @@ namespace DentaMatch.Controllers.Authentication
                 var result = await _patientService.SignUpPatientAsync(model);
                 if (!result.Success)
                 {
+                    if( result.Message == "This account is blocked")
+                    {
+                        return StatusCode(StatusCodes.Status403Forbidden, result);
+                    }
                     return BadRequest(result);
                 }
                 return Ok(result);

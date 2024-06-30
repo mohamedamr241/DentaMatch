@@ -6,5 +6,6 @@ namespace DentaMatch.ViewModel.Authentication
     {
         public string University { get; set; }
         public IFormFile CardImage { get; set; }
+        public string Specialization { get; set; } = "General";
     }
 }

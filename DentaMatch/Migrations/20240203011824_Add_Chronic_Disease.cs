@@ -17,7 +17,7 @@ namespace DentaMatch.Migrations
             migrationBuilder.InsertData(
                 table: "ChronicDiseases",
                 columns: new[] { "Id", "DiseaseName" },
-                values: new object[] { Guid.NewGuid().ToString(), "Cardiovascular" }
+                values: new object[] { Guid.NewGuid().ToString(), "Cardiovascular diseases" }
             );
             migrationBuilder.InsertData(
                 table: "ChronicDiseases",
@@ -27,12 +27,7 @@ namespace DentaMatch.Migrations
             migrationBuilder.InsertData(
                 table: "ChronicDiseases",
                 columns: new[] { "Id", "DiseaseName" },
-                values: new object[] { Guid.NewGuid().ToString(), "Heart Disease" }
-            );
-            migrationBuilder.InsertData(
-                table: "ChronicDiseases",
-                columns: new[] { "Id", "DiseaseName" },
-                values: new object[] { Guid.NewGuid().ToString(), "Cancer" }
+                values: new object[] { Guid.NewGuid().ToString(), "Autoimmune diseases" }
             );
         }
 

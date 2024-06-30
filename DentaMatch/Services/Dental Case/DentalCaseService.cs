@@ -639,6 +639,7 @@ namespace DentaMatch.Services.Dental_Case
             var PatientCity = dentalCase.Patient.User.City;
             var PatientNumber = dentalCase.Patient.User.PhoneNumber;
             var doctorName = dentalCase.Doctor != null ? dentalCase.Doctor.User.FullName : null;
+            var profileImage = dentalCase.Patient.User.ProfileImageLink;
             var doctorUniversity = dentalCase.Doctor != null ? dentalCase.Doctor.University : null;
             var appointment = dentalCase.AppointmentDateTime;
             var googleMapLink = dentalCase.GoogleMapLink;
@@ -660,10 +661,45 @@ namespace DentaMatch.Services.Dental_Case
                 PrescriptionImages = PrescriptionImages,
                 PhoneNumber = PatientNumber,
                 AppointmentDateTime = appointment,
-                GoogleMapLink= googleMapLink
+                GoogleMapLink= googleMapLink,
+                PatientProfileImageLink = profileImage
             };
 
             return dentalCaseResponse;
+        }
+
+        public AuthModel<AvailableSlots> CheckSlots(AvailableSlots model, string docotrId)
+        {
+            try
+            {
+                List<TimeOnly> AvailableTimes = new List<TimeOnly>();
+                var doctor = _authUnitOfWork.DoctorRepository.Get(u => u.UserId == docotrId);
+                var bookedTimes = _dentalunitOfWork.DentalCaseRepository.GetAll(u => u.DoctorId == doctor.Id);
+
+                var bookedTimesOnDate = bookedTimes
+                .Where(bt => DateOnly.FromDateTime(bt.AppointmentDateTime) == model.Date)
+                .Select(bt => TimeOnly.FromDateTime(bt.AppointmentDateTime))
+                .ToList();
+
+                foreach (var time in model.Times)
+                {
+                    if (!bookedTimesOnDate.Contains(time))
+                    {
+                        AvailableTimes.Add(time);
+                    }
+                }
+                var availableSlots = new AvailableSlots
+                {
+                    Date = model.Date,
+                    Times = AvailableTimes
+                };
+                return new AuthModel<AvailableSlots> { Success = true, Message = "Success retrieving available slots", Data = availableSlots };
+                
+            }
+            catch(Exception ex)
+            {
+                return new AuthModel<AvailableSlots> { Success = false, Message = $" failed :{ex}" };
+            }
         }
     }
 

@@ -38,7 +38,7 @@ namespace DentaMatch.Services.Authentication
             try
             {
                 var errorMessages = new List<string>();
-
+                string NewUserName = model.FullName.Replace(" ", "");
                 var existinguser = await _authUnitOfWork.UserManager.FindByEmailAsync(model.Email);
                 if (existinguser != null)
                 {
@@ -64,11 +64,15 @@ namespace DentaMatch.Services.Authentication
                 {
                     return new AuthModel<ApplicationUser> { Success = false, Message = string.Join(", ", errorMessages) };
                 }
+                if (_appHelper.ContainsNonEnglishCharacters(model.FullName.Replace(" ", "")))
+                {
+                    NewUserName = _appHelper.GenerateRandomString(4);
+                }
 
                 var user = new ApplicationUser
                 {
                     FullName = model.FullName,
-                    UserName = model.FullName.Replace(" ", "") + _appHelper.GenerateThreeDigitsCode(),
+                    UserName = NewUserName + _appHelper.GenerateThreeDigitsCode(),
                     Email = model.Email,
                     City = model.City,
                     PhoneNumber = model.PhoneNumber,
@@ -373,7 +377,7 @@ namespace DentaMatch.Services.Authentication
                     return new AuthModel { Success = false, Message = "No User associated with this email" };
                 }
                 TimeSpan timeDifference = DateTime.UtcNow - user.VerificationCodeTimeStamp;
-                if (user.Email == model.Email && user.VerificationCode == model.VerificationCode && timeDifference.TotalMinutes <= 3)
+                if (user.Email == model.Email && user.VerificationCode == model.VerificationCode && timeDifference.TotalMinutes <= 4)
                 {
 
                     int randomNumber = _appHelper.GenerateCode();
@@ -443,7 +447,7 @@ namespace DentaMatch.Services.Authentication
             return userRoles[0];
         }
 
-        public void UpsertProfilePicture(ApplicationUser user, IFormFile Image, string folderName)
+        public string UpsertProfilePicture(ApplicationUser user, IFormFile Image, string folderName)
         {
                 if (user.ProfileImage is not null)
                     _appHelper.DeleteImage(user.ProfileImage);
@@ -459,6 +463,7 @@ namespace DentaMatch.Services.Authentication
                 }
                 _authUnitOfWork.UserRepository.UpdateProfilePicture(user, profileImageFullPath, ProfileImageLink);
                 _authUnitOfWork.Save();
+                return ProfileImageLink;
         }
 
         public async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)

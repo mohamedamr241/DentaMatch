@@ -17,13 +17,12 @@ namespace DentaMatch.Migrations
                 columns: table => new
                 {
                     CaseId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PatientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     DoctorId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ReportTimestamp = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Report", x => new { x.CaseId, x.PatientId, x.DoctorId });
+                    table.PrimaryKey("PK_Report", x => new { x.CaseId, x.DoctorId });
                     table.ForeignKey(
                         name: "FK_Report_DentalCases_CaseId",
                         column: x => x.CaseId,
@@ -35,11 +34,6 @@ namespace DentaMatch.Migrations
                         column: x => x.DoctorId,
                         principalTable: "Doctors",
                         principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Report_Patients_PatientId",
-                        column: x => x.PatientId,
-                        principalTable: "Patients",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -47,10 +41,6 @@ namespace DentaMatch.Migrations
                 table: "Report",
                 column: "DoctorId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Report_PatientId",
-                table: "Report",
-                column: "PatientId");
         }
 
         /// <inheritdoc />

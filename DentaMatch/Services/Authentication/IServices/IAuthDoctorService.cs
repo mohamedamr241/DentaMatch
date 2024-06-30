@@ -11,5 +11,6 @@ namespace DentaMatch.Services.Authentication.IServices
         Task<AuthModel<DoctorResponseVM>> UpdateDoctorAccount(string userId, DoctorUpdateRequestVM model);
         Task<AuthModel<DoctorResponseVM>> GetDoctorAccount(string userId);
         Task<AuthModel<List<DoctorResponseVM>>> GetUnverifiedDoctorsAsync();
+        Task<AuthModel> DeleteDoctorAccount(string userId);
     }
 }

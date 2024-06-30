@@ -8,10 +8,6 @@ namespace DentaMatch.Models.Dental_Case.Reports
         public string CaseId { get; set; }
         public virtual DentalCase DentalCase { get; set; }
 
-        [ForeignKey("Patient")]
-        public string PatientId { get; set; }
-        public virtual Patient Patient { get; set; }
-
         [ForeignKey("Doctor")]
         public string DoctorId { get; set; }
         public virtual Doctor Doctor { get; set; }

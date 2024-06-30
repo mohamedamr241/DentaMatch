@@ -55,5 +55,12 @@ namespace DentaMatch.Repository.Authentication
                 user.IsBlocked = blockStatus;
             }
         }
+        public void UpdateReportNumber(ApplicationUser user)
+        {
+            if (user != null)
+            {
+                user.NumOfReport += 1;
+            }
+        }
     }
 }

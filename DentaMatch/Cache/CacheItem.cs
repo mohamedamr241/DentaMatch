@@ -21,6 +21,11 @@ namespace DentaMatch.Cache
             var cacheOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromDays(time));
             _cache.Set(key, value, cacheOptions);
         }
+        public void storeArrayInDays(string key, string value, int time)
+        {
+            var cacheOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromDays(time));
+            _cache.Set(key, value, cacheOptions);
+        }
         public object Retrieve(string key)
         {
             return _cache.Get(key);

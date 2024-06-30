@@ -7,5 +7,6 @@ namespace DentaMatch.Services.Comments.IServices
     {
         Task<AuthModel> createComment(string caseId, string comment, string commentorID, string Role);
         Task<AuthModel<List<DentalCaseCommentVM>>> GetCaseComments(string caseId);
+        AuthModel DeleteComment(string dentalCaseId, string commentId, string userId);
     }
 }

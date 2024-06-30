@@ -131,7 +131,7 @@ namespace DentaMatch.Services.Authentication
 
         private PatientResponseVM ConstructPatientResponse(Patient patient, JwtSecurityToken? jwtToken = null)
         {
-            int NumOfReports = _dentalunitOfWork.DentalCaseRepository.Report.Count(r => r.PatientId == patient.Id);
+            int NumOfReports = patient.User.NumOfReport;
             var response = new PatientResponseVM
             {
                 ProfileImage = patient.User.ProfileImage,

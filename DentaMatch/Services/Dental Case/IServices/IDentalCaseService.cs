@@ -17,6 +17,7 @@ namespace DentaMatch.Services.Dental_Case.IServices
         AuthModel<List<DentalCaseResponseVM>> SearchByDentalDisease(string diseaseName);
         AuthModel<List<DentalCaseResponseVM>> SearchByDescription(string query);
         AuthModel<List<DentalCaseResponseVM>> GetFirstThreeUnAssignedCases();
+        AuthModel<AvailableSlots> CheckSlots(AvailableSlots model, string docotrId);
 
     }
 }

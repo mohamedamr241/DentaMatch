@@ -1,4 +1,7 @@
-﻿namespace DentaMatch.Helpers
+﻿using System.Text;
+using System.Text.RegularExpressions;
+
+namespace DentaMatch.Helpers
 {
     public class AppHelper
     {
@@ -41,6 +44,26 @@
             Random random = new Random();
             int randomNumber = random.Next(10000, 100000);
             return randomNumber;
+        }
+        public bool ContainsNonEnglishCharacters(string input)
+        {
+            // Regular expression to match non-English characters
+            Regex regex = new Regex(@"[^\u0000-\u007F]+");
+            return regex.IsMatch(input);
+        }
+
+        public string GenerateRandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            StringBuilder result = new StringBuilder(length);
+            Random random = new Random();
+
+            for (int i = 0; i < length; i++)
+            {
+                result.Append(chars[random.Next(chars.Length)]);
+            }
+
+            return result.ToString();
         }
     }
 }

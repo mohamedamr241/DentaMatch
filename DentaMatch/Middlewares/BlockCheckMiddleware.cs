@@ -1,4 +1,5 @@
 ﻿using DentaMatch.Repository.Authentication.IRepository;
+using Newtonsoft.Json;
 namespace DentaMatch.Middlewares
 {
     public class BlockCheckMiddleware
@@ -19,7 +20,11 @@ namespace DentaMatch.Middlewares
             if (isBlocked)
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                await context.Response.WriteAsync("User is blocked.");
+                var responseObject = new { message = "User is blocked." };
+                var jsonResponse = JsonConvert.SerializeObject(responseObject);
+
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(jsonResponse);
                 return;
             }
             await _next(context);
@@ -28,7 +33,9 @@ namespace DentaMatch.Middlewares
         private async Task<bool> IsBlocked(IAuthUnitOfWork _authUnitOfWork, string userId)
         {
             var user = _authUnitOfWork.UserRepository.Get(u => u.Id == userId);
-            return user.IsBlocked;
+            if (user != null)
+                return user.IsBlocked;
+            else return true;
         }
     }
 }

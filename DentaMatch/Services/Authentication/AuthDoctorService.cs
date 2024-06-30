@@ -1,25 +1,29 @@
 ﻿using DentaMatch.Helpers;
 using DentaMatch.Models;
 using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.Repository.Dental_Case.IRepository;
 using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.Services.Mail.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication;
 using DentaMatch.ViewModel.Authentication.Doctor;
 using System.IdentityModel.Tokens.Jwt;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DentaMatch.Services.Authentication
 {
     public class AuthDoctorService : AuthService, IAuthDoctorService
     {
         private readonly IConfiguration _configuration;
+        private readonly IDentalUnitOfWork _dentalUnitOfWork;
         private readonly IAuthUnitOfWork _authUnitOfWork;
         private readonly AppHelper _appHelper;
-        public AuthDoctorService(IAuthUnitOfWork authUnitOfWork, IMailService mailService, IConfiguration configuration, AppHelper appHelper) : base(authUnitOfWork, mailService, configuration, appHelper)
+        public AuthDoctorService(IAuthUnitOfWork authUnitOfWork, IMailService mailService, IConfiguration configuration, AppHelper appHelper, IDentalUnitOfWork dentalUnitOfWork) : base(authUnitOfWork, mailService, configuration, appHelper)
         {
             _configuration = configuration;
             _authUnitOfWork = authUnitOfWork;
             _appHelper = appHelper;
+            _dentalUnitOfWork = dentalUnitOfWork;
         }
 
         public async Task<AuthModel> SignUpDoctorAsync(DoctorSignUpVM model)
@@ -50,7 +54,8 @@ namespace DentaMatch.Services.Authentication
                     UserId = user.Id,
                     University = model.University,
                     CardImage = CardImageFullPath,
-                    CardImageLink = CardImageLink
+                    CardImageLink = CardImageLink,
+                    Specialization = model.Specialization,
                 };
 
                 _authUnitOfWork.DoctorRepository.Add(DoctorDetails);
@@ -195,7 +200,8 @@ namespace DentaMatch.Services.Authentication
                 userName = doctor.User.UserName,
                 University = doctor.University,
                 CardImage = doctor.CardImage,
-                CardImageLink = doctor.CardImageLink
+                CardImageLink = doctor.CardImageLink,
+                Specialization = doctor.Specialization,
             };
 
             if (jwtToken is not null)
@@ -205,6 +211,47 @@ namespace DentaMatch.Services.Authentication
             }
 
             return response;
+        }
+
+        public async Task<AuthModel> DeleteDoctorAccount(string userId)
+        {
+            try
+            {
+                var userComments = _dentalUnitOfWork.CaseCommentRepository.GetAll(u => u.UserId == userId);
+                var doctor = _authUnitOfWork.DoctorRepository.Get(u => u.UserId == userId);
+                var userReports = _dentalUnitOfWork.DentalCaseRepository.Report.GetAll(u=>u.DoctorId == doctor.Id);
+                var doctorRequests = _dentalUnitOfWork.DentalCaseRepository.GetAll(u => u.DoctorId ==doctor.Id);
+                if (doctorRequests != null && userComments.Count() != 0)
+                {
+                    foreach(var request in doctorRequests)
+                    {
+                        _dentalUnitOfWork.DentalCaseRepository.updateDoctorRequestStatus(request);
+                    }
+                    _dentalUnitOfWork.Save();
+                }
+                if(userComments != null && userComments.Count() != 0)
+                {
+                    foreach (var comment in userComments)
+                    {
+                        _dentalUnitOfWork.CaseCommentRepository.Remove(comment);
+                    }
+                    _dentalUnitOfWork.Save();
+                }
+                if (userReports != null && userReports.Count() != 0)
+                {
+                    foreach (var report in userReports)
+                    {
+                        _dentalUnitOfWork.DentalCaseRepository.Report.Remove(report);
+                    }
+                    _dentalUnitOfWork.Save();
+                }
+                var result = await DeleteAccount(userId);
+                return result;
+            }
+            catch (Exception error)
+            {
+                return new AuthModel { Success = false, Message = $"{error.Message}" };
+            }
         }
     }
 }

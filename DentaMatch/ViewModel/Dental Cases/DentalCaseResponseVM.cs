@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Security.Policy;
 
 namespace DentaMatch.ViewModel.Dental_Cases
 {
@@ -14,6 +15,7 @@ namespace DentaMatch.ViewModel.Dental_Cases
         public string Description { get; set; }
         public bool IsKnown { get; set; }
         public bool IsAssigned { get; set; }
+        public string PatientProfileImageLink { get; set; }
         public DateTime AppointmentDateTime { get; set; }
         public string GoogleMapLink { get; set; }
         public List<string> ChronicDiseases { get; set; }

@@ -28,6 +28,20 @@ using DentaMatch.Services.Reports.IService;
 using DentaMatch.Services.Comments;
 using DentaMatch.Services.Comments.IServices;
 using DentaMatch.Middlewares;
+using DentaMatch.Services.CaseProgress.IServices;
+using DentaMatch.Services.CaseProgress;
+using DentaMatch.Repository.Notifications.IRepository;
+using DentaMatch.Repository.Notifications;
+using DentaMatch.Services;
+using DentaMatch.Services.FireBase.IServices;
+using DentaMatch.Services.FireBase;
+using DentaMatch.Services.Notifications.IServices;
+using DentaMatch.Services.Notifications;
+using DentaMatch.Services.Specialization.IServices;
+using DentaMatch.Services.Specialization;
+using DentaMatch.Repository.Specialization.IRepository;
+using DentaMatch.Repository.Specialization;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +64,7 @@ builder.Services.AddScoped<CacheItem>();
 
 builder.Services.AddScoped<IDentalCaseService, DentalCaseService>();
 builder.Services.AddScoped<IDentalCaseCommentRepository, DentalCaseCommentRepository>();
+builder.Services.AddScoped<ICaseProgressService, CaseProgressService>();
 builder.Services.AddTransient<IMailService, MailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPaymobService, PaymobService>();
@@ -61,6 +76,13 @@ builder.Services.AddScoped<IAuthDoctorService, AuthDoctorService>();
 builder.Services.AddScoped<ICaseAppointmentService, CaseAppointmentService>();
 builder.Services.AddScoped<ICaseCommentsService, CaseCommentsService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<INotificationService, NotificationServices>();
+builder.Services.AddScoped<IFirebaseService, FirebaseService>();
+builder.Services.AddScoped<ITableDependencyService, TableDependencyService>();
+builder.Services.AddScoped<ISpecializationService, SpecializationService>();
+builder.Services.AddScoped<ISpecializationRepository, SpecializationRepository>();
+
 
 builder.Services.AddHttpContextAccessor();
 
@@ -103,7 +125,7 @@ app.UseWhen(context => context.Request.Path.StartsWithSegments("/Patient/DentalC
     appBuilder.UseMiddleware<BlockCheckMiddleware>();
 });
 
-app.UseWhen(context => (context.Request.Path.StartsWithSegments("/PatientAuth/GetAccount") || context.Request.Path.StartsWithSegments("/PatientAuth/UpdateAccount") || context.Request.Path.StartsWithSegments("/Patient/DentalCase")), appBuilder =>
+app.UseWhen(context => (context.Request.Path.StartsWithSegments("/PatientAuth/GetAccount") || context.Request.Path.StartsWithSegments("/PatientAuth/UpdateAccount") || context.Request.Path.StartsWithSegments("/Patient/DentalCase") || context.Request.Path.StartsWithSegments("/DentalCase/addcomment") || context.Request.Path.StartsWithSegments("/Auth/DeleteAccount")), appBuilder =>
 {
     appBuilder.UseMiddleware<BlockCheckMiddleware>();
 });
@@ -114,6 +136,7 @@ app.UseWhen(context => context.Request.Path.StartsWithSegments("/Patient/CaseApp
 {
     appBuilder.UseMiddleware<BlockCheckMiddleware>();
 });
+app.UseSqlTableDependency(builder.Configuration.GetConnectionString("DefaultConnection"));
 
 
 app.Run();

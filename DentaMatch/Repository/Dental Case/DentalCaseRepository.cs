@@ -42,6 +42,14 @@ namespace DentaMatch.Repository.Dental_Case
             Report = new Repository<Report>(db);
             _db = db;
         }
+        public void updateDoctorRequestStatus(DentalCase request)
+        {
+            if (request == null)
+            {
+                request.DoctorId = null;
+            }
+        }
+
 
         public void UpdateDentalCaseProperties(DentalCase dentalCase, bool isKnown, string? description = null, DateTime? appointmentDateTime = null, string? googleMapLink = null)
         {

@@ -1,12 +1,15 @@
 ﻿using DentaMatch.Models;
 using DentaMatch.Models.Dental_Case.Reports;
+using DentaMatch.Models.Notifications;
 using DentaMatch.Repository.Authentication;
 using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.Repository.Dental_Case;
 using DentaMatch.Repository.Dental_Case.IRepository;
 using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.Services.Dental_Case.IServices;
 using DentaMatch.Services.Reports.IService;
 using DentaMatch.ViewModel;
+using PayPal.v1.Payments;
 
 namespace DentaMatch.Services.Reports
 {
@@ -53,14 +56,22 @@ namespace DentaMatch.Services.Reports
                 {
                     CaseId = caseId,
                     DoctorId = doctor.Id,
-                    PatientId = dentalCase.PatientId,
                     ReportTimestamp = DateTime.UtcNow
                 };
-
+                _authUnitOfWork.UserRepository.UpdateReportNumber(dentalCase.Patient.User);
                 _dentalunitOfWork.DentalCaseRepository.Report.Add(report);
+                _dentalunitOfWork.notifications.Add(new UserNotifications
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Title = "Report",
+                    UserName = dentalCase.Patient.User.UserName,
+                    Message = $"Doctor {doctor.User.FullName} has reported you.",
+                    NotificationDateTime = DateTime.Now
+                });
                 _dentalunitOfWork.Save();
+                _authUnitOfWork.Save();
 
-                var reportCount = _dentalunitOfWork.DentalCaseRepository.Report.Count(r => r.PatientId == dentalCase.PatientId);
+                var reportCount = dentalCase.Patient.User.NumOfReport;
 
                 int reportThreshold = 3;
 

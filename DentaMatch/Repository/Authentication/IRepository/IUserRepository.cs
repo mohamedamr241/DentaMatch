@@ -8,7 +8,8 @@ namespace DentaMatch.Repository.Authentication.IRepository
         void UpdateVerificationCode(ApplicationUser user, string verficationCode, bool isVerified = false);
         void UpdateProfilePicture(ApplicationUser user, string? ImagePath = null, string? ImagePathLink = null);
         void UpdateUserAccount(ApplicationUser user, UserUpdateRequestVM updatedUser);
-        public void SetAccountBlockStatus(ApplicationUser user, bool blockStatus);
+        void SetAccountBlockStatus(ApplicationUser user, bool blockStatus);
+        void UpdateReportNumber(ApplicationUser user);
 
     }
 }

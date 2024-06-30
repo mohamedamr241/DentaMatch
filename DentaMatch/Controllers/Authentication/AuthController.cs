@@ -1,4 +1,5 @@
 ﻿using DentaMatch.Repository.Authentication.IRepository;
+using DentaMatch.Services;
 using DentaMatch.Services.Authentication.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Authentication;
@@ -23,8 +24,9 @@ namespace DentaMatch.Controllers.Authentication
         private readonly IAuthService _authService;
         private readonly IAuthAdminDoctorService _doctoradminService;
         private readonly IAuthUnitOfWork _authUnitOfWork;
+        private readonly INotificationService _notify;
 
-        public AuthController(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IAuthDoctorService doctor,
+        public AuthController(INotificationService notify, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IAuthDoctorService doctor,
             IAuthPatientService patient, IAuthAdminService admin, IAuthService authService, IAuthAdminDoctorService doctoradminService, IAuthUnitOfWork authUnitOfWork)
         {
             _configuration = configuration;
@@ -35,6 +37,7 @@ namespace DentaMatch.Controllers.Authentication
             _authService = authService;
             _doctoradminService = doctoradminService;
             _authUnitOfWork = authUnitOfWork;
+            _notify = notify;
         }
 
         [HttpPost("Signin")]
@@ -64,7 +67,7 @@ namespace DentaMatch.Controllers.Authentication
                 if (role == "Patient")
                 {
                     AuthModel<PatientResponseVM> patientResponse = await _patient.SignInPatientAsync(model);
-                    return patientResponse.Success ? Ok(patientResponse) : BadRequest(patientResponse);
+                    return patientResponse.Success ? Ok(patientResponse) : patientResponse.Message == "This account is blocked" ? StatusCode(StatusCodes.Status403Forbidden, patientResponse) : BadRequest(patientResponse);
                 }
 
                 if (role == "Admin")
@@ -103,12 +106,30 @@ namespace DentaMatch.Controllers.Authentication
                     return BadRequest(new { Success = false, Message = "Profile Image Insert Failed" });
                 }
                 string role = await _authService.GetRoleAsync(user.Email);
-                _authService.UpsertProfilePicture(user, image.ProfileImage, role);
-                return Ok(new { Success = true, Message = "Profile Image Upserted Successfully" });
+                string imageLink = _authService.UpsertProfilePicture(user, image.ProfileImage, role);
+                return Ok(new { Success = true, Message = "Profile Image Upserted Successfully",data= imageLink });
             }
             catch(Exception err)
             {
                 return BadRequest(new { Success = false, Message = $"Profile Image Insert Failed: {err.Message}" });
+            }
+        }
+        [HttpPost("Notify")]
+        public IActionResult Notify(NotificationVM model)
+        {
+            try
+            {
+               var res = _notify.AddNotification(model);
+                if(!res.Success)
+                {
+                    return BadRequest(res);
+                }
+                return Ok(res);
+
+            }
+            catch (Exception err)
+            {
+                return BadRequest(new { Success = false, Message = $"Notify insert Failed: {err.Message}" });
             }
         }
         [HttpGet("ConfirmEmail")]
@@ -236,16 +257,21 @@ namespace DentaMatch.Controllers.Authentication
             {
                 var userClaims = _httpContextAccessor.HttpContext.User.Claims;
                 var userId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value;
+                var userRole = userClaims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
                 if (userId == null)
                 {
                     return BadRequest(new { Success = false, Message = "User not Found!" });
                 }
-                var result = await _authService.DeleteAccount(userId);
-                if (!result.Success)
+                if(userRole == "Doctor") 
                 {
-                    return BadRequest(result);
+                    var result = await _doctor.DeleteDoctorAccount(userId);
+                    return result.Success ? Ok(result) : BadRequest(result);
                 }
-                return Ok(result);
+                else
+                {
+                    var result = await _authService.DeleteAccount(userId);
+                    return result.Success ? Ok(result) : BadRequest(result);
+                }
             }
             catch (Exception error)
             {

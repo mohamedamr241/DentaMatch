@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "22831482476",
+    "project_id": "dentamatch-1ef31",
+    "storage_bucket": "dentamatch-1ef31.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:22831482476:android:f00fdb25c78deabfacba49",
+        "android_client_info": {
+          "package_name": "com.dentaMatch.dentamatch"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8aRhlHLYSy_y2448QoXWuoyZqBJXZvIg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

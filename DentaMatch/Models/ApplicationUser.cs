@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using DentaMatch.Models.Notifications;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
@@ -27,6 +28,7 @@ namespace DentaMatch.Models
 
         public Boolean IsVerified { get; set; } = false;
         public bool IsBlocked { get; set; }
+        public int NumOfReport { get; set; } = 0;
         public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
     }
 }

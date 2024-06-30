@@ -17,22 +17,22 @@ namespace DentaMatch.Migrations
             migrationBuilder.InsertData(
                 table: "DentalDiseases",
                 columns: new[] { "Id", "DiseaseName" },
-                values: new object[] { Guid.NewGuid().ToString(), "Gingivitis" }
+                values: new object[] { Guid.NewGuid().ToString(), "Fixed Prosthodontics Crown and Brigde" }
             );
             migrationBuilder.InsertData(
                 table: "DentalDiseases",
                 columns: new[] { "Id", "DiseaseName" },
-                values: new object[] { Guid.NewGuid().ToString(), "Prosthodontic" }
+                values: new object[] { Guid.NewGuid().ToString(), "Fixed Prosthodontics Implantology" }
             );
             migrationBuilder.InsertData(
                 table: "DentalDiseases",
                 columns: new[] { "Id", "DiseaseName" },
-                values: new object[] { Guid.NewGuid().ToString(), "Gumboil" }
+                values: new object[] { Guid.NewGuid().ToString(), "Partial Removable Prosthodontics" }
             );
             migrationBuilder.InsertData(
                 table: "DentalDiseases",
                 columns: new[] { "Id", "DiseaseName" },
-                values: new object[] { Guid.NewGuid().ToString(), "Dental abscess" }
+                values: new object[] { Guid.NewGuid().ToString(), "Complete Removable Prosthodontics" }
             );
             migrationBuilder.InsertData(
                 table: "DentalDiseases",
@@ -42,12 +42,7 @@ namespace DentaMatch.Migrations
             migrationBuilder.InsertData(
                 table: "DentalDiseases",
                 columns: new[] { "Id", "DiseaseName" },
-                values: new object[] { Guid.NewGuid().ToString(), "Displaced tooth" }
-            );
-            migrationBuilder.InsertData(
-                table: "DentalDiseases",
-                columns: new[] { "Id", "DiseaseName" },
-                values: new object[] { Guid.NewGuid().ToString(), "Implantology" }
+                values: new object[] { Guid.NewGuid().ToString(), "Gingivitis - periodontitis" }
             );
             migrationBuilder.InsertData(
                 table: "DentalDiseases",
@@ -57,7 +52,7 @@ namespace DentaMatch.Migrations
             migrationBuilder.InsertData(
                 table: "DentalDiseases",
                 columns: new[] { "Id", "DiseaseName" },
-                values: new object[] { Guid.NewGuid().ToString(), "Edentulous" }
+                values: new object[] { Guid.NewGuid().ToString(), "Dental abscess" }
             );
         }
 

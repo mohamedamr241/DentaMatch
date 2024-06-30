@@ -16,6 +16,7 @@ namespace DentaMatch.Repository.Dental_Case.IRepository
         IRepository<CaseChronicDiseases> CaseChronicDiseases { get; }
         IRepository<ChronicDisease> ChronicDiseases { get; }
         IRepository<MouthImages> MouthImages { get; }
+        void updateDoctorRequestStatus(DentalCase request);
         IRepository<XrayIamges> XRayImages { get; }
         IRepository<PrescriptionImages> PrescriptionImages { get; }
         IRepository<Report> Report { get; }

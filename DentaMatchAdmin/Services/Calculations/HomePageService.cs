@@ -79,7 +79,9 @@ namespace DentaMatchAdmin.Services.Calculations
 
             int newUsers = NumOfNewCustomerPerWeek();
             int CurrentUsers =  NumOfCurrentCustomerPerWeek();
-            double weekStatus = (CurrentUsers + newUsers)==0? 0:(newUsers / (CurrentUsers + newUsers)) * 100;
+
+            double num =  (double)newUsers / ((double)CurrentUsers + (double)newUsers) ;
+            double weekStatus = (CurrentUsers + newUsers)==0? 0: Math.Round(num * 100.0, 2);
 
             var Response = new HomePageVM()
             {
