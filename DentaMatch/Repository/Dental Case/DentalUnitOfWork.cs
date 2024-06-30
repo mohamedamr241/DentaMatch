@@ -13,8 +13,6 @@ namespace DentaMatch.Repository.Dental_Case
         public IDentalCaseRepository DentalCaseRepository { get; private set; }
         public ICaseAppointmentRepository CaseAppointmentRepository { get; private set; }
         public IDentalCaseCommentRepository CaseCommentRepository { get; private set; }
-        public IDentalCaseProgressRepository CaseProgressRepository { get; private set; } 
-
         public UserManager<ApplicationUser> UserManager { get; private set; }
 
         public DentalUnitOfWork(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
@@ -24,8 +22,6 @@ namespace DentaMatch.Repository.Dental_Case
             DentalCaseRepository = new DentalCaseRepository(_db);
             CaseAppointmentRepository = new CaseAppointmentRepository();
             CaseCommentRepository = new DentalCaseCommentRepository(_db);
-            CaseProgressRepository = new DentalCaseProgressRepository(_db); 
-
 
         }
         public void Save()

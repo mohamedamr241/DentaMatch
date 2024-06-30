@@ -1,5 +1,4 @@
 ﻿using DentaMatch.Models;
-using DentaMatch.Models.Dental_Case.CaseProgress;
 using DentaMatch.Models.Dental_Case.Chronic_Diseases;
 using DentaMatch.Models.Dental_Case.Comments;
 using DentaMatch.Models.Dental_Case.Dental_Diseases;
@@ -28,7 +27,7 @@ namespace DentaMatch.Data
         public DbSet<XrayIamges> XrayIamges { get; set; }
         public DbSet<DentalCaseComments> Comment { get; set; }
         public DbSet<Report> Report { get; set; }
-        public DbSet<DentalCaseProgress> DentalCaseProgresses { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -64,7 +63,7 @@ namespace DentaMatch.Data
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             modelBuilder.Entity<Report>()
-                 .HasKey(r => new { r.CaseId, r.PatientId, r.DoctorId });
+            .HasKey(r => new { r.CaseId, r.PatientId, r.DoctorId });
 
             modelBuilder.Entity<Report>()
                 .HasOne(r => r.DentalCase)
@@ -79,21 +78,10 @@ namespace DentaMatch.Data
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             modelBuilder.Entity<Report>()
-                 .HasOne(r => r.Doctor)
-                 .WithMany()
-                 .HasForeignKey(r => r.DoctorId)
-                 .OnDelete(DeleteBehavior.ClientSetNull);
-            modelBuilder.Entity<DentalCaseProgress>()
-                  .HasOne(dcp => dcp.Doctor)
-                  .WithMany()
-                  .HasForeignKey(dcp => dcp.DoctorId)
-                  .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<DentalCaseProgress>()
-                .HasOne(dcp => dcp.DentalCases)
-                .WithMany()
-                .HasForeignKey(dcp => dcp.CaseId)
-                .OnDelete(DeleteBehavior.Restrict); 
+                    .HasOne(r => r.Doctor)
+                    .WithMany()
+                    .HasForeignKey(r => r.DoctorId)
+                    .OnDelete(DeleteBehavior.ClientSetNull);
         }
     }
 }
