@@ -46,6 +46,26 @@ namespace DentaMatch.Services.Specialization
                 return new AuthModel { Success = false, Message = $"Error in requesting {ex}" };
             }
         }
+        public AuthModel<SpecializationResponse> GetSpecialization(string doctorId)
+        {
+            try
+            {
+                var doctor = _authUnitOfWork.DoctorRepository.Get(u => u.UserId == doctorId);
+                if (doctor == null)
+                {
+                    return new AuthModel<SpecializationResponse> { Success = false, Message = "User not found!" };
+                }
+                var response = new SpecializationResponse
+                {
+                    Specialization = doctor.Specialization
+                };
+                return new AuthModel<SpecializationResponse> { Success = true, Message = "Success retrieving specialization", Data = response };
+            }
+            catch (Exception ex)
+            {
+                return new AuthModel<SpecializationResponse> { Success = false, Message = $"Error in requesting {ex}" };
+            }
+        }
         private void UpsertSpecializationImage(IFormFile Image, string doctorId, string Specialization)
         {
 

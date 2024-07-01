@@ -6,5 +6,6 @@ namespace DentaMatch.Services.Specialization.IServices
     public interface ISpecializationService
     {
         AuthModel RequestSpecialization(SpecialzationVM model, string doctorId);
+        AuthModel<SpecializationResponse> GetSpecialization(string doctorId);
     }
 }

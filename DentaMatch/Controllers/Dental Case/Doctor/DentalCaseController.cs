@@ -257,6 +257,32 @@ namespace DentaMatch.Controllers.Dental_Case.Doctor
                 return StatusCode(500, new { Success = false, Message = "Internal server error. requesting specialization failed." });
             }
         }
+        [HttpGet("getSpecialization")]
+        public IActionResult getSpecialization()
+        {
+            try
+            {
+                var userClaims = _httpContextAccessor.HttpContext.User.Claims;
+                var doctorId = userClaims.FirstOrDefault(c => c.Type == "uid")?.Value;
+                if (string.IsNullOrEmpty(doctorId))
+                {
+                    return BadRequest(new { Success = false, Message = "Doctor ID is required." });
+                }
+
+                var result = _specializationService.GetSpecialization(doctorId);
+
+                if (!result.Success)
+                {
+                    return BadRequest(result);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception error)
+            {
+                return StatusCode(500, new { Success = false, Message = "Internal server error. getting specialization failed." });
+            }
+        }
         [HttpPost("editprogress")]
         public async Task<IActionResult> EditCaseProgress(string CaseId, string ProgressId, string ProgressMessage)
         {
