@@ -1,5 +1,6 @@
 ﻿using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Dental_Cases;
+using DentaMatch.ViewModel.MachineLearning;
 
 namespace DentaMatch.Services.Dental_Case.IServices
 {
@@ -13,6 +14,7 @@ namespace DentaMatch.Services.Dental_Case.IServices
         AuthModel<List<DentalCaseResponseVM>> GetPatientCases(string UserId);
         AuthModel<List<DentalCaseResponseVM>> GetAssignedCases(string UserId);
         AuthModel<List<DentalCaseResponseVM>> GetUnkownCases();
+        AuthModel<List<MachineLearningVM>> GetKnownCases();
         AuthModel<List<DentalCaseResponseVM>> GetUnAssignedCases();
         AuthModel<List<DentalCaseResponseVM>> SearchByDentalDisease(string diseaseName);
         AuthModel<List<DentalCaseResponseVM>> SearchByDescription(string query);

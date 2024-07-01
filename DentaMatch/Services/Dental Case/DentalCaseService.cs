@@ -8,6 +8,7 @@ using DentaMatch.Repository.Dental_Case.IRepository;
 using DentaMatch.Services.Dental_Case.IServices;
 using DentaMatch.ViewModel;
 using DentaMatch.ViewModel.Dental_Cases;
+using DentaMatch.ViewModel.MachineLearning;
 
 namespace DentaMatch.Services.Dental_Case
 {
@@ -337,6 +338,44 @@ namespace DentaMatch.Services.Dental_Case
             catch (Exception error)
             {
                 return new AuthModel<List<DentalCaseResponseVM>> { Success = false, Message = $"Error Retrieving Unkown dental cases: {error.Message}" };
+            }
+        }
+        public AuthModel<List<MachineLearningVM>> GetKnownCases()
+        {
+            try
+            {
+                var DentalCases = _dentalunitOfWork.DentalCaseRepository.GetAll((u => u.IsKnown),
+                    "CaseDentalDiseases.DentalDiseases,MouthImages");
+                if (DentalCases != null && DentalCases.Count() != 0)
+                {
+                    List<MachineLearningVM> UnAssignedDentalCases = new List<MachineLearningVM>();
+                    foreach (var DentalCase in DentalCases)
+                    {
+                        var UnAssginedCase = new MachineLearningVM
+                        {
+                            MouthImages = DentalCase.MouthImages.Select(u => u.ImageLink).ToList(),
+                            DentalDiseases = DentalCase.CaseDentalDiseases.Select(u => u.DentalDiseases.DiseaseName).ToList()
+                        };
+                        UnAssignedDentalCases.Add(UnAssginedCase);
+                    };
+                    
+                    return new AuthModel<List<MachineLearningVM>>
+                    {
+                        Success = true,
+                        Message = "known Dental Cases retrieved successfully",
+                        Data = UnAssignedDentalCases
+                    };
+                }
+                return new AuthModel<List<MachineLearningVM>>
+                {
+                    Success = true,
+                    Message = "No Dental Cases Available",
+                    Data = []
+                };
+            }
+            catch (Exception error)
+            {
+                return new AuthModel<List<MachineLearningVM>> { Success = false, Message = $"Error Retrieving kown dental cases: {error.Message}" };
             }
         }
 
